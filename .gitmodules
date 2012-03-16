@@ -1,0 +1,12 @@
+[submodule "QBoolMonitor"]
+	path = QBoolMonitor
+	url = /Users/chris/Dropbox/Programming/Repos/QBoolMonitor
+[submodule "QROVMotor"]
+	path = QROVMotor
+	url = /Users/chris/Dropbox/Programming/Repos/QROVMotor
+[submodule "QROVRelay"]
+	path = QROVRelay
+	url = /Users/chris/Dropbox/Programming/Repos/QROVRelay
+[submodule "QROVServo"]
+	path = QROVServo
+	url = /Users/chris/Dropbox/Programming/Repos/QROVServo
