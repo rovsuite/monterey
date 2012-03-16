@@ -10,3 +10,6 @@
 [submodule "QROVServo"]
 	path = QROVServo
 	url = /Users/chris/Dropbox/Programming/Repos/QROVServo
+[submodule "QActivityMonitor"]
+	path = QActivityMonitor
+	url = /Users/chris/Dropbox/Programming/Repos/QActivityMonitor
