@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "QActivityMonitor/qactivitymonitor.h"
 #include "rovabout.h"
+#include "rovdebug.h"
 
 namespace Ui {
     class MainWindow;
@@ -18,12 +19,14 @@ public:
     ~MainWindow();
 
 public slots:
-    void showAbout();
+    void showAbout();   //!< show the about dialog
+    void showDebug();   //!< show the debug dialog
 
 private:
     Ui::MainWindow *ui;
     QActivityMonitor *activityMonitor;
-    ROVAbout *about;
+    ROVAbout *dialogAbout;
+    ROVDebug *dialogDebug;
 };
 
 #endif // MAINWINDOW_H
