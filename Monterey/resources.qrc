@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/text">
+        <file>resources/about.rtf</file>
+        <file>resources/plainabout.txt</file>
+    </qresource>
+</RCC>
