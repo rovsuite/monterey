@@ -12,11 +12,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    ../QActivityMonitor/QActivityMonitor/qactivitymonitor.cpp \
-    ../QBoolMonitor/QBoolMonitor/qboolmonitor.cpp \
-    ../QROVMotor/QROVMotor/qrovmotor.cpp \
-    ../QROVRelay/QROVRelay/qrovrelay.cpp \
-    ../QROVServo/QROVServo/qrovservo.cpp \
+    ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.cpp \
+    ../Monterey/extraclasses/QBoolMonitor/qboolmonitor.cpp \
+    ../Monterey/extraclasses/QROVMotor/qrovmotor.cpp \
+    ../Monterey/extraclasses/QROVRelay/qrovrelay.cpp \
+    ../Monterey/extraclasses/QROVServo/qrovservo.cpp \
     ../Qwtsrc/qwt_wheel.cpp \
     ../Qwtsrc/qwt_thermo.cpp \
     ../Qwtsrc/qwt_text.cpp \
@@ -98,11 +98,11 @@ SOURCES += main.cpp\
     rovabout.cpp
 
 HEADERS  += mainwindow.h \
-    ../QActivityMonitor/QActivityMonitor/qactivitymonitor.h \
-    ../QBoolMonitor/QBoolMonitor/qboolmonitor.h \
-    ../QROVMotor/QROVMotor/qrovmotor.h \
-    ../QROVRelay/QROVRelay/qrovrelay.h \
-    ../QROVServo/QROVServo/qrovservo.h \
+    ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
+    ../Monterey/extraclasses/QBoolMonitor/qboolmonitor.h \
+    ../Monterey/extraclasses/QROVMotor/qrovmotor.h \
+    ../Monterey/extraclasses/QROVRelay/qrovrelay.h \
+    ../Monterey/extraclasses/QROVServo/qrovservo.h \
     ../Qwtsrc/qwt.h \
     ../Qwtsrc/qwt_wheel.h \
     ../Qwtsrc/qwt_thermo.h \
@@ -191,11 +191,11 @@ FORMS    += mainwindow.ui \
     rovmappings.ui \
     rovabout.ui
 
-INCLUDEPATH += ../QActivityMonitor/ \
-                ../QBoolMonitor/ \
-                ../QROVMotor/ \
-                ../QROVRelay/ \
-                ../QROVServo/ \
+INCLUDEPATH += ../Monterey/extraclasses/QActivityMonitor/ \
+                ../Monterey/extraclasses/QBoolMonitor/ \
+                ../Monterey/extraclasses/QROVMotor/ \
+                ../Monterey/extraclasses/QROVRelay/ \
+                ../Monterey/extraclasses/QROVServo/ \
                 ../Qwtsrc/
 
 RESOURCES += \

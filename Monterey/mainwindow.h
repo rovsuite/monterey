@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "QActivityMonitor/qactivitymonitor.h"
+#include "qactivitymonitor.h"
 #include "rovabout.h"
 #include "rovdebug.h"
 
