@@ -34,14 +34,27 @@
   <widget class="QTextEdit" name="teAbout">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>70</y>
+     <x>200</x>
+     <y>80</y>
      <width>291</width>
      <height>311</height>
     </rect>
    </property>
    <property name="readOnly">
     <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="labelIcon">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>80</y>
+     <width>181</width>
+     <height>181</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Logo</string>
    </property>
   </widget>
  </widget>

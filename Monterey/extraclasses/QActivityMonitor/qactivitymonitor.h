@@ -1,6 +1,9 @@
 #ifndef QACTIVITYMONITOR_H
 #define QACTIVITYMONITOR_H
 
+//Written by Chris Konstad
+//March 2012
+
 #include <QObject>
 #include <QTextEdit>
 #include <QTime>

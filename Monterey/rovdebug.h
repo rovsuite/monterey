@@ -2,6 +2,7 @@
 #define ROVDEBUG_H
 
 #include <QDialog>
+#include <QTimer>
 
 namespace Ui {
     class ROVDebug;
@@ -15,8 +16,12 @@ public:
     explicit ROVDebug(QWidget *parent = 0);
     ~ROVDebug();
 
+private slots:
+    void updateGUI();
+
 private:
     Ui::ROVDebug *ui;
+    QTimer *updateTimer;
 };
 
 #endif // ROVDEBUG_H

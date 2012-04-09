@@ -3,4 +3,8 @@
         <file>resources/about.rtf</file>
         <file>resources/plainabout.txt</file>
     </qresource>
+    <qresource prefix="/pictures">
+        <file>resources/monterey.png</file>
+        <file>resources/montereySmall.png</file>
+    </qresource>
 </RCC>
