@@ -39,10 +39,13 @@ public slots:
     void setNumServos(int s);
     int getNumServos();
 
+    void setVersion(double v);
+    double getVersion();
 private:
     int numMotors;
     int numRelays;
     int numServos;
+    double version;
 };
 
 #endif // QROV_H

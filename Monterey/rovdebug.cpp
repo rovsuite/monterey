@@ -11,6 +11,8 @@ ROVDebug::ROVDebug(QWidget *parent) :
     updateTimer->setInterval(50);
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(updateGUI()));
     updateTimer->start();
+
+    //TODO: Add more debug information
 }
 
 ROVDebug::~ROVDebug()

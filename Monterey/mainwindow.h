@@ -44,9 +44,9 @@ public slots:
     void showAbout();   //!< show the about dialog
     void showDebug();   //!< show the debug dialog
     //void showMappings();    //!< show the joystick mapping dialog
-    //void showSettings();    //!< show the settings dialog
+    void showSettings();    //!< show the settings dialog
 
-    //void loadSettings();    //!< load the application's settings
+    void loadSettings();    //!< load the application's settings
 
     void setupCustomWidgets();  //!< Setup the custom widgets
     void refreshGUI();  //!< Refresh the GUI on a timer
@@ -54,6 +54,10 @@ public slots:
     void diveTimeStart();   //!< Start the dive timer
     void diveTimeReset();   //!< Reset the dive timer
     void diveTimeDisplay(); //!< Convert the milliseconds to minutes and hours and display in the gui
+    void ledDisplay();  //!< Light up the LEDs based on each important status
+    void thresholdCheck();  //!< Check the input values to see if they reach thresholds and alert the user if they do
+    void loadData();    //!< Load the data from the ROV controller and display it
+    void displayTime(); //!< Display the current time
 
 private slots:
     void on_pbRelay0_clicked();
@@ -61,6 +65,10 @@ private slots:
     void on_pbRelay1_clicked();
 
     void on_pbRelay2_clicked();
+
+    void on_vsServo0_valueChanged(int value);
+
+    void on_vsServo1_valueChanged(int value);
 
 private:
     QString *version;

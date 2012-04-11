@@ -74,3 +74,13 @@ int QROV::getNumServos()
 {
     return numServos;
 }
+
+void QROV::setVersion(double v)
+{
+    version = v;
+}
+
+double QROV::getVersion()
+{
+    return version;
+}

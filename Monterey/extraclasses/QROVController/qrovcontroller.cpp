@@ -85,6 +85,7 @@ void QROVController::processPacket()
 
     rxProcessing >> version >> depth >> heading >> voltage >> sens0 >> sens1;
 
+    rov->setVersion(version);
     rov->sensorDepth->setValue(depth);
     rov->sensorCompass->setValue(heading);
     rov->sensorVoltage->setValue(voltage);
@@ -132,16 +133,33 @@ void QROVController::sendPacket()
 
 void QROVController::sendDebug()
 {
+    // TODO: Add in code to send debug packet
+}
+
+void QROVController::noJoystick()
+{
+    for(int i=0;i<rov->listMotors.count();i++)
+    {
+        rov->listMotors[i]->setValue(1500); //set everything neutral
+    }
 }
 
 double QROVController::getMaxDepth()
 {
+    // WARNING: Possibly remove getMaxDepth() function?
     return rov->sensorDepth->getMax();
 }
 
 void QROVController::motherFunction()
 {
-    updateJoystickData();
+    if(joysAvail !=0 )
+    {
+        updateJoystickData();
+    }
+    else
+    {
+        noJoystick();
+    }
     sendPacket();
     sendDebug();
 }
@@ -154,6 +172,7 @@ int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outM
 
 void QROVController::readMappings()
 {
+    // TODO: Add in code to load up joystick mappings
 }
 
 
@@ -185,18 +204,18 @@ void QROVController::updateJoystickData()
     //Execute vector math
     if(vectorEnabled)
     {
-        // TODO: Uncomment
-        /*
-        myVectorDrive->vectorMath(joy->axis[mySettings.value("axes/vector/x").toInt()],joy->axis[mySettings.value("axes/vector/y").toInt()],joy->axis[mySettings.value("axes/vector/z").toInt()],joy->axis[mySettings.value("axes/vector/v").toInt()],false);
+        // TODO: Remove reading of QSettings and move that to the MainWindow class?
+
+        myVectorDrive->vectorMath(joy->axis[mySettings->value("axes/vector/x").toInt()],joy->axis[mySettings->value("axes/vector/y").toInt()],joy->axis[mySettings->value("axes/vector/z").toInt()],joy->axis[mySettings->value("axes/vector/v").toInt()],false);
 
         if(rov->getNumMotors() == 6)
         {
             for(int i=0;i<rov->getNumMotors();i++)    //retrieve vector values
             {
-                rov->listMotors[i] = myVectorDrive->getVectorValue(i);
+                rov->listMotors[i]->setValue(myVectorDrive->getVectorValue(i));
             }
         }
-        */
+
     }
 
     // TODO: Add hat and button reading
