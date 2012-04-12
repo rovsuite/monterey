@@ -24,4 +24,6 @@ void ROVDebug::updateGUI()
 {
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
     ui->leTOBI->setText(p->controller->txPacket);
+    ui->lcdPortTIBO->display(p->controller->getPortTIBO());
+    ui->lcdPortTOBI->display(p->controller->getPortTOBI());
 }

@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()), this, SLOT(diveTimeReset()));
     connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(showSettings()));
+    connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
 
     guiTimer->start();
 }
@@ -48,18 +49,28 @@ MainWindow::~MainWindow()
 
 void MainWindow::showAbout()
 {
+    // TODO: Add about information
     dialogAbout = new ROVAbout(this);
     dialogAbout->exec();
 }
 
 void MainWindow::showDebug()
 {
+    // TODO: Add debug code
     dialogDebug = new ROVDebug(this);
     dialogDebug->show();
 }
 
+void MainWindow::showMappings()
+{
+    // TODO: Add mapping code
+    dialogMappings = new ROVMappings(this);
+    dialogMappings->show();
+}
+
 void MainWindow::showSettings()
 {
+    // TODO: Finish adding settings code
     dialogSettings = new ROVSettings(this);
     connect(dialogSettings, SIGNAL(callLoadSettings()), this, SLOT(loadSettings()));    //connect the signal to load the settings
     dialogSettings->show();

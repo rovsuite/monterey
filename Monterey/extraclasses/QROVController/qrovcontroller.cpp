@@ -144,6 +144,16 @@ void QROVController::noJoystick()
     }
 }
 
+int QROVController::getPortTOBI()
+{
+    return tobiPort;
+}
+
+int QROVController::getPortTIBO()
+{
+    return tiboPort;
+}
+
 double QROVController::getMaxDepth()
 {
     // WARNING: Possibly remove getMaxDepth() function?

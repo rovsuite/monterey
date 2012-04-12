@@ -54,6 +54,8 @@ public slots:
     void setZDeadzone(int z) { zDead = z; }
     int getZDeadzone() { return zDead; }
     void noJoystick();   //!< Put the ROV motors into a neutral state if the joystick is not attached
+    int getPortTOBI();  //!< Get the TOBI port
+    int getPortTIBO();  //!< Get the TIBO port
 
     double getMaxDepth();
 

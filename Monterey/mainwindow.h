@@ -43,7 +43,7 @@ public:
 public slots:
     void showAbout();   //!< show the about dialog
     void showDebug();   //!< show the debug dialog
-    //void showMappings();    //!< show the joystick mapping dialog
+    void showMappings();    //!< show the joystick mapping dialog
     void showSettings();    //!< show the settings dialog
 
     void loadSettings();    //!< load the application's settings
