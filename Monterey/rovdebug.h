@@ -18,6 +18,8 @@ public:
 
 private slots:
     void updateGUI();
+    void displayTIBOPacket(QString toDisp);
+    void displayTOBIPacket(QString toDisp);
 
 private:
     Ui::ROVDebug *ui;

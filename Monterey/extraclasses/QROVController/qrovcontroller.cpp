@@ -3,6 +3,7 @@
 #define numberOfMotors 6
 #define numberOfRelays 3
 #define numberOfServos 2
+#define ERRORTIMEOUT 500
 
 QROVController::QROVController(QObject *parent) :
     QObject(parent)
@@ -12,6 +13,14 @@ QROVController::QROVController(QObject *parent) :
     mySettings = new QSettings("rovsuite", "monterey", this);
     rxSocket = new QUdpSocket(this);
     txSocket = new QUdpSocket(this);
+    timerTIBO = new QTimer(this);
+    timerTOBI = new QTimer(this);
+    comTIBO = false;
+    comTOBI = false;
+    monitorTIBO = new QBoolMonitor(this);
+    monitorTIBO->setComparisonState(comTIBO);
+    monitorTOBI = new QBoolMonitor(this);
+    monitorTOBI->setComparisonState(comTOBI);
 
     initJoysticks();
 
@@ -31,10 +40,15 @@ QROVController::QROVController(QObject *parent) :
     bilinearThreshold = 0.6;
     bilinearRatio = 1.5;
 
+    timerTIBO->start(ERRORTIMEOUT);
+    timerTOBI->start(ERRORTIMEOUT);
+
     tiboPort = 50000;
     tobiPort = 51000;
     rxSocket->bind(tiboPort, QUdpSocket::ShareAddress);
     connect(rxSocket, SIGNAL(readyRead()), this, SLOT(processPacket()));
+    connect(timerTOBI, SIGNAL(timeout()), this, SLOT(setErrorTOBI()));
+    connect(timerTIBO, SIGNAL(timeout()),this, SLOT(setErrorTIBO()));
 }
 
 void QROVController::initJoysticks()
@@ -70,7 +84,7 @@ void QROVController::processPacket()
     double sens1;
 
     QByteArray rxDatagram;
-    rxPacket.clear();
+    QString rxPacket;
 
     do
     {
@@ -92,12 +106,17 @@ void QROVController::processPacket()
     rov->sensorOther0->setValue(sens0);
     rov->sensorOther1->setValue(sens1);
 
+    emit receivedPacket(rxPacket);
+    emit noErrorTIBO();
+    comTIBO = true;
+    monitorTIBO->compareState(comTIBO);
+    timerTIBO->start(ERRORTIMEOUT);
 }
 
 void QROVController::sendPacket()
 {
     QByteArray txDatagram;
-    txPacket.clear();
+    QString txPacket;
 
     foreach(QROVMotor *m, rov->listMotors)
     {
@@ -128,6 +147,11 @@ void QROVController::sendPacket()
     txDatagram = txPacket.toUtf8();
 
     txSocket->writeDatagram(txDatagram.data(), txDatagram.size(), QHostAddress::Broadcast, tobiPort);
+    emit sentPacket(txPacket);
+    emit noErrorTOBI();
+    comTOBI = true;
+    monitorTOBI->compareState(comTOBI);
+    timerTOBI->start(ERRORTIMEOUT);
 
 }
 
@@ -229,4 +253,18 @@ void QROVController::updateJoystickData()
     }
 
     // TODO: Add hat and button reading
+}
+
+void QROVController::setErrorTOBI()
+{
+    comTOBI = false;
+    monitorTOBI->compareState(comTOBI);
+    emit errorTOBI();
+}
+
+void QROVController::setErrorTIBO()
+{
+    comTIBO = false;
+    monitorTIBO->compareState(comTIBO);
+    emit errorTIBO();
 }

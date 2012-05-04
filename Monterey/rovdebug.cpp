@@ -12,6 +12,12 @@ ROVDebug::ROVDebug(QWidget *parent) :
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(updateGUI()));
     updateTimer->start();
 
+    MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
+    ui->lcdPortTIBO->display(p->controller->getPortTIBO());
+    ui->lcdPortTOBI->display(p->controller->getPortTOBI());
+    connect(p->controller, SIGNAL(sentPacket(QString)), this, SLOT(displayTOBIPacket(QString)));
+    connect(p->controller, SIGNAL(receivedPacket(QString)), this, SLOT(displayTIBOPacket(QString)));
+
     //TODO: Add more debug information
 }
 
@@ -22,8 +28,17 @@ ROVDebug::~ROVDebug()
 
 void ROVDebug::updateGUI()
 {
-    MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
-    ui->leTOBI->setText(p->controller->txPacket);
-    ui->lcdPortTIBO->display(p->controller->getPortTIBO());
-    ui->lcdPortTOBI->display(p->controller->getPortTOBI());
+    //TODO: Any debug stuff to add here on a timer?
+}
+
+void ROVDebug::displayTIBOPacket(QString toDisp)
+{
+    //toDisp = packet;
+    ui->leTIBO->setText(toDisp);
+}
+
+void ROVDebug::displayTOBIPacket(QString toDisp)
+{
+    //toDisp = packet;
+    ui->leTOBI->setText(toDisp);
 }

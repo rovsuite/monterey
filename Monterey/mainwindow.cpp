@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setupCustomWidgets();   //load the settings for the custom widgets
     loadSettings();
 
-    if(controller->joyAttached)
+    if(controller->isJoyAttached())
     {
         activityMonitor->display("Joystick attached");
     }
@@ -38,6 +38,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(showSettings()));
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
+    connect(controller, SIGNAL(errorTIBO()), this, SLOT(errorTIBO()));
+    connect(controller, SIGNAL(errorTOBI()), this, SLOT(errorTOBI()));
+    connect(controller, SIGNAL(noErrorTIBO()),this, SLOT(noErrorTIBO()));
+    connect(controller, SIGNAL(noErrorTOBI()), this, SLOT(noErrorTOBI()));
+    connect(controller->monitorTIBO, SIGNAL(stateChanged()), this, SLOT(lostTIBO()));
+    connect(controller->monitorTOBI, SIGNAL(stateChanged()), this, SLOT(lostTOBI()));
 
     guiTimer->start();
 }
@@ -268,7 +274,7 @@ void MainWindow::diveTimeDisplay()
 
 void MainWindow::ledDisplay()
 {
-    if(controller->joyAttached == true)
+    if(controller->isJoyAttached() == true)
     {
         ui->ledJoystickG->setChecked(true);
         ui->ledJoystickY->setChecked(false);
@@ -280,6 +286,50 @@ void MainWindow::ledDisplay()
         ui->ledJoystickY->setChecked(false);
         ui->ledJoystickR->setChecked(true);
     }
+}
+
+void MainWindow::noErrorTOBI()
+{
+    ui->ledTOBIG->setChecked(true);
+    ui->ledTOBIR->setChecked(false);
+    ui->ledTOBIY->setChecked(false);
+}
+
+void MainWindow::noErrorTIBO()
+{
+    ui->ledTIBOG->setChecked(true);
+    ui->ledTIBOR->setChecked(false);
+    ui->ledTIBOY->setChecked(false);
+}
+
+void MainWindow::errorTOBI()
+{
+    ui->ledTOBIG->setChecked(false);
+    ui->ledTOBIR->setChecked(true);
+    ui->ledTOBIY->setChecked(false);
+}
+
+void MainWindow::errorTIBO()
+{
+    ui->ledTIBOG->setChecked(false);
+    ui->ledTIBOR->setChecked(true);
+    ui->ledTIBOY->setChecked(false);
+}
+
+void MainWindow::lostTOBI()
+{
+    if(controller->getStatusTOBI())
+        activityMonitor->display("Gained TOBI");
+    else
+        activityMonitor->display("Lost TOBI");
+}
+
+void MainWindow::lostTIBO()
+{
+    if(controller->getStatusTIBO())
+        activityMonitor->display("Gained TIBO");
+    else
+        activityMonitor->display("Lost TIBO");
 }
 
 void MainWindow::thresholdCheck()

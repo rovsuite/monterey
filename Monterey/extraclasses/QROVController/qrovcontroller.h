@@ -10,9 +10,11 @@
 #include <QString>
 #include <QUdpSocket>
 #include <QtNetwork>
+#include <QTimer>
 #include "qrov.h"
 #include "qjoystick.h"
 #include "extraclasses/QVectorDrive2/qvectordrive2.h"
+#include "extraclasses/QBoolMonitor/qboolmonitor.h"
 
 class QROVController : public QObject
 {
@@ -21,12 +23,18 @@ public:
     explicit QROVController(QObject *parent = 0);
     QROV *rov;
     QList<int> myVector;    //hold the motor values
-    bool joyAttached;
 
-    QString txPacket;
-    QString rxPacket;
+    QBoolMonitor *monitorTOBI;
+    QBoolMonitor *monitorTIBO;
 
 signals:
+    void sentPacket(QString packet);
+    void receivedPacket(QString packet);
+
+    void errorTOBI();
+    void errorTIBO();
+    void noErrorTOBI();
+    void noErrorTIBO();
 
 public slots:
     void motherFunction();  //!< Used to loop the application
@@ -42,7 +50,7 @@ public slots:
     void sendPacket();  //!< Send a packet to the ROV
     void sendDebug();   //!< Send a debug packet out to any listeners
 
-    //ROVContoller functions
+    //ROVContoller interactive functions
     void setBilinearThreshold(double t) { bilinearThreshold = t; }
     double getBilinearThreshold() { return bilinearThreshold; }
     void setBilinearRatio(double r) { bilinearRatio = r; }
@@ -56,10 +64,15 @@ public slots:
     void noJoystick();   //!< Put the ROV motors into a neutral state if the joystick is not attached
     int getPortTOBI();  //!< Get the TOBI port
     int getPortTIBO();  //!< Get the TIBO port
-
     double getMaxDepth();
-
     int getJoysAvail() { joysAvail = joy->availableJoysticks(); return joysAvail; }    //!< Return the number of attached joysticks
+    bool isJoyAttached() {return joyAttached; } //!< Return the joystick attached status
+    bool getStatusTOBI() { return comTOBI; }    //!< Return the status of TOBI
+    bool getStatusTIBO() { return comTIBO; }    //!< Return the status of TIBO
+
+    //Error functions
+    void setErrorTOBI();    //!< use to say that there is a TOBI error
+    void setErrorTIBO();   //!< use to say that there is a TIBO error
 
 private slots:
     //Misc
@@ -74,8 +87,12 @@ private:
     unsigned int tiboPort;
     unsigned int tobiPort;
 
-    bool com;
+    bool comTOBI;
+    bool comTIBO;
+    QTimer *timerTOBI;
+    QTimer *timerTIBO;
     int joysAvail;
+    bool joyAttached;
 
     bool bilinearEnabled;
     bool vectorEnabled;
