@@ -114,6 +114,9 @@ void MainWindow::loadSettings()
     ui->scaleDepth->setMaximum(maxDepth);
     ui->plotDepth->setAxisScale(0,-maxDepth, 0,1);
 
+    //Load motor settings
+    controller->setMotorLayout(mySettings->value("motors/layout", "0").toInt());
+
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
 }

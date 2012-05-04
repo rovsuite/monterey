@@ -20,6 +20,8 @@ ROVSettings::ROVSettings(QWidget *parent) :
 
     ui->sbDepth->setValue(mySettings->value("thresholds/depth", "4").toDouble());
     ui->sbVoltage->setValue(mySettings->value("thresholds/voltage", "11").toDouble());
+
+    ui->comboMotorLayout->setCurrentIndex(mySettings->value("motors/layout", "0").toInt());
 }
 
 ROVSettings::~ROVSettings()
@@ -47,6 +49,9 @@ void ROVSettings::on_pbSave_clicked()
     //Thresholds
     mySettings->setValue("thresholds/depth", ui->sbDepth->value());
     mySettings->setValue("threshold/voltage", ui->sbVoltage->value());
+
+    //Motors
+    mySettings->setValue("motors/layout", ui->comboMotorLayout->currentIndex());
 
     //Then close the window
     emit callLoadSettings();    //emit a signal for the mainwindow to catch to force it to reload the settings

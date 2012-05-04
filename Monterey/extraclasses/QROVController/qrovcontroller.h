@@ -26,6 +26,7 @@ public:
 
     QBoolMonitor *monitorTOBI;
     QBoolMonitor *monitorTIBO;
+    enum MotorLayout{vectorDrive, tankDrive};
 
 signals:
     void sentPacket(QString packet);
@@ -69,6 +70,10 @@ public slots:
     bool isJoyAttached() {return joyAttached; } //!< Return the joystick attached status
     bool getStatusTOBI() { return comTOBI; }    //!< Return the status of TOBI
     bool getStatusTIBO() { return comTIBO; }    //!< Return the status of TIBO
+    MotorLayout getMotorLayout() { return motorLayout; }  //!< Return the currently set motor layout
+    void setMotorLayout(MotorLayout mL) { motorLayout = mL; }   //!< Set the motor layout
+    void setMotorLayout(int mL) { motorLayout = (MotorLayout)mL; }   //!< Set the motor layout
+    void loadSettings();    //!< Force a loading of the settings
 
     //Error functions
     void setErrorTOBI();    //!< use to say that there is a TOBI error
@@ -101,6 +106,7 @@ private:
     int xDead;
     int yDead;
     int zDead;
+    MotorLayout motorLayout;
 
 };
 

@@ -21,6 +21,7 @@ QROVController::QROVController(QObject *parent) :
     monitorTIBO->setComparisonState(comTIBO);
     monitorTOBI = new QBoolMonitor(this);
     monitorTOBI->setComparisonState(comTOBI);
+    motorLayout = vectorDrive;
 
     initJoysticks();
 
@@ -182,6 +183,16 @@ double QROVController::getMaxDepth()
 {
     // WARNING: Possibly remove getMaxDepth() function?
     return rov->sensorDepth->getMax();
+}
+
+void QROVController::loadSettings()
+{
+    //TODO: Add settings code (including save settings)
+    //TDOD: Finish adding settings code and remove it from mainwindow.cpp
+    //Load relay names
+    rov->listRelays[0]->setName(mySettings->value("names/relay0").toString());
+    rov->listRelays[1]->setName(mySettings->value("names/relay1").toString());
+    rov->listRelays[2]->setName(mySettings->value("names/relay2").toString());
 }
 
 void QROVController::motherFunction()
