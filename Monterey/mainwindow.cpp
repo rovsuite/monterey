@@ -15,7 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     controller = new QROVController();
 
-    mySettings = new QSettings("rovsuite", "monterey", this);
+    //mySettings = new QSettings("rovsuite", "monterey", this);
+    mySettings = new QSettings("settings.ini", QSettings::IniFormat);
 
     setupCustomWidgets();   //load the settings for the custom widgets
     loadSettings();

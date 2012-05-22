@@ -7,7 +7,8 @@ ROVSettings::ROVSettings(QWidget *parent) :
 {
     //TODO: Add ability to change which ports Monterey listens on?
     ui->setupUi(this);
-    mySettings = new QSettings("rovsuite", "monterey", this);
+    //mySettings = new QSettings("rovsuite", "monterey", this);
+    mySettings = new QSettings("settings.ini", QSettings::IniFormat);
 
     //Load settings
     ui->leNameRelay0->setText(mySettings->value("names/relay0", "relay1").toString());

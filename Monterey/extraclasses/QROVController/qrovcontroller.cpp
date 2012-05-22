@@ -10,7 +10,8 @@ QROVController::QROVController(QObject *parent) :
 {
     rov = new QROV(this);
     joy = new QJoystick();
-    mySettings = new QSettings("rovsuite", "monterey", this);
+    //mySettings = new QSettings("rovsuite", "monterey", this);
+    mySettings = new QSettings("settings.ini", QSettings::IniFormat);
     rxSocket = new QUdpSocket(this);
     txSocket = new QUdpSocket(this);
     timerTIBO = new QTimer(this);
