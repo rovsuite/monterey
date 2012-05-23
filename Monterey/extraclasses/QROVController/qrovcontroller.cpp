@@ -37,6 +37,11 @@ QROVController::QROVController(QObject *parent) :
     rov->setNumServos(numberOfServos);
     rov->sensorVoltage->setUnits("volts");
     rov->sensorCompass->setUnits("degrees");
+    foreach(QROVMotor* m, rov->listMotors)
+    {
+        m->setMaximum(MOTORMAX);
+        m->setMinimum(MOTORMIN);
+    }
 
     bilinearEnabled = true;
     vectorEnabled = true;
@@ -366,13 +371,16 @@ void QROVController::updateJoystickData()
     }
     else    //if tank drive
     {
-        double percentL = (double)((joy->axis[axisL]+32768) / 65355);   //find the percent of the joystick movement
+        joy->axis[axisL] = joy->axis[axisL] + 32768;
+        double percentL = ((double)joy->axis[axisL] / 65355.0);   //find the percent of the joystick movement
         rov->listMotors[0]->setValue((int)((percentL * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
 
-        double percentR = (double)((joy->axis[axisR]+32768) / 65355);   //find the percent of the joystick movement
+        joy->axis[axisR] = joy->axis[axisR] + 32768;
+        double percentR = ((double)joy->axis[axisR] / 65355.0);   //find the percent of the joystick movement
         rov->listMotors[1]->setValue((int)((percentR * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
 
-        double percentV = (double)((joy->axis[axisV]+32768) / 65355);   //find the percent of the joystick movement
+        joy->axis[axisV] = joy->axis[axisV] + 32768;
+        double percentV = ((double)joy->axis[axisV] / 65355.0);   //find the percent of the joystick movement
         rov->listMotors[2]->setValue((int)((percentV * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
 
     }

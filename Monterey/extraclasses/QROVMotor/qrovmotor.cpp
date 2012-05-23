@@ -5,8 +5,8 @@ QROVMotor::QROVMotor(QObject *parent) :
 {
     //Initialize values to keep division by zero from occuring by default
     min = 0;
-    max = 1;
-    value = 0;
+    max = 100;
+    value = 50;
 }
 
 void QROVMotor::init(int minimum, int maximum, int inputValue)
@@ -23,7 +23,18 @@ void QROVMotor::setValue(int input)
 
 int QROVMotor::getValue()
 {
-    return value;
+    if(value < min)
+    {
+        return min;
+    }
+    else if (value > max)
+    {
+        return max;
+    }
+    else
+    {
+        return value;
+    }
 }
 
 void QROVMotor::setMinimum(int minimum)
