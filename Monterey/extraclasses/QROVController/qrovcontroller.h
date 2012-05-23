@@ -23,6 +23,7 @@ public:
     explicit QROVController(QObject *parent = 0);
     QROV *rov;
     QList<int> myVector;    //hold the motor values
+    QList<int> joystickAxesValues;
 
     QBoolMonitor *monitorTOBI;
     QBoolMonitor *monitorTIBO;
@@ -49,6 +50,7 @@ public slots:
     void readMappings();    //!< Read adjustable mappings
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
+    int getJoystickNumberAxes() { return joy->axis.count(); }   //!< Get the number of axes
 
     //Networking
     void processPacket();   //!< Process the packet received from the ROV
@@ -71,7 +73,6 @@ public slots:
     void noJoystick();   //!< Put the ROV motors into a neutral state if the joystick is not attached
     int getPortTOBI();  //!< Get the TOBI port
     int getPortTIBO();  //!< Get the TIBO port
-    double getMaxDepth();
     int getJoysAvail() { joysAvail = joy->availableJoysticks(); return joysAvail; }    //!< Return the number of attached joysticks
     bool isJoyAttached() {return joyAttached; } //!< Return the joystick attached status
     bool getStatusTOBI() { return comTOBI; }    //!< Return the status of TOBI
@@ -81,6 +82,18 @@ public slots:
     void setMotorLayout(int mL) { motorLayout = (MotorLayout)mL; }   //!< Set the motor layout
     void loadSettings();    //!< Force a loading of the settings
     void saveSettings();    //!< Force a saving of the settings
+    int getAxisX() { return axisX; }    //!< Get the axis x ID
+    void setAxisX(int x) { axisX = x; }
+    int getAxisY() { return axisY; }
+    void setAxisY(int y) { axisY = y; }
+    int getAxisZ() { return axisZ; }
+    void setAxisZ(int z) { axisZ = z; }
+    int getAxisV() { return axisV; }
+    void setAxisV(int v) { axisV = v; }
+    int getAxisL() { return axisL; }
+    void setAxisL(int l) { axisL = l; }
+    int getAxisR() { return axisR; }
+    void setAxisR(int r) { axisR = r; }
 
     //Error functions
     void setErrorTOBI();    //!< use to say that there is a TOBI error
@@ -104,6 +117,7 @@ private:
     QTimer *timerTOBI;
     QTimer *timerTIBO;
     int joysAvail;
+    int joyID;
     bool joyAttached;
 
     bool bilinearEnabled;
@@ -113,6 +127,12 @@ private:
     int xDead;
     int yDead;
     int zDead;
+    int axisX;
+    int axisY;
+    int axisZ;
+    int axisV;
+    int axisL;
+    int axisR;
     MotorLayout motorLayout;
 
 };

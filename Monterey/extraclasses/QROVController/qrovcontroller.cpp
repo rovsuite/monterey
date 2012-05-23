@@ -4,13 +4,14 @@
 #define numberOfRelays 3
 #define numberOfServos 2
 #define ERRORTIMEOUT 500
+#define MOTORMIN 1000
+#define MOTORMAX 2000
 
 QROVController::QROVController(QObject *parent) :
     QObject(parent)
 {
     rov = new QROV(this);
     joy = new QJoystick();
-    //mySettings = new QSettings("rovsuite", "monterey", this);
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
     rxSocket = new QUdpSocket(this);
     txSocket = new QUdpSocket(this);
@@ -25,14 +26,11 @@ QROVController::QROVController(QObject *parent) :
     motorLayout = vectorDrive;
     monitorJoystick = new QBoolMonitor(this);
     monitorJoystick->setComparisonState(joyAttached);
+    joyID = 0;
+    myVectorDrive = new QVectorDrive2(this);
+    myVectorDrive->initVector(MOTORMIN, MOTORMAX, 0, 0, 0);
 
     initJoysticks();
-
-    rov->sensorDepth->setUnits("meters");
-    rov->sensorCompass->setUnits("degrees");
-    rov->sensorVoltage->setUnits("volts");
-    rov->sensorOther0->setUnits("units");
-    rov->sensorOther1->setUnits("units");
 
     rov->setNumMotors(numberOfMotors);
     rov->setNumRelays(numberOfRelays);
@@ -61,10 +59,10 @@ void QROVController::initJoysticks()
 {
     joysAvail = joy->availableJoysticks();
 
-    if(joysAvail != 0)
+    if(joysAvail != 0 && joyID < joysAvail)
     {
         joyAttached = true;
-        //joy->setJoystick(0);
+        joy->setJoystick(joyID);
     }
     else
     {
@@ -196,15 +194,8 @@ int QROVController::getPortTIBO()
     return tiboPort;
 }
 
-double QROVController::getMaxDepth()
-{
-    // WARNING: Possibly remove getMaxDepth() function?
-    return rov->sensorDepth->getMax();
-}
-
 void QROVController::loadSettings()
 {
-    //TODO: Add settings code (including save settings)
     //TDOD: Finish adding settings code and remove it from mainwindow.cpp
 
     //Load relay names
@@ -229,6 +220,19 @@ void QROVController::loadSettings()
     bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
     bilinearRatio = mySettings->value("bilinear/ratio", "0.0").toDouble();
     bilinearThreshold = mySettings->value("bilinear/thresold", "0.0").toDouble();
+
+    //Joystick
+    axisX = mySettings->value("joystick/x", "0").toInt();
+    axisY = mySettings->value("joystick/y", "0").toInt();
+    axisZ = mySettings->value("joystick/z", "0").toInt();
+    axisV = mySettings->value("joystick/v", "0").toInt();
+    axisL = mySettings->value("joystick/l", "0").toInt();
+    axisR = mySettings->value("joystick/r", "0").toInt();
+    xDead = mySettings->value("joystick/deadX", "0").toInt();
+    yDead = mySettings->value("joystick/deadY", "0").toInt();
+    zDead = mySettings->value("joystick/deadZ", "0").toInt();
+
+    myVectorDrive->initVector(MOTORMIN,MOTORMAX,xDead,yDead,zDead);
 }
 
 void QROVController::saveSettings()
@@ -255,6 +259,17 @@ void QROVController::saveSettings()
     mySettings->setValue("bilinear/ratio", bilinearRatio);
     mySettings->setValue("bilinear/threshold", bilinearThreshold);
 
+    //Joystick
+    mySettings->setValue("joystick/x", axisX);
+    mySettings->setValue("joystick/y", axisY);
+    mySettings->setValue("joystick/z", axisZ);
+    mySettings->setValue("joystick/v", axisV);
+    mySettings->setValue("joystick/l", axisL);
+    mySettings->setValue("joystick/r", axisR);
+    mySettings->setValue("joystick/deadX", xDead);
+    mySettings->setValue("joystick/deadY", yDead);
+    mySettings->setValue("joystick/deadZ", zDead);
+
     emit savedSettings("Settings saved");
 }
 
@@ -262,8 +277,7 @@ void QROVController::motherFunction()
 {
     if(joysAvail !=0 )
     {
-        // TODO: Joystick reading code
-        //updateJoystickData();
+        updateJoystickData();
     }
     else
     {
@@ -309,13 +323,16 @@ void QROVController::updateJoystickData()
             }
         }
     }
+    joystickAxesValues.clear(); //empty the list
+    foreach(int i, joy->axis)
+    {
+        joystickAxesValues.append(i);
+    }
 
     //Execute vector math
-    if(vectorEnabled)
+    if(motorLayout == vectorDrive)
     {
-        // TODO: Remove reading of QSettings and move that to the MainWindow class?
-
-        myVectorDrive->vectorMath(joy->axis[mySettings->value("axes/vector/x").toInt()],joy->axis[mySettings->value("axes/vector/y").toInt()],joy->axis[mySettings->value("axes/vector/z").toInt()],joy->axis[mySettings->value("axes/vector/v").toInt()],false);
+        myVectorDrive->vectorMath(joy->axis[axisX],joy->axis[axisY],joy->axis[axisZ],joy->axis[axisV],false);
 
         if(rov->getNumMotors() == 6)
         {

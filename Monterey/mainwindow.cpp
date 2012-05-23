@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    version = new QString("2.0.0 Pre-Alpha");
+    version = new QString("2.0.0 Alpha");
 
     guiTimer = new QTimer(this);
     guiTimer->setInterval(50); //refresh the gui 20x a second
