@@ -1,8 +1,9 @@
 #include "qactivitymonitor.h"
 
-QActivityMonitor::QActivityMonitor(QObject *parent) :
+QActivityMonitor::QActivityMonitor(QTextEdit* textEdit, QObject *parent) :
     QObject(parent)
 {
+    activityDisplay = textEdit;
     autoscroll = true;
 }
 

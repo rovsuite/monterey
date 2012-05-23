@@ -223,7 +223,7 @@
      </rect>
     </property>
     <property name="title">
-     <string>Statuses</string>
+     <string>Status Lights</string>
     </property>
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
@@ -612,7 +612,7 @@
     <property name="geometry">
      <rect>
       <x>910</x>
-      <y>390</y>
+      <y>430</y>
       <width>101</width>
       <height>21</height>
      </rect>
@@ -630,7 +630,7 @@
     <property name="geometry">
      <rect>
       <x>1010</x>
-      <y>390</y>
+      <y>430</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -642,28 +642,6 @@
     </property>
     <property name="text">
      <string/>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="leError">
-    <property name="geometry">
-     <rect>
-      <x>910</x>
-      <y>420</y>
-      <width>341</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="focusPolicy">
-     <enum>Qt::NoFocus</enum>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-    <property name="placeholderText">
-     <string>No error to display</string>
     </property>
    </widget>
    <widget class="QwtCompass" name="compass" native="true">
@@ -726,7 +704,7 @@
     <property name="geometry">
      <rect>
       <x>910</x>
-      <y>370</y>
+      <y>410</y>
       <width>101</width>
       <height>21</height>
      </rect>
@@ -744,7 +722,7 @@
     <property name="geometry">
      <rect>
       <x>1010</x>
-      <y>370</y>
+      <y>410</y>
       <width>121</width>
       <height>21</height>
      </rect>

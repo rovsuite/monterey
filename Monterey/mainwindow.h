@@ -25,6 +25,8 @@
 #include "qwt/qwt_plot_curve.h"
 #include "qwt/qwt_plot.h"
 #include "qwt/qwt_series_data.h"
+#include <QPointF>
+#include "qwt/qwt_plot_curve.h"
 
 namespace Ui {
     class MainWindow;
@@ -87,11 +89,13 @@ private:
     ROVSettings *dialogSettings;
     QSettings *mySettings;
 
+    QwtPlotCurve *depthCurve;
+    QVector<QPointF> depthPoints;
+    QTime *graphTime;
+    int graphDepthIndex;
+
     QTimer *guiTimer;
     QTime *diveTime;
-
-    QwtPlotCurve *depthCurve;   //curve for graphing
-
 };
 
 #endif // MAINWINDOW_H

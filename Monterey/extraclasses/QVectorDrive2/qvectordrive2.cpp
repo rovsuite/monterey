@@ -3,6 +3,16 @@
 QVectorDrive2::QVectorDrive2(QObject *parent) :
     QObject(parent)
 {
+    vectorMin = 1000;
+    vectorMax = 2000;
+    xVal = 0;
+    yVal = 0;
+    zVal = 0;
+    vVal = 0;
+    xDeadzone = 0;
+    yDeadzone = 0;
+    zDeadzone = 0;
+    vectorType = 1;
 }
 
 QVectorDrive2::~QVectorDrive2()

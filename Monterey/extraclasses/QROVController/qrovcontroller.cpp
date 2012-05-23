@@ -10,7 +10,7 @@
 QROVController::QROVController(QObject *parent) :
     QObject(parent)
 {
-    rov = new QROV(this);
+    rov = new QROV(numberOfMotors, numberOfRelays, numberOfServos, this);
     joy = new QJoystick();
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
     rxSocket = new QUdpSocket(this);
@@ -66,10 +66,10 @@ void QROVController::initJoysticks()
 {
     joysAvail = joy->availableJoysticks();
 
-    if(joysAvail != 0 && joyID < joysAvail)
+    if(joysAvail != 0)
     {
         joyAttached = true;
-        joy->setJoystick(joyID);
+        joy->setJoystick(0);
     }
     else
     {
@@ -253,8 +253,10 @@ void QROVController::loadSettings()
     xDead = mySettings->value("joystick/deadX", "0").toInt();
     yDead = mySettings->value("joystick/deadY", "0").toInt();
     zDead = mySettings->value("joystick/deadZ", "0").toInt();
+    joyID = mySettings->value("joystick/id", "0").toInt();
 
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,xDead,yDead,zDead);
+    //initJoysticks();
 }
 
 void QROVController::saveSettings()
@@ -295,6 +297,7 @@ void QROVController::saveSettings()
     mySettings->setValue("joystick/deadX", xDead);
     mySettings->setValue("joystick/deadY", yDead);
     mySettings->setValue("joystick/deadZ", zDead);
+    mySettings->setValue("joystick/id", joyID);
 
     emit savedSettings("Settings saved");
 }

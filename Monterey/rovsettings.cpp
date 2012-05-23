@@ -31,7 +31,7 @@ ROVSettings::ROVSettings(QWidget *parent) :
     QStringList joystickNames = p->controller->getJoystickNames();
     foreach(QString name, joystickNames)
     {
-        ui->comboJoysticks->addItem(name);
+        ui->listJoysticks->addItem(name);
     }
 }
 

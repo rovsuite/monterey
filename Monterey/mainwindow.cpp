@@ -15,6 +15,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     controller = new QROVController();
 
+    graphTime = new QTime;
+    graphTime->start();
+    depthCurve = new QwtPlotCurve;
+    depthCurve->setPen(QPen(Qt::darkBlue));
+    depthCurve->attach(ui->plotDepth);
+    graphDepthIndex = 0;
     setupCustomWidgets();   //load the settings for the custom widgets
     loadSettings();
 
@@ -94,6 +100,13 @@ void MainWindow::loadSettings()
 
     //Load the units
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
+    QString label = "Depth (";
+    label.append(controller->rov->sensorDepth->getUnits());
+    label.append(")");
+    ui->gbDepthScale->setTitle(label);
+    QwtText titlePlot(controller->rov->sensorDepth->getUnits());
+    titlePlot.setFont(QFont("MS Shell Dlg 2", 12));
+    ui->plotDepth->setAxisTitle(QwtPlot::yLeft, titlePlot);
     ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
@@ -114,8 +127,7 @@ void MainWindow::setupCustomWidgets()
     controller->loadSettings();
 
     //Setup the activity monitor
-    activityMonitor = new QActivityMonitor(this);
-    activityMonitor->setTextEdit(ui->teLog);
+    activityMonitor = new QActivityMonitor(ui->teLog, this);
     activityMonitor->display("Monterey started...");
     QString versionDisp("Version: ");
     versionDisp.append(version);
@@ -160,11 +172,8 @@ void MainWindow::setupCustomWidgets()
     ui->niVoltage->setMinorTicks(4);
 
     //Setup the depth plot
-    int depthMin = 0;
-    int depthMax = 10;
-
     ui->plotDepth->setAxisAutoScale(2, false);  //turn off y axis auto scale
-    ui->plotDepth->setAxisScale(0,-depthMax,-depthMin,1);   //set y axis scale
+    ui->plotDepth->setAxisScale(0,-controller->rov->sensorDepth->getMax(),-controller->rov->sensorDepth->getMin(),1);   //set y axis scale
     ui->plotDepth->setAxisMaxMinor(0,1);    //set the y axis minor ticks
     ui->plotDepth->setAutoReplot(true); //automatically  update the plot
     ui->plotDepth->setAxisMaxMinor(2, 10);  //x axis minor ticks = 10 seconds
@@ -173,7 +182,7 @@ void MainWindow::setupCustomWidgets()
     titlePlot.setFont(QFont("MS Shell Dlg 2", 12));
     ui->plotDepth->setAxisTitle(QwtPlot::yLeft, titlePlot);
 
-    //depthCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+    depthCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 
     qDebug() << "Setup the graph!";
 
@@ -401,6 +410,22 @@ void MainWindow::loadData()
     ui->compass->setValue(controller->rov->sensorCompass->getValue());
     ui->scaleDepth->setValue(controller->rov->sensorDepth->getValue());
     //TODO: Depth graphing
+    //Graph the depth
+    //Depth
+    depthPoints.append(QPointF(0,0));
+    depthPoints[graphDepthIndex].setX(graphTime->elapsed());
+    depthPoints[graphDepthIndex].setY(-1*controller->rov->sensorDepth->getValue());
+    graphDepthIndex++;
+    depthCurve->setSamples(depthPoints);
+    ui->plotDepth->setAxisScale(2, graphTime->elapsed()-10000, graphTime->elapsed());
+    if(controller->getStatusTIBO() == false) //if ROV is not connected
+    {
+        depthCurve->setPen(QPen(Qt::darkGray));
+    }
+    else
+    {
+        depthCurve->setPen(QPen(Qt::darkBlue));
+    }
 }
 
 void MainWindow::displayTime()

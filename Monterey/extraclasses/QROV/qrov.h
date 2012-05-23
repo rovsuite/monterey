@@ -15,7 +15,6 @@ class QROV : public QObject
 {
     Q_OBJECT
 public:
-    explicit QROV(QObject *parent = 0);
     QROV(int motors, int relays, int servos, QObject *parent);
 
     QList<QROVMotor*> listMotors;

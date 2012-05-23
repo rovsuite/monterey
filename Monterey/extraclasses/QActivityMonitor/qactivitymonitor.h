@@ -13,7 +13,7 @@ class QActivityMonitor : public QObject
 {
     Q_OBJECT
 public:
-    explicit QActivityMonitor(QObject *parent = 0);
+    explicit QActivityMonitor(QTextEdit* textEdit, QObject *parent = 0);
 
 signals:
 

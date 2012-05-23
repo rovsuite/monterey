@@ -1,6 +1,6 @@
 #include "qrov.h"
 
-QROV::QROV(QObject *parent) :
+QROV::QROV(int motors, int relays, int servos, QObject *parent) :
     QObject(parent)
 {
     sensorDepth = new QROVSensor(this);
@@ -11,11 +11,8 @@ QROV::QROV(QObject *parent) :
 
     sensorDepth->setMin(0);
 
-}
+    version = 0;
 
-QROV::QROV(int motors, int relays, int servos, QObject *parent) :
-    QObject(parent)
-{
     setNumMotors(motors);
     setNumRelays(relays);
     setNumServos(servos);
