@@ -9,6 +9,7 @@ QROVSensor::QROVSensor(QObject *parent) :
     threshold = 0;
     warnAbove = true;
     units = "units";
+    name = "sensor";
 }
 
 void QROVSensor::setMin(double m)
@@ -99,4 +100,14 @@ void QROVSensor::setUnits(QString u)
 QString QROVSensor::getUnits()
 {
     return units;
+}
+
+void QROVSensor::setName(QString n)
+{
+    name = n;
+}
+
+QString QROVSensor::getName()
+{
+    return name;
 }

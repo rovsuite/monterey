@@ -40,6 +40,9 @@ public slots:
     void setUnits(QString u);
     QString getUnits();
 
+    void setName(QString n);
+    QString getName();
+
  private:
     double min;
     double max;
@@ -47,6 +50,7 @@ public slots:
     double threshold;
     bool warnAbove; //true = warn when above threshold, false = warn when below threshold
     QString units;
+    QString name;
 };
 
 #endif // QROVSENSOR_H

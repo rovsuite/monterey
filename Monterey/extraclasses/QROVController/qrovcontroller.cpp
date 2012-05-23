@@ -35,6 +35,8 @@ QROVController::QROVController(QObject *parent) :
     rov->setNumMotors(numberOfMotors);
     rov->setNumRelays(numberOfRelays);
     rov->setNumServos(numberOfServos);
+    rov->sensorVoltage->setUnits("volts");
+    rov->sensorCompass->setUnits("degrees");
 
     bilinearEnabled = true;
     vectorEnabled = true;
@@ -208,6 +210,10 @@ void QROVController::loadSettings()
     rov->sensorOther0->setUnits(mySettings->value("units/sensor0", "units").toString());
     rov->sensorOther1->setUnits(mySettings->value("units/sensor1", "units").toString());
 
+    //Load the names
+    rov->sensorOther0->setName(mySettings->value("names/sensor0", "Sensor0").toString());
+    rov->sensorOther1->setName(mySettings->value("names/sensor1", "Sensor1").toString());
+
     //Load thresholds
     rov->sensorDepth->setMax(mySettings->value("thresholds/depth", "10.0").toDouble());
     rov->sensorDepth->setThreshold(rov->sensorDepth->getMax());
@@ -246,6 +252,10 @@ void QROVController::saveSettings()
     mySettings->setValue("units/depth", rov->sensorDepth->getUnits());
     mySettings->setValue("units/sensor0", rov->sensorOther0->getUnits());
     mySettings->setValue("units/sensor1", rov->sensorOther1->getUnits());
+
+    //Names
+    mySettings->setValue("names/sensor0", rov->sensorOther0->getName());
+    mySettings->setValue("names/sensor1", rov->sensorOther1->getName());
 
     //Thresholds
     mySettings->setValue("thresholds/depth", rov->sensorDepth->getThreshold());

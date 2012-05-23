@@ -97,6 +97,10 @@ void MainWindow::loadSettings()
     ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
+    //Load the sensor names
+    ui->labSensor0->setText(controller->rov->sensorOther0->getName());
+    ui->labSensor1->setText(controller->rov->sensorOther1->getName());
+
     //Load the thresholds
     ui->scaleDepth->setMaximum(controller->rov->sensorDepth->getMax());
     ui->plotDepth->setAxisScale(0,-1.0 * controller->rov->sensorDepth->getMax(), 0,1);
