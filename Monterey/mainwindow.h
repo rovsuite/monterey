@@ -74,6 +74,7 @@ private slots:
     void loadData();    //!< Load the data from the ROV controller and display it
     void displayTime(); //!< Display the current time
     void refreshGUI();  //!< Refresh the GUI on a timer
+    void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
 
 private:
     QString *version;

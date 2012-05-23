@@ -23,6 +23,8 @@ QROVController::QROVController(QObject *parent) :
     monitorTOBI = new QBoolMonitor(this);
     monitorTOBI->setComparisonState(comTOBI);
     motorLayout = vectorDrive;
+    monitorJoystick = new QBoolMonitor(this);
+    monitorJoystick->setComparisonState(joyAttached);
 
     initJoysticks();
 
@@ -42,6 +44,8 @@ QROVController::QROVController(QObject *parent) :
     bilinearThreshold = 0.6;
     bilinearRatio = 1.5;
 
+    loadSettings();
+
     timerTIBO->start(ERRORTIMEOUT);
     timerTOBI->start(ERRORTIMEOUT);
 
@@ -60,12 +64,13 @@ void QROVController::initJoysticks()
     if(joysAvail != 0)
     {
         joyAttached = true;
-        joy->setJoystick(0);
+        //joy->setJoystick(0);
     }
     else
     {
         joyAttached = false;
     }
+    monitorJoystick->compareState(joyAttached);
 }
 
 
@@ -74,6 +79,17 @@ void QROVController::rescanJoysticks()
     SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     SDL_Init(SDL_INIT_JOYSTICK);
     getJoysAvail(); //recalculate the number of available joysticks
+    initJoysticks();    //re-initialize joysticks
+}
+
+QStringList QROVController::getJoystickNames()
+{
+    QStringList joystickNames;
+    for(int i=0;i<joy->availableJoysticks();i++)
+    {
+        joystickNames.append(joy->joystickName(i));
+    }
+    return joystickNames;
 }
 
 void QROVController::processPacket()
@@ -202,9 +218,9 @@ void QROVController::loadSettings()
     rov->sensorOther1->setUnits(mySettings->value("units/sensor1", "units").toString());
 
     //Load thresholds
-    rov->sensorDepth->setMin(0);
-    rov->sensorDepth->setMax(mySettings->value("thresholds/depth", "4.0").toDouble());
+    rov->sensorDepth->setMax(mySettings->value("thresholds/depth", "10.0").toDouble());
     rov->sensorDepth->setThreshold(rov->sensorDepth->getMax());
+    rov->sensorVoltage->setThreshold(mySettings->value("thresholds/voltage", "9").toDouble());
 
     //Load motor settings
     setMotorLayout(mySettings->value("motors/layout", "0").toInt());
@@ -228,8 +244,8 @@ void QROVController::saveSettings()
     mySettings->setValue("units/sensor1", rov->sensorOther1->getUnits());
 
     //Thresholds
-    mySettings->setValue("threshold/depth", rov->sensorDepth->getThreshold());
-    mySettings->setValue("threshold/voltage", rov->sensorVoltage->getThreshold());
+    mySettings->setValue("thresholds/depth", rov->sensorDepth->getThreshold());
+    mySettings->setValue("thresholds/voltage", rov->sensorVoltage->getThreshold());
 
     //Motors
     mySettings->setValue("motors/layout", motorLayout);
@@ -246,7 +262,8 @@ void QROVController::motherFunction()
 {
     if(joysAvail !=0 )
     {
-        updateJoystickData();
+        // TODO: Joystick reading code
+        //updateJoystickData();
     }
     else
     {

@@ -24,6 +24,12 @@ ROVSettings::ROVSettings(QWidget *parent) :
     ui->cbBilinearEnabled->setChecked(p->controller->getBilinearEnabled());
     ui->sbBilinearRatio->setValue(p->controller->getBilinearRatio());
     ui->sbBilinearThreshold->setValue(p->controller->getBilinearThreshold());
+
+    QStringList joystickNames = p->controller->getJoystickNames();
+    foreach(QString name, joystickNames)
+    {
+        ui->comboJoysticks->addItem(name);
+    }
 }
 
 ROVSettings::~ROVSettings()

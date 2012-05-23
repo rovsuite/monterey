@@ -77,7 +77,7 @@ RESOURCES += \
 macx{
 ICON = monterey.icns
 
-HEADERS +=     ../Monterey/extraclass/SDL/SDLMain.h
+HEADERS +=     ../Monterey/extraclasses/SDL/SDLMain.h
 QMAKE_LFLAGS += -F/Library/Frameworks/
 LIBS += -framework SDL
 LIBS += -framework Qwt

@@ -26,6 +26,7 @@ public:
 
     QBoolMonitor *monitorTOBI;
     QBoolMonitor *monitorTIBO;
+    QBoolMonitor *monitorJoystick;
     enum MotorLayout{vectorDrive, tankDrive};
 
 signals:
@@ -47,6 +48,7 @@ public slots:
     void updateJoystickData();  //!< Read joystick data
     void readMappings();    //!< Read adjustable mappings
     void rescanJoysticks(); //!< Reenumerate joysticks
+    QStringList getJoystickNames();  //!< Get the names of the joysticks
 
     //Networking
     void processPacket();   //!< Process the packet received from the ROV

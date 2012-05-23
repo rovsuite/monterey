@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller->monitorTIBO, SIGNAL(stateChanged()), this, SLOT(lostTIBO()));
     connect(controller->monitorTOBI, SIGNAL(stateChanged()), this, SLOT(lostTOBI()));
     connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
+    connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
 
     guiTimer->start();
 }
@@ -227,6 +228,14 @@ void MainWindow::refreshGUI()
     thresholdCheck();   //check for values exceeding thresholds
 }
 
+void MainWindow::lostJoystick()
+{
+    if(controller->isJoyAttached())
+        activityMonitor->display("Joystick attached");
+    else
+        activityMonitor->display("Joystick detached");
+}
+
 void MainWindow::diveTimeStart()
 {
     diveTime->start();
@@ -254,7 +263,7 @@ void MainWindow::diveTimeDisplay()
     }
     else
     {
-        diveTimeString.append("Dive time not set");
+        diveTimeString.append("Start timer first");
     }
 
     ui->labDiveTime->setText(diveTimeString);
@@ -377,10 +386,17 @@ void MainWindow::thresholdCheck()
 void MainWindow::loadData()
 {
     // TODO: Add code to load information from QROVController
+    //Display data in the numerical readouts
     ui->lcdDepth->display(controller->rov->sensorDepth->getValue());
     ui->lcdSensor0->display(controller->rov->sensorOther0->getValue());
     ui->lcdSensor1->display(controller->rov->sensorOther1->getValue());
     ui->lcdVoltage->display(controller->rov->sensorVoltage->getValue());
+
+    //Display the data graphically
+    ui->niVoltage->setValue(controller->rov->sensorVoltage->getValue());
+    ui->compass->setValue(controller->rov->sensorCompass->getValue());
+    ui->scaleDepth->setValue(controller->rov->sensorDepth->getValue());
+    //TODO: Depth graphing
 }
 
 void MainWindow::displayTime()

@@ -355,6 +355,44 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QGroupBox" name="groupBox_6">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>330</y>
+     <width>211</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Joysticks</string>
+   </property>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>30</y>
+      <width>191</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QComboBox" name="comboJoysticks">
+       <property name="currentIndex">
+        <number>-1</number>
+       </property>
+       <property name="maxVisibleItems">
+        <number>2</number>
+       </property>
+       <property name="maxCount">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
  </widget>
  <resources/>
  <connections/>

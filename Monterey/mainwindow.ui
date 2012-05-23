@@ -851,6 +851,9 @@
    <property name="text">
     <string>Dive Timer - Start</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionDive_Timer_Stop">
    <property name="text">
