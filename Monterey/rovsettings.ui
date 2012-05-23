@@ -396,7 +396,20 @@
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QListWidget" name="listJoysticks"/>
+      <widget class="QListWidget" name="listJoysticks">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="cursor" stdset="0">
+        <cursorShape>ForbiddenCursor</cursorShape>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SingleSelection</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>

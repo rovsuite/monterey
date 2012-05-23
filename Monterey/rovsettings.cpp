@@ -33,6 +33,7 @@ ROVSettings::ROVSettings(QWidget *parent) :
     {
         ui->listJoysticks->addItem(name);
     }
+    ui->listJoysticks->item(0)->setSelected(true);
 }
 
 ROVSettings::~ROVSettings()
