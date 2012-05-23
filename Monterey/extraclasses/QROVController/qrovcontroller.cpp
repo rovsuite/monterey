@@ -136,10 +136,21 @@ void QROVController::sendPacket()
     QByteArray txDatagram;
     QString txPacket;
 
-    foreach(QROVMotor *m, rov->listMotors)
+    if(motorLayout == vectorDrive)  //if vector drive
     {
-        txPacket.append(QString::number(m->getValue()));
-        txPacket.append(" ");
+        foreach(QROVMotor *m, rov->listMotors)
+        {
+            txPacket.append(QString::number(m->getValue()));
+            txPacket.append(" ");
+        }
+    }
+    else    //if tank drive
+    {
+        for(int i=0;i<3;i++)
+        {
+            txPacket.append(QString::number(rov->listMotors[i]->getValue()));
+            txPacket.append(" ");
+        }
     }
 
     foreach(QROVRelay *r, rov->listRelays)
@@ -351,6 +362,18 @@ void QROVController::updateJoystickData()
                 rov->listMotors[i]->setValue(myVectorDrive->getVectorValue(i));
             }
         }
+
+    }
+    else    //if tank drive
+    {
+        double percentL = (double)((joy->axis[axisL]+32768) / 65355);   //find the percent of the joystick movement
+        rov->listMotors[0]->setValue((int)((percentL * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
+
+        double percentR = (double)((joy->axis[axisR]+32768) / 65355);   //find the percent of the joystick movement
+        rov->listMotors[1]->setValue((int)((percentR * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
+
+        double percentV = (double)((joy->axis[axisV]+32768) / 65355);   //find the percent of the joystick movement
+        rov->listMotors[2]->setValue((int)((percentV * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
 
     }
 
