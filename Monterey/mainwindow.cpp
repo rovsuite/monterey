@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    version = new QString("2.0.0 Alpha");
+    version = new QString("2.0.0 Beta");
 
     guiTimer = new QTimer(this);
     guiTimer->setInterval(50); //refresh the gui 20x a second
@@ -61,14 +61,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::showAbout()
 {
-    // TODO: Add about information
+    // TODO: Add about more information
     dialogAbout = new ROVAbout(this);
     dialogAbout->exec();
 }
 
 void MainWindow::showDebug()
 {
-    // TODO: Add debug code
+    // TODO: Add more debug code
     dialogDebug = new ROVDebug(this);
     dialogDebug->show();
 }
@@ -82,7 +82,6 @@ void MainWindow::showMappings()
 
 void MainWindow::showSettings()
 {
-    // TODO: Finish adding settings code
     dialogSettings = new ROVSettings(this);
     connect(dialogSettings, SIGNAL(callLoadSettings()), this, SLOT(loadSettings()));    //connect the signal to load the settings
     dialogSettings->show();
@@ -398,7 +397,6 @@ void MainWindow::thresholdCheck()
 
 void MainWindow::loadData()
 {
-    // TODO: Add code to load information from QROVController
     //Display data in the numerical readouts
     ui->lcdDepth->display(controller->rov->sensorDepth->getValue());
     ui->lcdSensor0->display(controller->rov->sensorOther0->getValue());
@@ -409,7 +407,6 @@ void MainWindow::loadData()
     ui->niVoltage->setValue(controller->rov->sensorVoltage->getValue());
     ui->compass->setValue(controller->rov->sensorCompass->getValue());
     ui->scaleDepth->setValue(controller->rov->sensorDepth->getValue());
-    //TODO: Depth graphing
     //Graph the depth
     //Depth
     depthPoints.append(QPointF(0,0));
