@@ -1,28 +1,29 @@
 #include "rovsettings.h"
 #include "ui_rovsettings.h"
+#include "mainwindow.h"
 
 ROVSettings::ROVSettings(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ROVSettings)
 {
-    //TODO: Add ability to change which ports Monterey listens on?
     ui->setupUi(this);
-    //mySettings = new QSettings("rovsuite", "monterey", this);
-    mySettings = new QSettings("settings.ini", QSettings::IniFormat);
 
-    //Load settings
-    ui->leNameRelay0->setText(mySettings->value("names/relay0", "relay1").toString());
-    ui->leNameRelay1->setText(mySettings->value("names/relay1", "relay2").toString());
-    ui->leNameRelay2->setText(mySettings->value("names/relay2", "relay3").toString());
+    MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
+    ui->leNameRelay0->setText(p->controller->rov->listRelays[0]->getName());
+    ui->leNameRelay1->setText(p->controller->rov->listRelays[1]->getName());
+    ui->leNameRelay2->setText(p->controller->rov->listRelays[2]->getName());
 
-    ui->leUnitsDepth->setText(mySettings->value("units/depth", "meters").toString());
-    ui->leUnitsSensor0->setText(mySettings->value("units/sensor0", "units").toString());
-    ui->leUnitsSensor1->setText(mySettings->value("units/sensor1", "units").toString());
+    ui->leUnitsDepth->setText(p->controller->rov->sensorDepth->getUnits());
+    ui->leUnitsSensor0->setText(p->controller->rov->sensorOther0->getUnits());
+    ui->leUnitsSensor1->setText(p->controller->rov->sensorOther1->getUnits());
 
-    ui->sbDepth->setValue(mySettings->value("thresholds/depth", "4").toDouble());
-    ui->sbVoltage->setValue(mySettings->value("thresholds/voltage", "11").toDouble());
+    ui->sbDepth->setValue(p->controller->rov->sensorDepth->getThreshold());
+    ui->sbVoltage->setValue(p->controller->rov->sensorVoltage->getThreshold());
 
-    ui->comboMotorLayout->setCurrentIndex(mySettings->value("motors/layout", "0").toInt());
+    ui->comboMotorLayout->setCurrentIndex((int)p->controller->getMotorLayout());
+    ui->cbBilinearEnabled->setChecked(p->controller->getBilinearEnabled());
+    ui->sbBilinearRatio->setValue(p->controller->getBilinearRatio());
+    ui->sbBilinearThreshold->setValue(p->controller->getBilinearThreshold());
 }
 
 ROVSettings::~ROVSettings()
@@ -37,22 +38,24 @@ void ROVSettings::on_pbCancel_clicked()
 
 void ROVSettings::on_pbSave_clicked()
 {
-    //Relay Names
-    mySettings->setValue("names/relay0", ui->leNameRelay0->text());
-    mySettings->setValue("names/relay1", ui->leNameRelay1->text());
-    mySettings->setValue("names/relay2", ui->leNameRelay2->text());
+    MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
 
-    //Units
-    mySettings->setValue("units/depth", ui->leUnitsDepth->text());
-    mySettings->setValue("units/sensor0", ui->leUnitsSensor0->text());
-    mySettings->setValue("units/sensor1", ui->leUnitsSensor1->text());
+    //Adjust the settings
+    p->controller->rov->listRelays[0]->setName(ui->leNameRelay0->text());
+    p->controller->rov->listRelays[1]->setName(ui->leNameRelay1->text());
+    p->controller->rov->listRelays[2]->setName(ui->leNameRelay2->text());
+    p->controller->rov->sensorDepth->setUnits(ui->leUnitsDepth->text());
+    p->controller->rov->sensorOther0->setUnits(ui->leUnitsSensor0->text());
+    p->controller->rov->sensorOther1->setUnits(ui->leUnitsSensor1->text());
+    p->controller->rov->sensorDepth->setThreshold(ui->sbDepth->value());
+    p->controller->rov->sensorVoltage->setThreshold(ui->sbVoltage->value());
+    p->controller->setMotorLayout(ui->comboMotorLayout->currentIndex());
+    p->controller->setBilinearRatio(ui->sbBilinearRatio->value());
+    p->controller->setBilinearThreshold(ui->sbBilinearThreshold->value());
+    p->controller->setBilinearEnabled(ui->cbBilinearEnabled->isChecked());
 
-    //Thresholds
-    mySettings->setValue("thresholds/depth", ui->sbDepth->value());
-    mySettings->setValue("threshold/voltage", ui->sbVoltage->value());
-
-    //Motors
-    mySettings->setValue("motors/layout", ui->comboMotorLayout->currentIndex());
+    //Save the settings
+    p->controller->saveSettings();
 
     //Then close the window
     emit callLoadSettings();    //emit a signal for the mainwindow to catch to force it to reload the settings

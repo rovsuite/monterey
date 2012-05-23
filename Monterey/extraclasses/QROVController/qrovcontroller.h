@@ -32,6 +32,8 @@ signals:
     void sentPacket(QString packet);
     void receivedPacket(QString packet);
 
+    void savedSettings(QString message);
+
     void errorTOBI();
     void errorTIBO();
     void noErrorTOBI();
@@ -56,6 +58,8 @@ public slots:
     double getBilinearThreshold() { return bilinearThreshold; }
     void setBilinearRatio(double r) { bilinearRatio = r; }
     double getBilinearRatio() { return bilinearRatio; }
+    void setBilinearEnabled(bool b) { bilinearEnabled = b; }
+    bool getBilinearEnabled() { return bilinearEnabled; }
     void setXDeadzone(int x) { xDead = x; }
     int getXDeadzone() { return xDead; }
     void setYDeadzone(int y) { yDead = y; }
@@ -74,6 +78,7 @@ public slots:
     void setMotorLayout(MotorLayout mL) { motorLayout = mL; }   //!< Set the motor layout
     void setMotorLayout(int mL) { motorLayout = (MotorLayout)mL; }   //!< Set the motor layout
     void loadSettings();    //!< Force a loading of the settings
+    void saveSettings();    //!< Force a saving of the settings
 
     //Error functions
     void setErrorTOBI();    //!< use to say that there is a TOBI error

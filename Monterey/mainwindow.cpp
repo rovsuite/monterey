@@ -15,9 +15,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     controller = new QROVController();
 
-    //mySettings = new QSettings("rovsuite", "monterey", this);
-    mySettings = new QSettings("settings.ini", QSettings::IniFormat);
-
     setupCustomWidgets();   //load the settings for the custom widgets
     loadSettings();
 
@@ -45,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller, SIGNAL(noErrorTOBI()), this, SLOT(noErrorTOBI()));
     connect(controller->monitorTIBO, SIGNAL(stateChanged()), this, SLOT(lostTIBO()));
     connect(controller->monitorTOBI, SIGNAL(stateChanged()), this, SLOT(lostTOBI()));
+    connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
 
     guiTimer->start();
 }
@@ -85,38 +83,22 @@ void MainWindow::showSettings()
 
 void MainWindow::loadSettings()
 {
+    //Load the settings into the controller
+    controller->loadSettings();
+
     //Load the relay names
-    QString name1 = mySettings->value("names/relay0", "relay1").toString();
-    QString name2 = mySettings->value("names/relay1", "relay2").toString();
-    QString name3 = mySettings->value("names/relay2", "relay3").toString();
-    controller->rov->listRelays[0]->setName(name1);
-    controller->rov->listRelays[1]->setName(name2);
-    controller->rov->listRelays[2]->setName(name3);
-    ui->pbRelay0->setText(name1);
-    ui->pbRelay1->setText(name2);
-    ui->pbRelay2->setText(name3);
+    ui->pbRelay0->setText(controller->rov->listRelays[0]->getName());
+    ui->pbRelay1->setText(controller->rov->listRelays[1]->getName());
+    ui->pbRelay2->setText(controller->rov->listRelays[2]->getName());
 
     //Load the units
-    QString unitsD = mySettings->value("units/depth", "meters").toString();
-    QString units0 = mySettings->value("units/sensor0", "units").toString();
-    QString units1 = mySettings->value("units/sensor1", "units").toString();
-    controller->rov->sensorDepth->setUnits(unitsD);
-    controller->rov->sensorOther0->setUnits(units0);
-    controller->rov->sensorOther1->setUnits(units1);
-    ui->labUnitsDepth->setText(unitsD);
-    ui->labUnits0->setText(units0);
-    ui->labUnits1->setText(units1);
+    ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
+    ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
+    ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
     //Load the thresholds
-    double maxDepth = mySettings->value("thresholds/depth", "4.0").toDouble();
-    controller->rov->sensorDepth->setMin(0);
-    controller->rov->sensorDepth->setMax(maxDepth);
-    controller->rov->sensorDepth->setThreshold(maxDepth);
-    ui->scaleDepth->setMaximum(maxDepth);
-    ui->plotDepth->setAxisScale(0,-maxDepth, 0,1);
-
-    //Load motor settings
-    controller->setMotorLayout(mySettings->value("motors/layout", "0").toInt());
+    ui->scaleDepth->setMaximum(controller->rov->sensorDepth->getMax());
+    ui->plotDepth->setAxisScale(0,-1.0 * controller->rov->sensorDepth->getMax(), 0,1);
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
@@ -124,6 +106,8 @@ void MainWindow::loadSettings()
 
 void MainWindow::setupCustomWidgets()
 {
+    controller->loadSettings();
+
     //Setup the activity monitor
     activityMonitor = new QActivityMonitor(this);
     activityMonitor->setTextEdit(ui->teLog);
@@ -278,6 +262,7 @@ void MainWindow::diveTimeDisplay()
 
 void MainWindow::ledDisplay()
 {
+    //Joystick
     if(controller->isJoyAttached() == true)
     {
         ui->ledJoystickG->setChecked(true);
@@ -289,6 +274,46 @@ void MainWindow::ledDisplay()
         ui->ledJoystickG->setChecked(false);
         ui->ledJoystickY->setChecked(false);
         ui->ledJoystickR->setChecked(true);
+    }
+
+    //Voltage
+    if(controller->rov->sensorVoltage->getValue() >= controller->rov->sensorVoltage->getMax())
+    {
+        ui->ledVoltageG->setChecked(false);
+        ui->ledVoltageR->setChecked(false);
+        ui->ledVoltageY->setChecked(true);
+    }
+    else if(controller->rov->sensorVoltage->getValue() < 1)
+    {
+        ui->ledVoltageG->setChecked(false);
+        ui->ledVoltageR->setChecked(true);
+        ui->ledVoltageY->setChecked(false);
+    }
+    else
+    {
+        ui->ledVoltageG->setChecked(true);
+        ui->ledVoltageR->setChecked(false);
+        ui->ledVoltageY->setChecked(false);
+    }
+
+    //Error LED
+    if(ui->ledJoystickR->isChecked() || ui->ledTIBOR->isChecked() || ui->ledTOBIR->isChecked() || ui->ledVoltageR->isChecked())
+    {
+        ui->ledErrorG->setChecked(false);
+        ui->ledErrorR->setChecked(true);
+        ui->ledErrorY->setChecked(false);
+    }
+    else if(ui->ledJoystickY->isChecked() || ui->ledTIBOY->isChecked() || ui->ledTOBIY->isChecked() || ui->ledVoltageY->isChecked())
+    {
+        ui->ledErrorG->setChecked(false);
+        ui->ledErrorR->setChecked(false);
+        ui->ledErrorY->setChecked(true);
+    }
+    else
+    {
+        ui->ledErrorG->setChecked(true);
+        ui->ledErrorR->setChecked(false);
+        ui->ledErrorY->setChecked(false);
     }
 }
 
@@ -353,6 +378,9 @@ void MainWindow::loadData()
 {
     // TODO: Add code to load information from QROVController
     ui->lcdDepth->display(controller->rov->sensorDepth->getValue());
+    ui->lcdSensor0->display(controller->rov->sensorOther0->getValue());
+    ui->lcdSensor1->display(controller->rov->sensorOther1->getValue());
+    ui->lcdVoltage->display(controller->rov->sensorVoltage->getValue());
 }
 
 void MainWindow::displayTime()

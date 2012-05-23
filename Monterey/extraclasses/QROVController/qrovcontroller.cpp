@@ -190,10 +190,56 @@ void QROVController::loadSettings()
 {
     //TODO: Add settings code (including save settings)
     //TDOD: Finish adding settings code and remove it from mainwindow.cpp
+
     //Load relay names
     rov->listRelays[0]->setName(mySettings->value("names/relay0").toString());
     rov->listRelays[1]->setName(mySettings->value("names/relay1").toString());
     rov->listRelays[2]->setName(mySettings->value("names/relay2").toString());
+
+    //Load the units
+    rov->sensorDepth->setUnits(mySettings->value("units/depth", "meters").toString());
+    rov->sensorOther0->setUnits(mySettings->value("units/sensor0", "units").toString());
+    rov->sensorOther1->setUnits(mySettings->value("units/sensor1", "units").toString());
+
+    //Load thresholds
+    rov->sensorDepth->setMin(0);
+    rov->sensorDepth->setMax(mySettings->value("thresholds/depth", "4.0").toDouble());
+    rov->sensorDepth->setThreshold(rov->sensorDepth->getMax());
+
+    //Load motor settings
+    setMotorLayout(mySettings->value("motors/layout", "0").toInt());
+
+    //Bilinear
+    bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
+    bilinearRatio = mySettings->value("bilinear/ratio", "0.0").toDouble();
+    bilinearThreshold = mySettings->value("bilinear/thresold", "0.0").toDouble();
+}
+
+void QROVController::saveSettings()
+{
+    //Relay Names
+    mySettings->setValue("names/relay0", rov->listRelays[0]->getName());
+    mySettings->setValue("names/relay1", rov->listRelays[1]->getName());
+    mySettings->setValue("names/relay2", rov->listRelays[2]->getName());
+
+    //Units
+    mySettings->setValue("units/depth", rov->sensorDepth->getUnits());
+    mySettings->setValue("units/sensor0", rov->sensorOther0->getUnits());
+    mySettings->setValue("units/sensor1", rov->sensorOther1->getUnits());
+
+    //Thresholds
+    mySettings->setValue("threshold/depth", rov->sensorDepth->getThreshold());
+    mySettings->setValue("threshold/voltage", rov->sensorVoltage->getThreshold());
+
+    //Motors
+    mySettings->setValue("motors/layout", motorLayout);
+
+    //Bilinear
+    mySettings->setValue("bilinear/enabled", bilinearEnabled);
+    mySettings->setValue("bilinear/ratio", bilinearRatio);
+    mySettings->setValue("bilinear/threshold", bilinearThreshold);
+
+    emit savedSettings("Settings saved");
 }
 
 void QROVController::motherFunction()

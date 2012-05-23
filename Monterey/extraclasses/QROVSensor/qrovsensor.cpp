@@ -3,6 +3,12 @@
 QROVSensor::QROVSensor(QObject *parent) :
     QObject(parent)
 {
+    min = 0;
+    max = 1;
+    val = 0;
+    threshold = 0;
+    warnAbove = true;
+    units = "units";
 }
 
 void QROVSensor::setMin(double m)
