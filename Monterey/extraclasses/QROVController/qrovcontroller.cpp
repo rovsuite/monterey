@@ -74,6 +74,7 @@ void QROVController::initJoysticks()
     else
     {
         joyAttached = false;
+
     }
     monitorJoystick->compareState(joyAttached);
 }
@@ -90,9 +91,16 @@ void QROVController::rescanJoysticks()
 QStringList QROVController::getJoystickNames()
 {
     QStringList joystickNames;
-    for(int i=0;i<joy->availableJoysticks();i++)
+    if(joy->availableJoysticks() > 0)
     {
-        joystickNames.append(joy->joystickName(i));
+        for(int i=0;i<joy->availableJoysticks();i++)
+        {
+            joystickNames.append(joy->joystickName(i));
+        }
+    }
+    else
+    {
+        joystickNames.append("No joystick attached");
     }
     return joystickNames;
 }

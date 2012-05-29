@@ -14,6 +14,9 @@
 #include "qrovcontroller.h"
 #include <QDebug>
 #include <QSettings>
+#include <QPointF>
+
+#ifdef Q_OS_MACX
 #include "qwt/qwt_dial.h"
 #include "qwt/qwt_dial_needle.h"
 #include "qwt/qwt_compass.h"
@@ -25,8 +28,23 @@
 #include "qwt/qwt_plot_curve.h"
 #include "qwt/qwt_plot.h"
 #include "qwt/qwt_series_data.h"
-#include <QPointF>
 #include "qwt/qwt_plot_curve.h"
+#endif
+
+#ifdef Q_OS_WIN32
+#include "qwt_dial.h"
+#include "qwt_dial_needle.h"
+#include "qwt_compass.h"
+#include "qwt_compass_rose.h"
+#include "qwt_plot_marker.h"
+#include "qwt_abstract_scale_draw.h"
+#include "qwt_scale_draw.h"
+#include "qwt.h"
+#include "qwt_plot_curve.h"
+#include "qwt_plot.h"
+#include "qwt_series_data.h"
+#include "qwt_plot_curve.h"
+#endif
 
 namespace Ui {
     class MainWindow;
