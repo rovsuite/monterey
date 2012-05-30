@@ -78,7 +78,7 @@ macx{
 ICON = monterey.icns
 
 HEADERS +=     ../Monterey/extraclasses/SDL/SDLMain.h
-QMAKE_LFLAGS += -F/Library/Frameworks/
+QMAKE_LFLAGS += -F../Monterey/depends/osx/
 LIBS += -framework SDL
 LIBS += -framework Qwt
 
@@ -92,16 +92,21 @@ RC_FILE = monterey.rc
 DEFINES += SDL_WIN
 LIBS += -lSDL.dll
 
-INCLUDEPATH += C:/qwt-6.0.1WINDOWS/src
+#INCLUDEPATH += C:/qwt-6.0.1WINDOWS/src
+INCLUDEPATH += ../Monterey/depends/windows/qwtsrc
 
 #Debug Build
 CONFIG(debug, debug|release){
-LIBS += C:/qwt-6.0.1WINDOWS/lib/libqwtd.a
-QMAKE_POST_LINK = copy /Y C:\qwt-6.0.1WINDOWS\lib\qwtd.dll $(DESTDIR)
+#LIBS += C:/qwt-6.0.1WINDOWS/lib/libqwtd.a
+LIBS += ../Monterey/depends/windows/libqwtd.a
+#QMAKE_POST_LINK = copy /Y C:\qwt-6.0.1WINDOWS\lib\qwtd.dll $(DESTDIR)
+QMAKE_POST_LINK = copy /Y ../Monterey/depends/windows/qwtd.dll $(DESTDIR)
 }
 #Release Build
 CONFIG(release, debug|release){
-LIBS += C:/qwt-6.0.1WINDOWS/lib/libqwt.a
-QMAKE_POST_LINK = copy /Y C:\qwt-6.0.1WINDOWS\lib\qwt.dll $(DESTDIR)
+#LIBS += C:/qwt-6.0.1WINDOWS/lib/libqwt.a
+LIBS += ../Monterey/depends/windows/libqwt.a
+#QMAKE_POST_LINK = copy /Y C:\qwt-6.0.1WINDOWS\lib\qwt.dll $(DESTDIR)
+QMAKE_POST_LINK = copy /Y ../Monterey/depends/windows/qwt.dll $(DESTDIR)
 }
 }
