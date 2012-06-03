@@ -58,6 +58,8 @@ public slots:
     void processPacket();   //!< Process the packet received from the ROV
     void sendPacket();  //!< Send a packet to the ROV
     void sendDebug();   //!< Send a debug packet out to any listeners
+    void processTahoe();    //!< Process the packet from Tahoe
+    void sendTahoe();   //!< Send the packet to Tahoe
 
     //ROVContoller interactive functions
     void setBilinearThreshold(double t) { bilinearThreshold = t; }
@@ -101,6 +103,11 @@ public slots:
     void setErrorTOBI();    //!< use to say that there is a TOBI error
     void setErrorTIBO();   //!< use to say that there is a TIBO error
 
+    //Dive timer
+    void diveTimeStart();   //!< Start the dive timer
+    void diveTimeReset();   //!< Reset the dive timer
+    QString diveTimeString(); //!< Convert the milliseconds to minutes and hours and display in the gui
+
 private slots:
     //Misc
     int mapInt(int input, int inMin, int inMax, int outMin, int outMax);    //!< map a value from one range to another range, stolen from http://arduino.cc
@@ -111,6 +118,7 @@ private:
     QSettings *mySettings;
     QUdpSocket *rxSocket;
     QUdpSocket *txSocket;
+    QUdpSocket *tahoeSocket;
     unsigned int tiboPort;
     unsigned int tobiPort;
 
@@ -121,6 +129,8 @@ private:
     int joysAvail;
     int joyID;
     bool joyAttached;
+
+    QTime *diveTime;
 
     bool bilinearEnabled;
     bool vectorEnabled;

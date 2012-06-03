@@ -11,8 +11,6 @@ MainWindow::MainWindow(QWidget *parent) :
     guiTimer = new QTimer(this);
     guiTimer->setInterval(50); //refresh the gui 20x a second
 
-    diveTime = new QTime();
-
     controller = new QROVController();
 
     graphTime = new QTime;
@@ -37,8 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));  //exit the application
     connect(ui->actionDebug, SIGNAL(triggered()), this, SLOT(showDebug())); //show the debug window
     connect(guiTimer, SIGNAL(timeout()), this, SLOT(refreshGUI())); //refresh the gui
-    connect(ui->actionDive_Timer_Start, SIGNAL(triggered()),this, SLOT(diveTimeStart()));
-    connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()), this, SLOT(diveTimeReset()));
+    connect(ui->actionDive_Timer_Start, SIGNAL(triggered()),this->controller, SLOT(diveTimeStart()));
+    connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()), this->controller, SLOT(diveTimeReset()));
     connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(showSettings()));
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
@@ -85,6 +83,11 @@ void MainWindow::showSettings()
     dialogSettings = new ROVSettings(this);
     connect(dialogSettings, SIGNAL(callLoadSettings()), this, SLOT(loadSettings()));    //connect the signal to load the settings
     dialogSettings->show();
+}
+
+void MainWindow::showDiveTimer()
+{
+    ui->labDiveTime->setText(controller->diveTimeString());
 }
 
 void MainWindow::loadSettings()
@@ -235,7 +238,7 @@ void MainWindow::refreshGUI()
 
     loadData(); //load data from the controller object
     displayTime();  //display the current time
-    diveTimeDisplay();  //show the time according to the dive timer
+    showDiveTimer();  //show the time according to the dive timer
     ledDisplay();   //light up the LEDs
     thresholdCheck();   //check for values exceeding thresholds
 }
@@ -246,39 +249,6 @@ void MainWindow::lostJoystick()
         activityMonitor->display("Joystick attached");
     else
         activityMonitor->display("Joystick detached");
-}
-
-void MainWindow::diveTimeStart()
-{
-    diveTime->start();
-}
-
-void MainWindow::diveTimeReset()
-{
-    diveTime->restart();
-}
-
-void MainWindow::diveTimeDisplay()
-{
-    QString diveTimeString;
-    if(diveTime->isValid())
-    {
-    unsigned int hours = diveTime->elapsed() / (1000 * 60 * 60);    //convert milliseconds to hours
-    unsigned int minutes = (diveTime->elapsed() % (1000 * 60 * 60)) / (1000 * 60);  //convert to minutes
-    unsigned int seconds = ((diveTime->elapsed() % (1000 * 60 * 60)) % (1000*60)) / 1000;    //convert to seconds
-
-    diveTimeString.append(QString::number(hours).rightJustified(2, '0'));   //add leading zeros
-    diveTimeString.append(":");
-    diveTimeString.append(QString::number(minutes).rightJustified(2,'0'));  //add leading zeros
-    diveTimeString.append(":");
-    diveTimeString.append(QString::number(seconds).rightJustified(2, '0')); //add leading zeros
-    }
-    else
-    {
-        diveTimeString.append("Start timer first");
-    }
-
-    ui->labDiveTime->setText(diveTimeString);
 }
 
 void MainWindow::ledDisplay()

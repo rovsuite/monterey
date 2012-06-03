@@ -15,6 +15,7 @@ QROVController::QROVController(QObject *parent) :
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
     rxSocket = new QUdpSocket(this);
     txSocket = new QUdpSocket(this);
+    tahoeSocket = new QUdpSocket(this);
     timerTIBO = new QTimer(this);
     timerTOBI = new QTimer(this);
     comTIBO = false;
@@ -29,6 +30,8 @@ QROVController::QROVController(QObject *parent) :
     joyID = 0;
     myVectorDrive = new QVectorDrive2(this);
     myVectorDrive->initVector(MOTORMIN, MOTORMAX, 0, 0, 0);
+
+    diveTime = new QTime();
 
     initJoysticks();
 
@@ -56,8 +59,10 @@ QROVController::QROVController(QObject *parent) :
 
     tiboPort = 50000;
     tobiPort = 51000;
+    tahoeSocket->bind(52000, QUdpSocket::ShareAddress);
     rxSocket->bind(tiboPort, QUdpSocket::ShareAddress);
     connect(rxSocket, SIGNAL(readyRead()), this, SLOT(processPacket()));
+    connect(tahoeSocket, SIGNAL(readyRead()), this, SLOT(processTahoe()));
     connect(timerTOBI, SIGNAL(timeout()), this, SLOT(setErrorTOBI()));
     connect(timerTIBO, SIGNAL(timeout()),this, SLOT(setErrorTIBO()));
 }
@@ -202,6 +207,122 @@ void QROVController::sendDebug()
     // TODO: Add in code to send debug packet
 }
 
+void QROVController::processTahoe()
+{
+    QByteArray datagram;
+    QString packet;
+
+    do
+    {
+        datagram.resize(tahoeSocket->pendingDatagramSize());
+        tahoeSocket->readDatagram(datagram.data(), datagram.size());
+    }
+    while(tahoeSocket->hasPendingDatagrams());
+    packet = (tr("\"%1\"").arg(datagram.data()));   //turn datagram into a string
+    packet.remove(QChar('"'), Qt::CaseInsensitive);   //remove quotation marks
+
+    int relay0;
+    int relay1;
+    int relay2;
+    int servo0;
+    int servo1;
+
+    QTextStream stream(&packet);
+    stream >> relay0 >> relay1 >> relay2 >> servo0 >> servo1;
+    if(relay0 == 1)
+        rov->listRelays[0]->setState(true);
+    else
+        rov->listRelays[0]->setState(false);
+
+    if(relay1 == 1)
+        rov->listRelays[1]->setState(true);
+    else
+        rov->listRelays[1]->setState(false);
+
+    if(relay2 == 1)
+        rov->listRelays[2]->setState(true);
+    else
+        rov->listRelays[2]->setState(false);
+    rov->listServos[0]->setValue(servo0);
+    rov->listServos[1]->setValue(servo1);
+}
+
+void QROVController::sendTahoe()
+{
+    // TODO: Add Tahoe syncing function
+    QString packet;
+    packet.append(QString::number((int)comTOBI));
+    packet.append(" ");
+    packet.append(QString::number((int)comTIBO));
+    packet.append(" ");
+    int isError;
+    if(!comTOBI || !comTIBO || !joyAttached)
+        isError = 1;
+    else
+        isError = 0;
+    packet.append(QString::number(isError));
+    packet.append(" ");
+    packet.append(diveTimeString().remove(QChar(' '), Qt::CaseInsensitive));
+    packet.append(" ");
+    foreach( QROVServo* s, rov->listServos)
+    {
+        packet.append(QString::number(s->getValue()));
+        packet.append(" ");
+    }
+    foreach(QROVRelay* r, rov->listRelays)
+    {
+        if(r->getState() == true)
+            packet.append(QString::number(1));
+        else
+            packet.append(QString::number(0));
+        packet.append(" ");
+    }
+    foreach(QROVRelay* r, rov->listRelays)
+    {
+        QString specialName = r->getName();
+        specialName.remove(QChar(' '), Qt::CaseInsensitive);    //remove spaces
+        packet.append(specialName);
+        packet.append(" ");
+    }
+    packet.append(QString::number(rov->sensorDepth->getValue()));
+    packet.append(" ");
+    packet.append(QString::number(rov->sensorDepth->getMax()));
+    packet.append(" ");
+    QString depthUnits = rov->sensorDepth->getUnits();
+    depthUnits.remove(QChar(' '), Qt::CaseInsensitive); //remove spaces
+    packet.append(depthUnits);
+    packet.append(" ");
+    packet.append(QString::number(rov->sensorCompass->getValue()));
+    packet.append(" ");
+    packet.append(QString::number(rov->sensorVoltage->getValue()));
+    packet.append(" ");
+    packet.append(QString::number(rov->sensorOther0->getValue()));
+    packet.append(" ");
+    packet.append(QString::number(rov->sensorOther1->getValue()));
+    packet.append(" ");
+    QString newName;
+    newName = rov->sensorOther0->getName();
+    newName.remove(QChar(' '), Qt::CaseInsensitive);
+    packet.append(newName);
+    packet.append(" ");
+    newName = rov->sensorOther1->getName();
+    newName.remove(QChar(' '), Qt::CaseInsensitive);
+    packet.append(newName);
+    packet.append(" ");
+    QString newUnits;
+    newUnits = rov->sensorOther0->getUnits();
+    newUnits.remove(QChar(' '), Qt::CaseInsensitive);
+    packet.append(newUnits);
+    packet.append(" ");
+    newUnits = rov->sensorOther1->getUnits();
+    newUnits.remove(QChar(' '), Qt::CaseInsensitive);
+    packet.append(newUnits);
+    packet.append(" ");
+
+    QByteArray datagram = packet.toUtf8();
+    txSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress::Broadcast, 53000);
+}
+
 void QROVController::noJoystick()
 {
     for(int i=0;i<rov->listMotors.count();i++)
@@ -322,6 +443,7 @@ void QROVController::motherFunction()
     }
     sendPacket();
     sendDebug();
+    sendTahoe();
 }
 
 int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outMax)
@@ -411,4 +533,37 @@ void QROVController::setErrorTIBO()
     comTIBO = false;
     monitorTIBO->compareState(comTIBO);
     emit errorTIBO();
+}
+
+void QROVController::diveTimeStart()
+{
+    diveTime->start();
+}
+
+void QROVController::diveTimeReset()
+{
+    diveTime->restart();
+}
+
+QString QROVController::diveTimeString()
+{
+    QString diveTimeString;
+    if(diveTime->isValid())
+    {
+    unsigned int hours = diveTime->elapsed() / (1000 * 60 * 60);    //convert milliseconds to hours
+    unsigned int minutes = (diveTime->elapsed() % (1000 * 60 * 60)) / (1000 * 60);  //convert to minutes
+    unsigned int seconds = ((diveTime->elapsed() % (1000 * 60 * 60)) % (1000*60)) / 1000;    //convert to seconds
+
+    diveTimeString.append(QString::number(hours).rightJustified(2, '0'));   //add leading zeros
+    diveTimeString.append(":");
+    diveTimeString.append(QString::number(minutes).rightJustified(2,'0'));  //add leading zeros
+    diveTimeString.append(":");
+    diveTimeString.append(QString::number(seconds).rightJustified(2, '0')); //add leading zeros
+    }
+    else
+    {
+        diveTimeString.append("00:00:00");
+    }
+
+    return diveTimeString;
 }

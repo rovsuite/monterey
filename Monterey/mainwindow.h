@@ -80,9 +80,7 @@ private slots:
     void showDebug();   //!< show the debug dialog
     void showMappings();    //!< show the joystick mapping dialog
     void showSettings();    //!< show the settings dialog
-    void diveTimeStart();   //!< Start the dive timer
-    void diveTimeReset();   //!< Reset the dive timer
-    void diveTimeDisplay(); //!< Convert the milliseconds to minutes and hours and display in the gui
+    void showDiveTimer();   //!< Display the dive timer
     void ledDisplay();  //!< Light up the LEDs based on each important status
     void noErrorTOBI(); //!< Light up the green TOBI LED
     void noErrorTIBO(); //!< Light up the green TIBO LED
@@ -113,7 +111,6 @@ private:
     int graphDepthIndex;
 
     QTimer *guiTimer;
-    QTime *diveTime;
 };
 
 #endif // MAINWINDOW_H
