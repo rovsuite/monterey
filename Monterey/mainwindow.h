@@ -112,6 +112,8 @@ private:
     int graphDepthIndex;
 
     QTimer *guiTimer;
+
+    QThread *engineThread;
 };
 
 #endif // MAINWINDOW_H

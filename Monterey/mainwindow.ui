@@ -466,7 +466,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLCDNumber" name="ledHeading">
+       <widget class="QLCDNumber" name="lcdHeading">
         <property name="frameShape">
          <enum>QFrame::Box</enum>
         </property>
@@ -743,7 +743,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

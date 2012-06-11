@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QThread>
 #include <QTime>
+#include <QMutex>
 #include "qrov.h"
 #include "qjoystick.h"
 #include "extraclasses/QVectorDrive2/qvectordrive2.h"
@@ -136,6 +137,8 @@ private:
 
     QTime *diveTime;
     QTimer *packetTimer;
+
+    //QMutex *mutex;
 
     bool bilinearEnabled;
     bool vectorEnabled;

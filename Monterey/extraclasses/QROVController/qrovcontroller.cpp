@@ -1,4 +1,5 @@
 #include "qrovcontroller.h"
+#include <QDebug>
 
 #define numberOfMotors 6
 #define numberOfRelays 3
@@ -10,6 +11,8 @@
 QROVController::QROVController(QObject *parent) :
     QObject(parent)
 {
+    QMutex mutex;
+    mutex.lock();
     rov = new QROV(numberOfMotors, numberOfRelays, numberOfServos, this);
     joy = new QJoystick();
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
@@ -70,10 +73,14 @@ QROVController::QROVController(QObject *parent) :
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
 
     packetTimer->start();
+    mutex.unlock();
+    qDebug() << "Controller finished setup!";
 }
 
 void QROVController::initJoysticks()
 {
+    QMutex mutex;
+    mutex.lock();
     joysAvail = joy->availableJoysticks();
 
     if(joysAvail != 0)
@@ -87,6 +94,8 @@ void QROVController::initJoysticks()
 
     }
     monitorJoystick->compareState(joyAttached);
+    mutex.unlock();
+    qDebug() << "joysticks setup";
 }
 
 
@@ -100,6 +109,8 @@ void QROVController::rescanJoysticks()
 
 QStringList QROVController::getJoystickNames()
 {
+    QMutex mutex;
+    mutex.lock();
     QStringList joystickNames;
     if(joy->availableJoysticks() > 0)
     {
@@ -112,11 +123,14 @@ QStringList QROVController::getJoystickNames()
     {
         joystickNames.append("No joystick attached");
     }
+    mutex.unlock();
     return joystickNames;
 }
 
 void QROVController::processPacket()
 {
+    QMutex mutex;
+    mutex.lock();
     double version;
     double depth;
     double heading;
@@ -152,10 +166,13 @@ void QROVController::processPacket()
     comTIBO = true;
     monitorTIBO->compareState(comTIBO);
     timerTIBO->start(ERRORTIMEOUT);
+    mutex.unlock();
 }
 
 void QROVController::sendPacket()
 {
+    QMutex mutex;
+    mutex.lock();
     QByteArray txDatagram;
     QString txPacket;
 
@@ -204,7 +221,7 @@ void QROVController::sendPacket()
     comTOBI = true;
     monitorTOBI->compareState(comTOBI);
     timerTOBI->start(ERRORTIMEOUT);
-
+    mutex.unlock();
 }
 
 void QROVController::sendDebug()
@@ -214,6 +231,8 @@ void QROVController::sendDebug()
 
 void QROVController::processTahoe()
 {
+    QMutex mutex;
+    mutex.lock();
     QByteArray datagram;
     QString packet;
 
@@ -250,10 +269,13 @@ void QROVController::processTahoe()
         rov->listRelays[2]->setState(false);
     rov->listServos[0]->setValue(servo0);
     rov->listServos[1]->setValue(servo1);
+    mutex.unlock();
 }
 
 void QROVController::sendTahoe()
 {
+    QMutex mutex;
+    mutex.lock();
     // TODO: Add Tahoe syncing function
     QString packet;
     packet.append(QString::number((int)comTOBI));
@@ -326,14 +348,18 @@ void QROVController::sendTahoe()
 
     QByteArray datagram = packet.toUtf8();
     txSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress::Broadcast, 53000);
+
+    mutex.unlock();
 }
 
 void QROVController::noJoystick()
 {
+
     for(int i=0;i<rov->listMotors.count();i++)
     {
         rov->listMotors[i]->setValue(1500); //set everything neutral
     }
+
 }
 
 int QROVController::getPortTOBI()
@@ -348,6 +374,8 @@ int QROVController::getPortTIBO()
 
 void QROVController::loadSettings()
 {
+    QMutex mutex;
+    mutex.lock();
     //TDOD: Finish adding settings code and remove it from mainwindow.cpp
 
     //Load relay names
@@ -391,10 +419,13 @@ void QROVController::loadSettings()
 
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,xDead,yDead,zDead);
     //initJoysticks();
+    mutex.unlock();
 }
 
 void QROVController::saveSettings()
 {
+    QMutex mutex;
+    mutex.lock();
     //Relay Names
     mySettings->setValue("names/relay0", rov->listRelays[0]->getName());
     mySettings->setValue("names/relay1", rov->listRelays[1]->getName());
@@ -433,11 +464,14 @@ void QROVController::saveSettings()
     mySettings->setValue("joystick/deadZ", zDead);
     mySettings->setValue("joystick/id", joyID);
 
+    mutex.unlock();
     emit savedSettings("Settings saved");
 }
 
 void QROVController::motherFunction()
 {
+    QMutex mutex;
+    mutex.lock();
     if(joysAvail !=0 )
     {
         updateJoystickData();
@@ -446,10 +480,12 @@ void QROVController::motherFunction()
     {
         noJoystick();
     }
+    mutex.unlock();
     sendPacket();
     sendDebug();
     sendTahoe();
     emit onMotherFunctionCompleted();
+    qDebug() << "Controller finished MotherFunction!";
 }
 
 int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outMax)
@@ -466,6 +502,8 @@ void QROVController::readMappings()
 
 void QROVController::updateJoystickData()
 {
+    QMutex mutex;
+    mutex.lock();
     // TODO: Add in tank drive stuff
     joy->getdata(); //read the joystick (within QJoystick)
 
@@ -525,19 +563,26 @@ void QROVController::updateJoystickData()
     }
 
     // TODO: Add hat and button reading
+    mutex.unlock();
 }
 
 void QROVController::setErrorTOBI()
 {
+    QMutex mutex;
+    mutex.lock();
     comTOBI = false;
     monitorTOBI->compareState(comTOBI);
+    mutex.unlock();
     emit errorTOBI();
 }
 
 void QROVController::setErrorTIBO()
 {
+    QMutex mutex;
+    mutex.lock();
     comTIBO = false;
     monitorTIBO->compareState(comTIBO);
+    mutex.unlock();
     emit errorTIBO();
 }
 
@@ -553,6 +598,8 @@ void QROVController::diveTimeReset()
 
 QString QROVController::diveTimeString()
 {
+    QMutex mutex;
+    mutex.lock();
     QString diveTimeString;
     if(diveTime->isValid())
     {
@@ -571,5 +618,6 @@ QString QROVController::diveTimeString()
         diveTimeString.append("00:00:00");
     }
 
+    mutex.unlock();
     return diveTimeString;
 }

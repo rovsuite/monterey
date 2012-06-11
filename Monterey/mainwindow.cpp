@@ -6,14 +6,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    version = new QString("2.0.0 Beta");
+    version = new QString("2.0.1 Beta");
 
     guiTimer = new QTimer(this);
     guiTimer->setInterval(50); //refresh the gui 20x a second
 
     controller = new QROVController();
-    //QThread engineThread(this); //create a second thread
-    //controller->moveToThread(engineThread); //move the QROVController engine to the second thread
+    engineThread = new QThread(this); //create a second thread
+    controller->moveToThread(engineThread); //move the QROVController engine to the second thread
+    engineThread->start();
 
     graphTime = new QTime;
     graphTime->start();
@@ -376,6 +377,7 @@ void MainWindow::loadData()
     ui->lcdSensor0->display(controller->rov->sensorOther0->getValue());
     ui->lcdSensor1->display(controller->rov->sensorOther1->getValue());
     ui->lcdVoltage->display(controller->rov->sensorVoltage->getValue());
+    ui->lcdHeading->display(controller->rov->sensorCompass->getValue());
 
     //Display the data graphically
     ui->niVoltage->setValue(controller->rov->sensorVoltage->getValue());
