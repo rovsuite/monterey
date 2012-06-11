@@ -11,6 +11,8 @@
 #include <QUdpSocket>
 #include <QtNetwork>
 #include <QTimer>
+#include <QThread>
+#include <QTime>
 #include "qrov.h"
 #include "qjoystick.h"
 #include "extraclasses/QVectorDrive2/qvectordrive2.h"
@@ -35,6 +37,8 @@ signals:
     void receivedPacket(QString packet);
 
     void savedSettings(QString message);
+
+    void onMotherFunctionCompleted();
 
     void errorTOBI();
     void errorTIBO();
@@ -131,6 +135,7 @@ private:
     bool joyAttached;
 
     QTime *diveTime;
+    QTimer *packetTimer;
 
     bool bilinearEnabled;
     bool vectorEnabled;

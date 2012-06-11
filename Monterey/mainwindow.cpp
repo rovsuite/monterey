@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     guiTimer->setInterval(50); //refresh the gui 20x a second
 
     controller = new QROVController();
+    //QThread engineThread(this); //create a second thread
+    //controller->moveToThread(engineThread); //move the QROVController engine to the second thread
 
     graphTime = new QTime;
     graphTime->start();
@@ -34,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout())); //show the about window
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));  //exit the application
     connect(ui->actionDebug, SIGNAL(triggered()), this, SLOT(showDebug())); //show the debug window
-    connect(guiTimer, SIGNAL(timeout()), this, SLOT(refreshGUI())); //refresh the gui
+    //connect(guiTimer, SIGNAL(timeout()), this, SLOT(refreshGUI())); //refresh the gui
     connect(ui->actionDive_Timer_Start, SIGNAL(triggered()),this->controller, SLOT(diveTimeStart()));
     connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()), this->controller, SLOT(diveTimeReset()));
     connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
@@ -50,6 +52,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
 
     guiTimer->start();
+    connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
+
 }
 
 MainWindow::~MainWindow()
@@ -234,7 +238,7 @@ void MainWindow::setupCustomWidgets()
 
 void MainWindow::refreshGUI()
 {
-    controller->motherFunction();   //run the ROV control engine through its polling loop
+    //controller->motherFunction();   //run the ROV control engine through its polling loop
 
     loadData(); //load data from the controller object
     displayTime();  //display the current time

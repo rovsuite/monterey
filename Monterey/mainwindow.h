@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QPointF>
+#include <QThread>
 
 #ifdef Q_OS_MACX
 #include "qwt/qwt_dial.h"

@@ -32,6 +32,8 @@ QROVController::QROVController(QObject *parent) :
     myVectorDrive->initVector(MOTORMIN, MOTORMAX, 0, 0, 0);
 
     diveTime = new QTime();
+    packetTimer = new QTimer(this);
+    packetTimer->setInterval(45);
 
     initJoysticks();
 
@@ -65,6 +67,9 @@ QROVController::QROVController(QObject *parent) :
     connect(tahoeSocket, SIGNAL(readyRead()), this, SLOT(processTahoe()));
     connect(timerTOBI, SIGNAL(timeout()), this, SLOT(setErrorTOBI()));
     connect(timerTIBO, SIGNAL(timeout()),this, SLOT(setErrorTIBO()));
+    connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
+
+    packetTimer->start();
 }
 
 void QROVController::initJoysticks()
@@ -444,6 +449,7 @@ void QROVController::motherFunction()
     sendPacket();
     sendDebug();
     sendTahoe();
+    emit onMotherFunctionCompleted();
 }
 
 int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outMax)
