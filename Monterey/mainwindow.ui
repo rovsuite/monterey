@@ -644,16 +644,6 @@
      <string/>
     </property>
    </widget>
-   <widget class="QwtCompass" name="compass" native="true">
-    <property name="geometry">
-     <rect>
-      <x>465</x>
-      <y>20</y>
-      <width>350</width>
-      <height>350</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QGroupBox" name="gbDepthScale">
     <property name="geometry">
      <rect>
@@ -734,6 +724,54 @@
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QDeclarativeView" name="dvCompass">
+    <property name="geometry">
+     <rect>
+      <x>465</x>
+      <y>20</y>
+      <width>350</width>
+      <height>350</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth">
+     <number>0</number>
+    </property>
+    <property name="backgroundBrush">
+     <brush brushstyle="NoBrush">
+      <color alpha="0">
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </brush>
+    </property>
+    <property name="foregroundBrush">
+     <brush brushstyle="NoBrush">
+      <color alpha="255">
+       <red>0</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </brush>
+    </property>
+    <property name="renderHints">
+     <set>QPainter::Antialiasing|QPainter::HighQualityAntialiasing|QPainter::TextAntialiasing</set>
+    </property>
+    <property name="resizeMode">
+     <enum>QDeclarativeView::SizeViewToRootObject</enum>
+    </property>
+    <property name="source">
+     <url>
+      <string>qrc:/pictures/resources/HeadingIndicator.qml</string>
+     </url>
     </property>
    </widget>
   </widget>
@@ -871,6 +909,11 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>QDeclarativeView</class>
+   <extends>QGraphicsView</extends>
+   <header>QtDeclarative/QDeclarativeView</header>
+  </customwidget>
+  <customwidget>
    <class>QScale</class>
    <extends>QWidget</extends>
    <header>qscale.h</header>
@@ -886,12 +929,6 @@
    <class>QNeedleIndicator</class>
    <extends>QWidget</extends>
    <header>qneedleindicator.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QwtCompass</class>
-   <extends>QWidget</extends>
-   <header>qwt/qwt_compass.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

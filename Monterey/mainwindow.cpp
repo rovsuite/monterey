@@ -194,31 +194,8 @@ void MainWindow::setupCustomWidgets()
     qDebug() << "Setup the graph!";
 
     //Setup the compass
-    QPalette *colorGroup = new QPalette(Qt::darkGray, Qt::white, Qt::lightGray, Qt::white, Qt::white, QColor::QColor(0,227,0,255), Qt::white, QColor::QColor(100,100,100,255), Qt::white);
-
-    ui->compass->setLineWidth(5);
-    ui->compass->setScaleComponents( QwtAbstractScaleDraw::Backbone |
-        QwtAbstractScaleDraw::Ticks | QwtAbstractScaleDraw::Labels );
-    ui->compass->setScaleTicks(0, 3, 5, 2);
-    QFont compassFont = ui->compass->font();
-    compassFont.setPointSize(24);
-    ui->compass->setFont(compassFont);
-
-    QMap<double, QString> map;
-    map.insert(0.0, "N");
-    map.insert(90.0, "E");
-    map.insert(180.0, "S");
-    map.insert(270.0, "W");
-
-    ui->compass->setLabelMap(map);
-
-    ui->compass->setPalette(*colorGroup);
-    ui->compass->setNeedle(new QwtDialSimpleNeedle(QwtDialSimpleNeedle::Arrow, false,
-         QColor::QColor(0,227,0,255)));
-    ui->compass->setOrigin(270.0);
-    ui->compass->setValue(0.0);
-    ui->compass->setMode(QwtDial::RotateScale);
-
+    QBrush brush = this->palette().window();
+    ui->dvCompass->setBackgroundBrush(brush);
     qDebug() << "Setup the compass!";
 
     //Setup the QScale
@@ -381,7 +358,13 @@ void MainWindow::loadData()
 
     //Display the data graphically
     ui->niVoltage->setValue(controller->rov->sensorVoltage->getValue());
-    ui->compass->setValue(controller->rov->sensorCompass->getValue());
+    //ui->compass->setValue(controller->rov->sensorCompass->getValue());
+    QObject *rootObject = dynamic_cast<QObject*>(ui->dvCompass->rootObject());
+    QObject *background = rootObject->findChild<QObject *>(QString("compassBackground"));
+    if(background)
+        background->setProperty("rotation", (-1*controller->rov->sensorCompass->getValue()));
+    else
+        qDebug() << "Couldn't find QML compass background image";
     ui->scaleDepth->setValue(controller->rov->sensorDepth->getValue());
     //Graph the depth
     //Depth

@@ -485,7 +485,6 @@ void QROVController::motherFunction()
     sendDebug();
     sendTahoe();
     emit onMotherFunctionCompleted();
-    qDebug() << "Controller finished MotherFunction!";
 }
 
 int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outMax)

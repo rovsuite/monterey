@@ -16,6 +16,9 @@
 #include <QSettings>
 #include <QPointF>
 #include <QThread>
+#include <QtDeclarative>
+#include <QBrush>
+#include <QColor>
 
 #ifdef Q_OS_MACX
 #include "qwt/qwt_dial.h"

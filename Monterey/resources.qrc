@@ -5,5 +5,9 @@
     <qresource prefix="/pictures">
         <file>resources/monterey.png</file>
         <file>resources/montereySmall.png</file>
+        <file>resources/any_casing.svg.png</file>
+        <file>resources/hsi_face.svg.png</file>
+        <file>resources/ROV.png</file>
+        <file>resources/HeadingIndicator.qml</file>
     </qresource>
 </RCC>

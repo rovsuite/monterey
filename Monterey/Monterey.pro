@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network svg
+QT       += core gui network svg declarative
 
 TARGET = Monterey
 TEMPLATE = app
@@ -110,3 +110,10 @@ LIBS += ../Monterey/depends/windows/libqwt.a
 QMAKE_POST_LINK = copy /Y ../Monterey/depends/windows/qwt.dll $(DESTDIR)
 }
 }
+
+OTHER_FILES += \
+    resources/ROV.png \
+    resources/hsi_face.svg.png \
+    resources/any_casing.svg.png \
+    resources/Compass.qml \
+    resources/HeadingIndicator.qml
