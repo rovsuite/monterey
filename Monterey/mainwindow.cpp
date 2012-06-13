@@ -7,6 +7,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     version = new QString("2.0.1 Beta");
+    QString title = this->windowTitle();
+    title.append(" ");
+    title.append(version);
+    this->setWindowTitle(title);
 
     guiTimer = new QTimer(this);
     guiTimer->setInterval(50); //refresh the gui 20x a second
