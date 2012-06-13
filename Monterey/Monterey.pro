@@ -9,8 +9,6 @@ QT       += core gui network svg declarative
 TARGET = Monterey
 TEMPLATE = app
 
-CONFIG +=qwt
-
 SOURCES += main.cpp\
         mainwindow.cpp \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.cpp \
@@ -29,7 +27,8 @@ SOURCES += main.cpp\
     extraclasses/QROVController/qrovcontroller.cpp \
     extraclasses/QROVSensor/qrovsensor.cpp \
     extraclasses/QJoystick/qjoystick.cpp \
-    extraclasses/QVectorDrive2/qvectordrive2.cpp
+    extraclasses/QVectorDrive2/qvectordrive2.cpp \
+    extraclasses/QCustomPlot/qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -48,7 +47,8 @@ HEADERS  += mainwindow.h \
     extraclasses/QROVController/qrovcontroller.h \
     extraclasses/QROVSensor/qrovsensor.h \
     extraclasses/QJoystick/qjoystick.h \
-    extraclasses/QVectorDrive2/qvectordrive2.h
+    extraclasses/QVectorDrive2/qvectordrive2.h \
+    extraclasses/QCustomPlot/qcustomplot.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \
@@ -61,7 +61,6 @@ INCLUDEPATH += ../Monterey/extraclasses/QActivityMonitor/ \
                 ../Monterey/extraclasses/QROVMotor/ \
                 ../Monterey/extraclasses/QROVRelay/ \
                 ../Monterey/extraclasses/QROVServo/ \
-                ../Qwtsrc/ \
                 ../Monterey/extraclasses/QScale/ \
                 ../Monterey/extraclasses/QNeedleIndicator/ \
                 ../Monterey/extraclasses/QLedIndicator/ \
@@ -80,7 +79,6 @@ ICON = monterey.icns
 HEADERS +=     ../Monterey/extraclasses/SDL/SDLMain.h
 QMAKE_LFLAGS += -F../Monterey/depends/osx/
 LIBS += -framework SDL
-LIBS += -framework Qwt
 
 OTHER_FILES += \
     ../Monterey/extraclasses/SDL/SDLMain.m
@@ -91,24 +89,6 @@ RC_FILE = monterey.rc
 
 DEFINES += SDL_WIN
 LIBS += -lSDL.dll
-
-#INCLUDEPATH += C:/qwt-6.0.1WINDOWS/src
-INCLUDEPATH += ../Monterey/depends/windows/qwtsrc
-
-#Debug Build
-CONFIG(debug, debug|release){
-#LIBS += C:/qwt-6.0.1WINDOWS/lib/libqwtd.a
-LIBS += ../Monterey/depends/windows/libqwtd.a
-#QMAKE_POST_LINK = copy /Y C:\qwt-6.0.1WINDOWS\lib\qwtd.dll $(DESTDIR)
-QMAKE_POST_LINK = copy /Y ../Monterey/depends/windows/qwtd.dll $(DESTDIR)
-}
-#Release Build
-CONFIG(release, debug|release){
-#LIBS += C:/qwt-6.0.1WINDOWS/lib/libqwt.a
-LIBS += ../Monterey/depends/windows/libqwt.a
-#QMAKE_POST_LINK = copy /Y C:\qwt-6.0.1WINDOWS\lib\qwt.dll $(DESTDIR)
-QMAKE_POST_LINK = copy /Y ../Monterey/depends/windows/qwt.dll $(DESTDIR)
-}
 }
 
 OTHER_FILES += \

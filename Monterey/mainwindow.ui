@@ -679,7 +679,7 @@
     <property name="title">
      <string>Depth Graph</string>
     </property>
-    <widget class="QwtPlot" name="plotDepth" native="true">
+    <widget class="QCustomPlot" name="plotDepth" native="true">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -932,9 +932,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QwtPlot</class>
+   <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header>qwt/qwt_plot.h</header>
+   <header>extraclasses/qcustomplot/qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

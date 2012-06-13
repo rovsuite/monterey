@@ -22,10 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     graphTime = new QTime;
     graphTime->start();
-    depthCurve = new QwtPlotCurve;
-    depthCurve->setPen(QPen(Qt::darkBlue));
-    depthCurve->attach(ui->plotDepth);
-    graphDepthIndex = 0;
+    ui->plotDepth->addGraph();
+    ui->plotDepth->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 100)));
     setupCustomWidgets();   //load the settings for the custom widgets
     loadSettings();
 
@@ -41,7 +39,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout())); //show the about window
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));  //exit the application
     connect(ui->actionDebug, SIGNAL(triggered()), this, SLOT(showDebug())); //show the debug window
-    //connect(guiTimer, SIGNAL(timeout()), this, SLOT(refreshGUI())); //refresh the gui
     connect(ui->actionDive_Timer_Start, SIGNAL(triggered()),this->controller, SLOT(diveTimeStart()));
     connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()), this->controller, SLOT(diveTimeReset()));
     connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
@@ -115,9 +112,10 @@ void MainWindow::loadSettings()
     label.append(controller->rov->sensorDepth->getUnits());
     label.append(")");
     ui->gbDepthScale->setTitle(label);
-    QwtText titlePlot(controller->rov->sensorDepth->getUnits());
-    titlePlot.setFont(QFont("MS Shell Dlg 2", 12));
-    ui->plotDepth->setAxisTitle(QwtPlot::yLeft, titlePlot);
+    QString depthTitle = "Depth (";
+    depthTitle.append(controller->rov->sensorDepth->getUnits());
+    depthTitle.append(")");
+    ui->plotDepth->setTitle(depthTitle);
     ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
@@ -127,7 +125,8 @@ void MainWindow::loadSettings()
 
     //Load the thresholds
     ui->scaleDepth->setMaximum(controller->rov->sensorDepth->getMax());
-    ui->plotDepth->setAxisScale(0,-1.0 * controller->rov->sensorDepth->getMax(), 0,1);
+    ui->plotDepth->yAxis->setRange(0,-1*controller->rov->sensorDepth->getMax());
+    ui->plotDepth->replot();    //repaint the element to update the title and range
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
@@ -183,18 +182,14 @@ void MainWindow::setupCustomWidgets()
     ui->niVoltage->setMinorTicks(4);
 
     //Setup the depth plot
-    ui->plotDepth->setAxisAutoScale(2, false);  //turn off y axis auto scale
-    ui->plotDepth->setAxisScale(0,-controller->rov->sensorDepth->getMax(),-controller->rov->sensorDepth->getMin(),1);   //set y axis scale
-    ui->plotDepth->setAxisMaxMinor(0,1);    //set the y axis minor ticks
-    ui->plotDepth->setAutoReplot(true); //automatically  update the plot
-    ui->plotDepth->setAxisMaxMinor(2, 10);  //x axis minor ticks = 10 seconds
-    ui->plotDepth->axisScaleDraw(2)->enableComponent(QwtAbstractScaleDraw::Labels, false);
-    QwtText titlePlot(controller->rov->sensorDepth->getUnits());
-    titlePlot.setFont(QFont("MS Shell Dlg 2", 12));
-    ui->plotDepth->setAxisTitle(QwtPlot::yLeft, titlePlot);
-
-    depthCurve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-
+    QString depthTitle = "Depth (";
+    depthTitle.append(controller->rov->sensorDepth->getUnits());
+    depthTitle.append(")");
+    ui->plotDepth->setTitle(depthTitle);
+    ui->plotDepth->yAxis->setRange(0,-1*controller->rov->sensorDepth->getMax());
+    ui->plotDepth->xAxis->setTickStep(1000);    //set to 1000ms gaps
+    ui->plotDepth->xAxis->setTickLabels(false); //hide labels
+    ui->plotDepth->setColor(this->palette().background().color());
     qDebug() << "Setup the graph!";
 
     //Setup the compass
@@ -362,7 +357,6 @@ void MainWindow::loadData()
 
     //Display the data graphically
     ui->niVoltage->setValue(controller->rov->sensorVoltage->getValue());
-    //ui->compass->setValue(controller->rov->sensorCompass->getValue());
     QObject *rootObject = dynamic_cast<QObject*>(ui->dvCompass->rootObject());
     QObject *background = rootObject->findChild<QObject *>(QString("compassBackground"));
     if(background)
@@ -372,20 +366,22 @@ void MainWindow::loadData()
     ui->scaleDepth->setValue(controller->rov->sensorDepth->getValue());
     //Graph the depth
     //Depth
-    depthPoints.append(QPointF(0,0));
-    depthPoints[graphDepthIndex].setX(graphTime->elapsed());
-    depthPoints[graphDepthIndex].setY(-1*controller->rov->sensorDepth->getValue());
-    graphDepthIndex++;
-    depthCurve->setSamples(depthPoints);
-    ui->plotDepth->setAxisScale(2, graphTime->elapsed()-10000, graphTime->elapsed());
+    depthPoints.append(-1*controller->rov->sensorDepth->getValue());
+    seconds.append(graphTime->elapsed());
+    ui->plotDepth->graph(0)->setData(seconds, depthPoints);
+    ui->plotDepth->xAxis->setRangeUpper(graphTime->elapsed());
+    ui->plotDepth->xAxis->setRangeLower(graphTime->elapsed() - 10000);
     if(controller->getStatusTIBO() == false) //if ROV is not connected
     {
-        depthCurve->setPen(QPen(Qt::darkGray));
+        ui->plotDepth->graph(0)->setPen(QPen(Qt::darkGray));
+        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(128, 128, 128, 100)));
     }
     else
     {
-        depthCurve->setPen(QPen(Qt::darkBlue));
+        ui->plotDepth->graph(0)->setPen(QPen(Qt::blue));
+        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 100)));
     }
+    ui->plotDepth->replot();
 }
 
 void MainWindow::displayTime()

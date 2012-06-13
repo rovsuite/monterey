@@ -20,36 +20,6 @@
 #include <QBrush>
 #include <QColor>
 
-#ifdef Q_OS_MACX
-#include "qwt/qwt_dial.h"
-#include "qwt/qwt_dial_needle.h"
-#include "qwt/qwt_compass.h"
-#include "qwt/qwt_compass_rose.h"
-#include "qwt/qwt_plot_marker.h"
-#include "qwt/qwt_abstract_scale_draw.h"
-#include "qwt/qwt_scale_draw.h"
-#include "qwt/qwt.h"
-#include "qwt/qwt_plot_curve.h"
-#include "qwt/qwt_plot.h"
-#include "qwt/qwt_series_data.h"
-#include "qwt/qwt_plot_curve.h"
-#endif
-
-#ifdef Q_OS_WIN32
-#include "qwt_dial.h"
-#include "qwt_dial_needle.h"
-#include "qwt_compass.h"
-#include "qwt_compass_rose.h"
-#include "qwt_plot_marker.h"
-#include "qwt_abstract_scale_draw.h"
-#include "qwt_scale_draw.h"
-#include "qwt.h"
-#include "qwt_plot_curve.h"
-#include "qwt_plot.h"
-#include "qwt_series_data.h"
-#include "qwt_plot_curve.h"
-#endif
-
 namespace Ui {
     class MainWindow;
 }
@@ -109,10 +79,9 @@ private:
     ROVSettings *dialogSettings;
     QSettings *mySettings;
 
-    QwtPlotCurve *depthCurve;
-    QVector<QPointF> depthPoints;
+    QVector<double> depthPoints;
+    QVector<double> seconds;
     QTime *graphTime;
-    int graphDepthIndex;
 
     QTimer *guiTimer;
 
