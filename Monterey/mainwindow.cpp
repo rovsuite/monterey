@@ -52,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller->monitorTOBI, SIGNAL(stateChanged()), this, SLOT(lostTOBI()));
     connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
+    connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
 
     guiTimer->start();
     connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
@@ -230,6 +231,16 @@ void MainWindow::lostJoystick()
         activityMonitor->display("Joystick attached");
     else
         activityMonitor->display("Joystick detached");
+}
+
+void MainWindow::displayTahoe()
+{
+    ui->pbRelay0->setChecked(controller->rov->listRelays[0]->getState());
+    ui->pbRelay1->setChecked(controller->rov->listRelays[1]->getState());
+    ui->pbRelay2->setChecked(controller->rov->listRelays[2]->getState());
+
+    ui->vsServo0->setValue(controller->rov->listServos[0]->getValue());
+    ui->vsServo1->setValue(controller->rov->listServos[1]->getValue());
 }
 
 void MainWindow::ledDisplay()

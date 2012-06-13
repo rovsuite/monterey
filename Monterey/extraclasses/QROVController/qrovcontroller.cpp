@@ -231,6 +231,7 @@ void QROVController::sendDebug()
 
 void QROVController::processTahoe()
 {
+    qDebug() << "Received packet from Tahoe!";
     QMutex mutex;
     mutex.lock();
     QByteArray datagram;
@@ -270,6 +271,7 @@ void QROVController::processTahoe()
     rov->listServos[0]->setValue(servo0);
     rov->listServos[1]->setValue(servo1);
     mutex.unlock();
+    emit onTahoeProcessed();    //tell the GUI to update itself
 }
 
 void QROVController::sendTahoe()

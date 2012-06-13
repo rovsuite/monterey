@@ -40,6 +40,7 @@ signals:
     void savedSettings(QString message);
 
     void onMotherFunctionCompleted();
+    void onTahoeProcessed();
 
     void errorTOBI();
     void errorTIBO();
@@ -56,8 +57,8 @@ public slots:
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
     int getJoystickNumberAxes() { return joy->axis.count(); }   //!< Get the number of axes
-    int getJoyID() { return joyID; }    //get the ID of the currently selected joystick
-    void setJoyID(int j) { joyID = j; } //set the joystick to be read
+    int getJoyID() { return joyID; }    //!< get the ID of the currently selected joystick
+    void setJoyID(int j) { joyID = j; } //!< set the joystick to be read
 
     //Networking
     void processPacket();   //!< Process the packet received from the ROV

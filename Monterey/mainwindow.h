@@ -67,6 +67,7 @@ private slots:
     void displayTime(); //!< Display the current time
     void refreshGUI();  //!< Refresh the GUI on a timer
     void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
+    void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
 
 private:
     QString *version;
