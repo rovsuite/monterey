@@ -68,7 +68,6 @@ public slots:
     void sendTahoe();   //!< Send the packet to Tahoe
 
     //ROVContoller interactive functions
-    void setBilinearThreshold(double t) { bilinearThreshold = t; }
     double getBilinearThreshold() { return bilinearThreshold; }
     void setBilinearRatio(double r) { bilinearRatio = r; }
     double getBilinearRatio() { return bilinearRatio; }
@@ -87,6 +86,7 @@ public slots:
     bool isJoyAttached() {return joyAttached; } //!< Return the joystick attached status
     bool getStatusTOBI() { return comTOBI; }    //!< Return the status of TOBI
     bool getStatusTIBO() { return comTIBO; }    //!< Return the status of TIBO
+    bool getStatusTahoe() { return comTahoe; }  //!< Return the status of Tahoe's COM
     MotorLayout getMotorLayout() { return motorLayout; }  //!< Return the currently set motor layout
     void setMotorLayout(MotorLayout mL) { motorLayout = mL; }   //!< Set the motor layout
     void setMotorLayout(int mL) { motorLayout = (MotorLayout)mL; }   //!< Set the motor layout
@@ -108,6 +108,7 @@ public slots:
     //Error functions
     void setErrorTOBI();    //!< use to say that there is a TOBI error
     void setErrorTIBO();   //!< use to say that there is a TIBO error
+    void setErrorTahoe();   //!< use to say that Monterey is getting packets from Monterey
 
     //Dive timer
     void diveTimeStart();   //!< Start the dive timer
@@ -130,8 +131,10 @@ private:
 
     bool comTOBI;
     bool comTIBO;
+    bool comTahoe;
     QTimer *timerTOBI;
     QTimer *timerTIBO;
+    QTimer *timerTahoe;
     int joysAvail;
     int joyID;
     bool joyAttached;

@@ -279,6 +279,16 @@ void MainWindow::ledDisplay()
         ui->ledVoltageY->setChecked(false);
     }
 
+    //Tahoe LED
+    if(controller->getStatusTahoe())    //if Tahoe is connected
+    {
+        ui->ledTahoe->setChecked(true);
+    }
+    else
+    {
+        ui->ledTahoe->setChecked(false);
+    }
+
     //Error LED
     if(ui->ledJoystickR->isChecked() || ui->ledTIBOR->isChecked() || ui->ledTOBIR->isChecked() || ui->ledVoltageR->isChecked())
     {

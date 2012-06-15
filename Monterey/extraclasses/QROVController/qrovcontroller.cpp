@@ -21,8 +21,10 @@ QROVController::QROVController(QObject *parent) :
     tahoeSocket = new QUdpSocket(this);
     timerTIBO = new QTimer(this);
     timerTOBI = new QTimer(this);
+    timerTahoe = new QTimer(this);
     comTIBO = false;
     comTOBI = false;
+    comTahoe = false;
     monitorTIBO = new QBoolMonitor(this);
     monitorTIBO->setComparisonState(comTIBO);
     monitorTOBI = new QBoolMonitor(this);
@@ -54,13 +56,14 @@ QROVController::QROVController(QObject *parent) :
     bilinearEnabled = true;
     vectorEnabled = true;
 
-    bilinearThreshold = 0.6;
     bilinearRatio = 1.5;
+    bilinearThreshold = bilinearRatio / 1.0;
 
     loadSettings();
 
     timerTIBO->start(ERRORTIMEOUT);
     timerTOBI->start(ERRORTIMEOUT);
+    timerTahoe->start(ERRORTIMEOUT);
 
     tiboPort = 50000;
     tobiPort = 51000;
@@ -70,6 +73,7 @@ QROVController::QROVController(QObject *parent) :
     connect(tahoeSocket, SIGNAL(readyRead()), this, SLOT(processTahoe()));
     connect(timerTOBI, SIGNAL(timeout()), this, SLOT(setErrorTOBI()));
     connect(timerTIBO, SIGNAL(timeout()),this, SLOT(setErrorTIBO()));
+    connect(timerTahoe, SIGNAL(timeout()), this, SLOT(setErrorTahoe()));
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
 
     packetTimer->start();
@@ -270,6 +274,8 @@ void QROVController::processTahoe()
         rov->listRelays[2]->setState(false);
     rov->listServos[0]->setValue(servo0);
     rov->listServos[1]->setValue(servo1);
+    comTahoe = true;
+    timerTahoe->start(ERRORTIMEOUT);
     mutex.unlock();
     emit onTahoeProcessed();    //tell the GUI to update itself
 }
@@ -404,8 +410,8 @@ void QROVController::loadSettings()
 
     //Bilinear
     bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
-    bilinearRatio = mySettings->value("bilinear/ratio", "0.0").toDouble();
-    bilinearThreshold = mySettings->value("bilinear/thresold", "0.0").toDouble();
+    bilinearRatio = mySettings->value("bilinear/ratio", "1.5").toDouble();
+    bilinearThreshold = bilinearRatio/1.0;
 
     //Joystick
     axisX = mySettings->value("joystick/x", "0").toInt();
@@ -452,7 +458,6 @@ void QROVController::saveSettings()
     //Bilinear
     mySettings->setValue("bilinear/enabled", bilinearEnabled);
     mySettings->setValue("bilinear/ratio", bilinearRatio);
-    mySettings->setValue("bilinear/threshold", bilinearThreshold);
 
     //Joystick
     mySettings->setValue("joystick/x", axisX);
@@ -585,6 +590,14 @@ void QROVController::setErrorTIBO()
     monitorTIBO->compareState(comTIBO);
     mutex.unlock();
     emit errorTIBO();
+}
+
+void QROVController::setErrorTahoe()
+{
+    QMutex mutex;
+    mutex.lock();
+    comTahoe = false;
+    mutex.unlock();
 }
 
 void QROVController::diveTimeStart()

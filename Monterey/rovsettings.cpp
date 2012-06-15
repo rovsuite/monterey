@@ -26,7 +26,6 @@ ROVSettings::ROVSettings(QWidget *parent) :
     ui->comboMotorLayout->setCurrentIndex((int)p->controller->getMotorLayout());
     ui->cbBilinearEnabled->setChecked(p->controller->getBilinearEnabled());
     ui->sbBilinearRatio->setValue(p->controller->getBilinearRatio());
-    ui->sbBilinearThreshold->setValue(p->controller->getBilinearThreshold());
 
     QStringList joystickNames = p->controller->getJoystickNames();
     foreach(QString name, joystickNames)
@@ -63,7 +62,6 @@ void ROVSettings::on_pbSave_clicked()
     p->controller->rov->sensorVoltage->setThreshold(ui->sbVoltage->value());
     p->controller->setMotorLayout(ui->comboMotorLayout->currentIndex());
     p->controller->setBilinearRatio(ui->sbBilinearRatio->value());
-    p->controller->setBilinearThreshold(ui->sbBilinearThreshold->value());
     p->controller->setBilinearEnabled(ui->cbBilinearEnabled->isChecked());
 
     //Save the settings
