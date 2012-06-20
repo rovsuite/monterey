@@ -10,17 +10,20 @@ ROVMappings::ROVMappings(QWidget *parent) :
 
     //Load the existing mappings
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
-    QList<QSpinBox*> spinBoxes = this->findChildren<QSpinBox*>();
-    foreach(QSpinBox* sb, spinBoxes)
+    if(p->controller->isJoyAttached())
     {
-        sb->setMaximum(p->controller->getJoystickNumberAxes() - 1);
+        QList<QSpinBox*> spinBoxes = this->findChildren<QSpinBox*>();
+        foreach(QSpinBox* sb, spinBoxes)
+        {
+            sb->setMaximum(p->controller->getJoystickNumberAxes() - 1);
+        }
+        ui->sbVX->setValue(p->controller->getAxisX());
+        ui->sbVY->setValue(p->controller->getAxisY());
+        ui->sbVZ->setValue(p->controller->getAxisZ());
+        ui->sbV->setValue(p->controller->getAxisV());
+        ui->sbTL->setValue(p->controller->getAxisL());
+        ui->sbTR->setValue(p->controller->getAxisR());
     }
-    ui->sbVX->setValue(p->controller->getAxisX());
-    ui->sbVY->setValue(p->controller->getAxisY());
-    ui->sbVZ->setValue(p->controller->getAxisZ());
-    ui->sbV->setValue(p->controller->getAxisV());
-    ui->sbTL->setValue(p->controller->getAxisL());
-    ui->sbTR->setValue(p->controller->getAxisR());
 
     updateTimer = new QTimer(this);
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(updateDisplay()));
@@ -55,10 +58,13 @@ void ROVMappings::on_pbCancel_clicked()
 void ROVMappings::updateDisplay()
 {
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
-    ui->pbTL->setValue(p->controller->joystickAxesValues[ui->sbTL->value()]);
-    ui->pbTR->setValue(p->controller->joystickAxesValues[ui->sbTR->value()]);
-    ui->pbV->setValue(p->controller->joystickAxesValues[ui->sbV->value()]);
-    ui->pbVX->setValue(p->controller->joystickAxesValues[ui->sbVX->value()]);
-    ui->pbVY->setValue(p->controller->joystickAxesValues[ui->sbVY->value()]);
-    ui->pbVZ->setValue(p->controller->joystickAxesValues[ui->sbVZ->value()]);
+    if(p->controller->isJoyAttached())
+    {
+        ui->pbTL->setValue(p->controller->joystickAxesValues[ui->sbTL->value()]);
+        ui->pbTR->setValue(p->controller->joystickAxesValues[ui->sbTR->value()]);
+        ui->pbV->setValue(p->controller->joystickAxesValues[ui->sbV->value()]);
+        ui->pbVX->setValue(p->controller->joystickAxesValues[ui->sbVX->value()]);
+        ui->pbVY->setValue(p->controller->joystickAxesValues[ui->sbVY->value()]);
+        ui->pbVZ->setValue(p->controller->joystickAxesValues[ui->sbVZ->value()]);
+    }
 }
