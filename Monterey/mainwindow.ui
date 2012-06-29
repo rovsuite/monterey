@@ -806,6 +806,7 @@
      <string>File</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionCheck_for_Updates"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -920,6 +921,11 @@
   <action name="actionSettings_2">
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionCheck_for_Updates">
+   <property name="text">
+    <string>Check for Updates</string>
    </property>
   </action>
  </widget>

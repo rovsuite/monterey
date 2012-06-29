@@ -68,6 +68,7 @@ private slots:
     void refreshGUI();  //!< Refresh the GUI on a timer
     void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
     void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
+    void checkForUpdates(); //!< Check online for updates to Monterey
 
 private:
     QString *version;

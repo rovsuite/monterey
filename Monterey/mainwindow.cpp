@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "extraclasses/Fervor/fvupdater.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -44,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(showSettings()));
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
+    connect(ui->actionCheck_for_Updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
     connect(controller, SIGNAL(errorTIBO()), this, SLOT(errorTIBO()));
     connect(controller, SIGNAL(errorTOBI()), this, SLOT(errorTOBI()));
     connect(controller, SIGNAL(noErrorTIBO()),this, SLOT(noErrorTIBO()));
@@ -241,6 +243,11 @@ void MainWindow::displayTahoe()
 
     ui->vsServo0->setValue(controller->rov->listServos[0]->getValue());
     ui->vsServo1->setValue(controller->rov->listServos[1]->getValue());
+}
+
+void MainWindow::checkForUpdates()
+{
+    FvUpdater::sharedUpdater()->CheckForUpdatesNotSilent();
 }
 
 void MainWindow::ledDisplay()

@@ -7,6 +7,7 @@
 QT       += core gui network svg declarative
 
 TARGET = Monterey
+VERSION = 2.0
 TEMPLATE = app
 
 SOURCES += main.cpp\
@@ -28,7 +29,7 @@ SOURCES += main.cpp\
     extraclasses/QROVSensor/qrovsensor.cpp \
     extraclasses/QJoystick/qjoystick.cpp \
     extraclasses/QVectorDrive2/qvectordrive2.cpp \
-    extraclasses/QCustomPlot/qcustomplot.cpp
+    extraclasses/QCustomPlot/qcustomplot.cpp \
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -54,7 +55,7 @@ FORMS    += mainwindow.ui \
     rovdebug.ui \
     rovsettings.ui \
     rovmappings.ui \
-    rovabout.ui
+    rovabout.ui \
 
 INCLUDEPATH += ../Monterey/extraclasses/QActivityMonitor/ \
                 ../Monterey/extraclasses/QBoolMonitor/ \
@@ -96,4 +97,9 @@ OTHER_FILES += \
     resources/hsi_face.svg.png \
     resources/any_casing.svg.png \
     resources/Compass.qml \
-    resources/HeadingIndicator.qml
+    resources/HeadingIndicator.qml \
+
+# Fervor autoupdater
+!include("../Monterey/extraclasses/Fervor/Fervor.pri") {
+    error("Unabled to include Fervor autoupdater.")
+}
