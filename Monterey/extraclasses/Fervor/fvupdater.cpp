@@ -509,6 +509,9 @@ bool FvUpdater::searchDownloadedFeedForUpdates(QString xmlTitle,
 		return false;
 	}
 	if (xmlEnclosureUrl.isEmpty() || xmlEnclosureVersion.isEmpty() || xmlEnclosurePlatform.isEmpty()) {
+        qDebug() << xmlEnclosureUrl;
+        qDebug() << xmlEnclosureVersion;
+        qDebug() << xmlEnclosurePlatform;
 		showErrorDialog(tr("Feed error: invalid \"enclosure\" with the download link"), false);
 		return false;
 	}

@@ -18,7 +18,7 @@ public:
 	// Update the current update proposal from FvUpdater
 	bool UpdateWindowWithCurrentProposedUpdate();
 
-    //void closeEvent(QCloseEvent* event);
+    void closeEvent(QCloseEvent* event);
 
 private:
 	Ui::FvUpdateConfirmDialog* m_ui;
