@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    version = new QString("2.0.1 Beta");
+    version = new QString(QApplication::applicationVersion());
     QString title = this->windowTitle();
     title.append(" ");
     title.append(version);
