@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QPushButton>
 
 class QROVRelay : public QObject
 {
@@ -24,11 +25,20 @@ public slots:
     void setName(QString n);
     bool getState();
     void setState(bool s);
+    void setButton(int  b);
+    void setHat(int h);
+    int getButton();
+    int getHat();
+    void setQPushButton(QPushButton *pb);
+    QPushButton* getQPushButton();
 
 private:
     QString name;
     bool enabled;
     bool lastState;
+    int button;
+    int hat;
+    QPushButton * pushButton;
 };
 
 #endif // QROVRELAY_H

@@ -19,6 +19,7 @@
 #include <QtDeclarative>
 #include <QBrush>
 #include <QColor>
+#include <QPushButton>
 
 namespace Ui {
     class MainWindow;
@@ -38,6 +39,8 @@ public slots:
     void loadSettings();    //!< load the application's settings
 
     void setupCustomWidgets();  //!< Setup the custom widgets
+
+    void onCalledClickRelayButton(QPushButton * button);
 
 private slots:
     void on_pbRelay0_clicked();

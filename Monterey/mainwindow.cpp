@@ -21,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
     controller->moveToThread(engineThread); //move the QROVController engine to the second thread
     engineThread->start();
 
+    controller->rov->listRelays[0]->setQPushButton(ui->pbRelay0);
+    controller->rov->listRelays[1]->setQPushButton(ui->pbRelay1);
+    controller->rov->listRelays[2]->setQPushButton(ui->pbRelay2);
+
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
@@ -55,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
     connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
+    connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
 
     guiTimer->start();
     connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
@@ -214,6 +219,11 @@ void MainWindow::setupCustomWidgets()
     ui->labUnitsVoltage->setText(controller->rov->sensorVoltage->getUnits());
     ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
+}
+
+void MainWindow::onCalledClickRelayButton(QPushButton *button)
+{
+    button->click();
 }
 
 void MainWindow::refreshGUI()

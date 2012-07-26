@@ -75,6 +75,7 @@ QROVController::QROVController(QObject *parent) :
     connect(timerTIBO, SIGNAL(timeout()),this, SLOT(setErrorTIBO()));
     connect(timerTahoe, SIGNAL(timeout()), this, SLOT(setErrorTahoe()));
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
+    connect(joy, SIGNAL(toggleStateChanged(int)), this, SLOT(joystickButtonClicked(int)));
 
     packetTimer->start();
     mutex.unlock();
@@ -473,6 +474,17 @@ void QROVController::saveSettings()
 
     mutex.unlock();
     emit savedSettings("Settings saved");
+}
+
+void QROVController::joystickButtonClicked(int buttonID)
+{
+    //Check each relay to see if it's joystick button was clicked,
+    //if so, then click the QPushButton corresponding to each relay
+    foreach(QROVRelay * r, rov->listRelays)
+    {
+        if(buttonID == r->getButton())
+            emit clickRelayButton(r->getQPushButton());
+    }
 }
 
 void QROVController::motherFunction()

@@ -14,6 +14,7 @@
 #include <QThread>
 #include <QTime>
 #include <QMutex>
+#include <QPushButton>
 #include "qrov.h"
 #include "qjoystick.h"
 #include "extraclasses/QVectorDrive2/qvectordrive2.h"
@@ -46,6 +47,8 @@ signals:
     void errorTIBO();
     void noErrorTOBI();
     void noErrorTIBO();
+
+    void clickRelayButton(QPushButton * pb);
 
 public slots:
     void motherFunction();  //!< Used to loop the application
@@ -104,6 +107,7 @@ public slots:
     void setAxisL(int l) { axisL = l; }
     int getAxisR() { return axisR; }
     void setAxisR(int r) { axisR = r; }
+    void joystickButtonClicked(int buttonID);
 
     //Error functions
     void setErrorTOBI();    //!< use to say that there is a TOBI error
