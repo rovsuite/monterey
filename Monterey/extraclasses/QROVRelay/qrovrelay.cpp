@@ -8,6 +8,7 @@ QROVRelay::QROVRelay(QObject *parent) :
     name = "Relay";
     button = 0;
     hat = 0;
+    pushButton = 0;
 }
 
 QString QROVRelay::getName()
