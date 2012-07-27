@@ -8,6 +8,8 @@ QROVServo::QROVServo(QObject *parent) :
     min = 0;
     max = 1;    //keep division by zero from happening automatically
     name = "Servo";
+    hatUp = 1;
+    hatDown = 4;
 }
 
 QString QROVServo::getName()
@@ -64,4 +66,24 @@ double QROVServo::getPercentRotation()
     percent = (double)(value/(max-min));
     percent = percent * 100.0;
     return percent;
+}
+
+void QROVServo::setHatUp(int up)
+{
+    hatUp = up;
+}
+
+void QROVServo::setHatDown(int down)
+{
+    hatDown = down;
+}
+
+int QROVServo::getHatUp()
+{
+    return hatUp;
+}
+
+int QROVServo::getHatDown()
+{
+    return hatDown;
 }

@@ -15,7 +15,8 @@ ROVMappings::ROVMappings(QWidget *parent) :
         QList<QSpinBox*> spinBoxes = this->findChildren<QSpinBox*>();
         foreach(QSpinBox* sb, spinBoxes)
         {
-            sb->setMaximum(p->controller->getJoystickNumberAxes() - 1);
+            //WARNING: Changed functionality
+            //sb->setMaximum(p->controller->getJoystickNumberAxes() - 1);
         }
         ui->sbVX->setValue(p->controller->getAxisX());
         ui->sbVY->setValue(p->controller->getAxisY());
@@ -23,6 +24,21 @@ ROVMappings::ROVMappings(QWidget *parent) :
         ui->sbV->setValue(p->controller->getAxisV());
         ui->sbTL->setValue(p->controller->getAxisL());
         ui->sbTR->setValue(p->controller->getAxisR());
+
+        /*
+        QList<QComboBox*> comboButtons;
+        comboButtons.append(ui->cbR0But);
+        comboButtons.append(ui->cbR1But);
+        comboButtons.append(ui->cbR2But);
+        comboButtons.append(ui->cbS0DBut);
+        comboButtons.append(ui->cbS0IBut);
+        comboButtons.append(ui->cbS1DBut);
+        comboButtons.append(ui->cbS1IBut);
+        foreach(QComboBox* cb, comboButtons)
+        {
+            cb->setMaxCount(p->controller->getJoystickNumberButtons() - 1);
+        }
+        */
     }
 
     updateTimer = new QTimer(this);
@@ -66,5 +82,6 @@ void ROVMappings::updateDisplay()
         ui->pbVX->setValue(p->controller->joystickAxesValues[ui->sbVX->value()]);
         ui->pbVY->setValue(p->controller->joystickAxesValues[ui->sbVY->value()]);
         ui->pbVZ->setValue(p->controller->joystickAxesValues[ui->sbVZ->value()]);
+        ui->leCurrentHat->setText(QString::number(p->controller->getJoytickCurrentHatValue()));
     }
 }

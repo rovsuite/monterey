@@ -25,6 +25,7 @@ public:
     QList<int> axis;
     QList<bool> buttons;
     QList<bool> buttonsToggled; //Konstad
+    QList<bool> hatsToggled; //Konstad
     void getdata();
     int joystickNumHats(int id); //find out the number of hats (Konstad)
     QList<int> hats;    //POV hat (Konstad)
@@ -35,10 +36,12 @@ public slots:
 
 signals:
     void toggleStateChanged(int button);
+    void hatStateChanged(int hat);
 
 private:
     SDL_Joystick* m_joystick;
     QList<bool> buttonsPrevious;    //konstad
+    QList<int> hatsPrevious;    //konstad
 };
 
 #endif // QJOYSTICK_H

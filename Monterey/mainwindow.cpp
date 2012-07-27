@@ -60,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
     connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
+    connect(controller, SIGNAL(hatClicked(int,int)), this, SLOT(onCalledServoChange(int,int)));
 
     guiTimer->start();
     connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
@@ -223,7 +224,30 @@ void MainWindow::setupCustomWidgets()
 
 void MainWindow::onCalledClickRelayButton(QPushButton *button)
 {
+    Q_ASSERT(button != 0);
     button->click();
+}
+
+void MainWindow::onCalledServoChange(int id, int direction)
+{
+    if(id == 0)
+    {
+        if(direction == 1)
+            ui->vsServo0->setValue(ui->vsServo0->value() + 5);
+        else
+            ui->vsServo0->setValue(ui->vsServo0->value() - 5);
+    }
+    else if(id == 1)
+    {
+        if(direction == 1)
+            ui->vsServo0->setValue(ui->vsServo0->value() + 5);
+        else
+            ui->vsServo0->setValue(ui->vsServo0->value() - 5);
+    }
+    else
+    {
+        qDebug() << "servo ID is too large";
+    }
 }
 
 void MainWindow::refreshGUI()

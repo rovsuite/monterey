@@ -49,6 +49,8 @@ void QJoystick::setJoystick(int js)
     Q_ASSERT(js >= 0);
     buttonsPrevious.clear();    //konstad
     buttonsToggled.clear(); //konstad
+    hatsPrevious.clear();   //Konstad
+    hatsToggled.clear();    //konstad
 
     //SDL_JoystickClose(m_joystick);    //changed by Konstad to possibly fix crashing issue
     m_joystick = SDL_JoystickOpen(js);
@@ -57,6 +59,11 @@ void QJoystick::setJoystick(int js)
     {
         buttonsPrevious.append(false);  //start with all set to false
         buttonsToggled.append(false);   //start with all set to false
+    }
+    for(int i=0;i<SDL_JoystickNumHats(m_joystick);i++)
+    {
+        hatsPrevious.append(0);
+        hatsToggled.append(false);
     }
 }
 
@@ -75,6 +82,8 @@ QJoystick::~QJoystick()
     hats.clear();   //konstad
     buttonsPrevious.clear();    //konstad
     buttonsToggled.clear(); //konstad
+    hatsPrevious.clear();   //konstad
+    hatsToggled.clear();    //konstad
     SDL_JoystickClose(m_joystick);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
     this->deleteLater();
@@ -105,7 +114,7 @@ void QJoystick::getdata()
     for(int i=0;i<SDL_JoystickNumButtons(m_joystick);i++)
     {
         buttons.append(SDL_JoystickGetButton(m_joystick,i));
-        if(buttons[i] == true and buttonsPrevious[i] == false)  //if the button just turned true (Konstad)
+        if(buttons[i] == true && buttonsPrevious[i] == false)  //if the button just turned true (Konstad)
         {
             buttonsToggled[i] = !buttonsToggled[i];
             emit toggleStateChanged(i);
@@ -115,7 +124,12 @@ void QJoystick::getdata()
     for(int i=0;i<SDL_JoystickNumHats(m_joystick); i++) //konstad
     {
         hats.append(SDL_JoystickGetHat(m_joystick,i));
+        if(hats[i] != hatsPrevious[i] && hats[i] != 0)    //if hat moved and NO neutral
+        {
+            hatsToggled[i] = !hatsToggled[i];
+            qDebug() << "Emitting hatStateChanged";
+            emit hatStateChanged(hats[i]);
+        }
+        hatsPrevious[i] = hats[i];  //set the previous value to the current value
     }
-
-
 }

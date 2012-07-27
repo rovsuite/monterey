@@ -49,6 +49,7 @@ signals:
     void noErrorTIBO();
 
     void clickRelayButton(QPushButton * pb);
+    void hatClicked(int id, int direction);
 
 public slots:
     void motherFunction();  //!< Used to loop the application
@@ -60,6 +61,8 @@ public slots:
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
     int getJoystickNumberAxes() { return joy->axis.count(); }   //!< Get the number of axes
+    int getJoystickNumberButtons() { return joy->buttons.count(); } //!< Get the number of buttons
+    int getJoytickCurrentHatValue() { return joy->hats[0]; }    //!< Get the current hat value
     int getJoyID() { return joyID; }    //!< get the ID of the currently selected joystick
     void setJoyID(int j) { joyID = j; } //!< set the joystick to be read
 
@@ -108,6 +111,7 @@ public slots:
     int getAxisR() { return axisR; }
     void setAxisR(int r) { axisR = r; }
     void joystickButtonClicked(int buttonID);
+    void joystickHatClicked(int hatID);
 
     //Error functions
     void setErrorTOBI();    //!< use to say that there is a TOBI error

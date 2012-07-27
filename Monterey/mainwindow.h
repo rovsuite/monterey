@@ -42,6 +42,8 @@ public slots:
 
     void onCalledClickRelayButton(QPushButton * button);
 
+    void onCalledServoChange(int id, int direction);
+
 private slots:
     void on_pbRelay0_clicked();
 

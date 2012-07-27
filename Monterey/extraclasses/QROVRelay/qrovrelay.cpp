@@ -7,7 +7,7 @@ QROVRelay::QROVRelay(QObject *parent) :
     lastState = enabled;
     name = "Relay";
     button = 0;
-    hat = 0;
+    hat = 2;
     pushButton = 0;
 }
 
