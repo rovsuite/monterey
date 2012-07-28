@@ -1,4 +1,5 @@
 #include "qrovrelay.h"
+#include <QtDebug>
 
 QROVRelay::QROVRelay(QObject *parent) :
     QObject(parent)
@@ -59,6 +60,7 @@ int QROVRelay::getHat()
 void QROVRelay::setQPushButton(QPushButton *pb)
 {
     pushButton = pb;
+    qDebug() << pushButton;
 }
 
 QPushButton* QROVRelay::getQPushButton()

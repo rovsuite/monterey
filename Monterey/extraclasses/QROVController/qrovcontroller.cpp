@@ -133,6 +133,28 @@ QStringList QROVController::getJoystickNames()
     return joystickNames;
 }
 
+QList<int> QROVController::getJoystickCurrentButtonValue()
+{
+    QMutex mutex;
+    mutex.lock();
+    QList<int> returnValues;
+    for(int i=0;i<joy->buttons.count();i++) //for each button
+    {
+        if(joy->buttons[i] == true) //if button is pressed
+        {
+            returnValues.append(i);
+        }
+    }
+
+    if(returnValues.count() == 0)   //if no buttons are pressed
+    {
+        returnValues.append(-1);    //error value
+    }
+
+    mutex.unlock();
+    return returnValues;
+}
+
 void QROVController::processPacket()
 {
     QMutex mutex;
@@ -573,14 +595,17 @@ void QROVController::readMappings()
     // TODO: Add in code to load up joystick mappings
     QMutex mutex;
     mutex.lock();
-    if(joy->hats[0] != 0)   //if hat is not neutral
+    for(int h=0; h< joy->hats.count(); h++) //support for multiple hats
     {
-        for(int i=0;i<rov->listServos.count();i++)
+        if(joy->hats[h] != 0)   //if hat is not neutral
         {
-            if(joy->hats[0] == rov->listServos[i]->getHatUp()) //if increment
-                emit changeServo(i, 1);
-            else if(joy->hats[0] == rov->listServos[i]->getHatDown())  //if decrement
-                emit changeServo(i, 0);
+            for(int i=0;i<rov->listServos.count();i++)  //for each servo
+            {
+                if(joy->hats[h] == rov->listServos[i]->getHatUp()) //if increment
+                    emit changeServo(i, 1);
+                else if(joy->hats[h] == rov->listServos[i]->getHatDown())  //if decrement
+                    emit changeServo(i, 0);
+            }
         }
     }
     for(int s=0; s<rov->listServos.count(); s++) //for each servo

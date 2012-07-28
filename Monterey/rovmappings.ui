@@ -29,7 +29,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideMiddle</enum>
@@ -310,11 +310,53 @@
         <rect>
          <x>30</x>
          <y>10</y>
-         <width>293</width>
+         <width>241</width>
          <height>421</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Current Button:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="leCurrentButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_15">
           <item>
@@ -325,12 +367,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbR0But"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbR0But">
-            <property name="text">
-             <string>Set Button</string>
+           <widget class="QComboBox" name="cbR0But">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -346,12 +400,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbR1But"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbR1But">
-            <property name="text">
-             <string>Set Button</string>
+           <widget class="QComboBox" name="cbR1But">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -367,12 +433,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbR2But"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbR2But">
-            <property name="text">
-             <string>Set Button</string>
+           <widget class="QComboBox" name="cbR2But">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -388,12 +466,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS0IBut"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS0IBut">
-            <property name="text">
-             <string>Set Button</string>
+           <widget class="QComboBox" name="cbS0IBut">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -409,12 +499,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS0DBut"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS0DBut">
-            <property name="text">
-             <string>Set Button</string>
+           <widget class="QComboBox" name="cbS0DBut">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -430,12 +532,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS1IBut"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS1IBut">
-            <property name="text">
-             <string>Set Button</string>
+           <widget class="QComboBox" name="cbS1IBut">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -451,12 +565,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS1DBut"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS1DBut">
-            <property name="text">
-             <string>Set Button</string>
+           <widget class="QComboBox" name="cbS1DBut">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -467,9 +593,9 @@
       <widget class="QWidget" name="layoutWidget_5">
        <property name="geometry">
         <rect>
-         <x>550</x>
+         <x>610</x>
          <y>10</y>
-         <width>293</width>
+         <width>234</width>
          <height>421</height>
         </rect>
        </property>
@@ -485,6 +611,27 @@
           </item>
           <item>
            <widget class="QLineEdit" name="leCurrentHat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -505,12 +652,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbR0Hat"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbR0Hat">
-            <property name="text">
-             <string>Set Hat</string>
+           <widget class="QLineEdit" name="leR0Hat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -526,12 +685,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbR1Hat"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbR1Hat">
-            <property name="text">
-             <string>Set Hat</string>
+           <widget class="QLineEdit" name="leR1Hat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -547,12 +718,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbR2Hat"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbR2Hat">
-            <property name="text">
-             <string>Set Hat</string>
+           <widget class="QLineEdit" name="leR2Hat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -568,12 +751,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS0IHat"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS0IHat">
-            <property name="text">
-             <string>Set Hat</string>
+           <widget class="QLineEdit" name="leS0IHat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -589,12 +784,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS0DHat"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS0DHat">
-            <property name="text">
-             <string>Set Hat</string>
+           <widget class="QLineEdit" name="leS0DHat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -610,12 +817,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS1IHat"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS1IHat">
-            <property name="text">
-             <string>Set Hat</string>
+           <widget class="QLineEdit" name="leS1IHat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -631,12 +850,24 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbS1DHat"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbS1DHat">
-            <property name="text">
-             <string>Set Hat</string>
+           <widget class="QLineEdit" name="leS1DHat">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>

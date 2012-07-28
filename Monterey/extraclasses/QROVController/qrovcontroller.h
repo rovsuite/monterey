@@ -62,7 +62,8 @@ public slots:
     QStringList getJoystickNames();  //!< Get the names of the joysticks
     int getJoystickNumberAxes() { return joy->axis.count(); }   //!< Get the number of axes
     int getJoystickNumberButtons() { return joy->buttons.count(); } //!< Get the number of buttons
-    int getJoytickCurrentHatValue() { return joy->hats[0]; }    //!< Get the current hat value
+    int getJoystickCurrentHatValue() { return joy->hats[0]; }    //!< Get the current hat value
+    QList<int> getJoystickCurrentButtonValue();    //!< Get the (first in list) currently pressed button if one is pressed
     int getJoyID() { return joyID; }    //!< get the ID of the currently selected joystick
     void setJoyID(int j) { joyID = j; } //!< set the joystick to be read
 
