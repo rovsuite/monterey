@@ -34,6 +34,10 @@ public slots:
     void setHatDown(int down);
     int getHatUp();
     int getHatDown();
+    void setButtonUp(int up);
+    void setButtonDown(int down);
+    int getButtonUp();
+    int getButtonDown();
 
 private:
     QString name;
@@ -43,6 +47,8 @@ private:
     int lastValue;
     int hatUp;
     int hatDown;
+    int buttonUp;
+    int buttonDown;
 };
 
 #endif // QROVSERVO_H

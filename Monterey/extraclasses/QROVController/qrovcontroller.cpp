@@ -436,6 +436,10 @@ void QROVController::loadSettings()
     rov->listServos[0]->setHatUp(mySettings->value("joystick/hat/s0/up").toInt());
     rov->listServos[1]->setHatDown(mySettings->value("joystick/hat/s1/down").toInt());
     rov->listServos[1]->setHatUp(mySettings->value("joystick/hat/s1/up").toInt());
+    rov->listServos[0]->setButtonDown(mySettings->value("joystick/but/s0/down").toInt());
+    rov->listServos[0]->setButtonUp(mySettings->value("joystick/but/s0/up").toInt());
+    rov->listServos[1]->setButtonDown(mySettings->value("joystick/but/s1/down").toInt());
+    rov->listServos[1]->setButtonUp(mySettings->value("joystick/but/s1/up").toInt());
 
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,xDead,yDead,zDead);
     //initJoysticks();
@@ -492,6 +496,10 @@ void QROVController::saveSettings()
     mySettings->setValue("joystick/hat/s0/down", rov->listServos[0]->getHatDown());
     mySettings->setValue("joystick/hat/s1/up", rov->listServos[1]->getHatUp());
     mySettings->setValue("joystick/hat/s1/down", rov->listServos[1]->getHatDown());
+    mySettings->setValue("joystick/but/s0/up", rov->listServos[0]->getButtonUp());
+    mySettings->setValue("joystick/but/s0/down", rov->listServos[0]->getButtonDown());
+    mySettings->setValue("joystick/but/s1/up", rov->listServos[1]->getButtonUp());
+    mySettings->setValue("joystick/but/s1/down", rov->listServos[1]->getButtonDown());
 
     mutex.unlock();
     emit savedSettings("Settings saved");
@@ -558,6 +566,8 @@ int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outM
     return output;
 }
 
+//This is for the non-event based mappings.  To read the event based mappings, look to the
+//joystickButtonClicked and joystickHatClicked functions
 void QROVController::readMappings()
 {
     // TODO: Add in code to load up joystick mappings
@@ -568,9 +578,31 @@ void QROVController::readMappings()
         for(int i=0;i<rov->listServos.count();i++)
         {
             if(joy->hats[0] == rov->listServos[i]->getHatUp()) //if increment
-                emit hatClicked(i, 1);
+                emit changeServo(i, 1);
             else if(joy->hats[0] == rov->listServos[i]->getHatDown())  //if decrement
-                emit hatClicked(i, 0);
+                emit changeServo(i, 0);
+        }
+    }
+    for(int s=0; s<rov->listServos.count(); s++) //for each servo
+    {
+        for(int i=0;i<joy->buttons.count();i++) //for each button
+        {
+            if(joy->buttons[i] == true && rov->listServos[s]->getButtonUp() == i) //if the up button is pressed
+            {
+                //increment
+                qDebug() << "Button ID: " << i << "Servo Increment";
+                emit changeServo(s, 1);
+            }
+            else if(joy->buttons[i] == true && rov->listServos[s]->getButtonDown() == i) //if the down button is pressed
+            {
+                //decrement
+                qDebug() << "Button ID: " << i << "Servo Decrement";
+                emit changeServo(s, 0);
+            }
+            else
+            {
+                //do nothing
+            }
         }
     }
     mutex.unlock();

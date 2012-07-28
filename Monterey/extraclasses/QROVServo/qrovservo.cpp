@@ -10,6 +10,8 @@ QROVServo::QROVServo(QObject *parent) :
     name = "Servo";
     hatUp = 1;
     hatDown = 4;
+    buttonUp = 3;
+    buttonDown = 0;
 }
 
 QString QROVServo::getName()
@@ -86,4 +88,24 @@ int QROVServo::getHatUp()
 int QROVServo::getHatDown()
 {
     return hatDown;
+}
+
+void QROVServo::setButtonUp(int up)
+{
+    buttonUp = up;
+}
+
+void QROVServo::setButtonDown(int down)
+{
+    buttonDown = down;
+}
+
+int QROVServo::getButtonUp()
+{
+    return buttonUp;
+}
+
+int QROVServo::getButtonDown()
+{
+    return buttonDown;
 }

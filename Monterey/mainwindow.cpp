@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
     connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
-    connect(controller, SIGNAL(hatClicked(int,int)), this, SLOT(onCalledServoChange(int,int)));
+    connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
 
     guiTimer->start();
     connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController

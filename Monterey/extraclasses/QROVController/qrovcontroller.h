@@ -49,7 +49,7 @@ signals:
     void noErrorTIBO();
 
     void clickRelayButton(QPushButton * pb);
-    void hatClicked(int id, int direction);
+    void changeServo(int id, int direction);
 
 public slots:
     void motherFunction();  //!< Used to loop the application
