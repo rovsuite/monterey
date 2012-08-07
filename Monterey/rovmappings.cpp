@@ -12,6 +12,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
     if(p->controller->isJoyAttached())
     {
+        numAxes = p->controller->getJoystickNumberAxes();
         //Load maximum axes
         QList<QSpinBox*> spinBoxes = this->findChildren<QSpinBox*>();
         foreach(QSpinBox* sb, spinBoxes)
@@ -66,11 +67,14 @@ ROVMappings::ROVMappings(QWidget *parent) :
     updateTimer = new QTimer(this);
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(updateDisplay()));
     updateTimer->start(50);
+    qDebug() << "Setup the mappings dialog!";
 }
 
 ROVMappings::~ROVMappings()
 {
+    qDebug() << "Mappings dialog closed";
     delete ui;
+    this->deleteLater();
 }
 
 void ROVMappings::on_pbSave_clicked()
@@ -104,11 +108,13 @@ void ROVMappings::on_pbSave_clicked()
 
     p->controller->saveSettings();  //save the settings
 
+    delete updateTimer;
     this->close();
 }
 
 void ROVMappings::on_pbCancel_clicked()
 {
+    delete updateTimer;
     this->close();
 }
 
@@ -118,36 +124,63 @@ void ROVMappings::updateDisplay()
     if(p->controller->isJoyAttached())
     {
         //Display axes values
-        ui->pbTL->setValue(p->controller->joystickAxesValues[ui->sbTL->value()]);
-        ui->pbTR->setValue(p->controller->joystickAxesValues[ui->sbTR->value()]);
-        ui->pbV->setValue(p->controller->joystickAxesValues[ui->sbV->value()]);
-        ui->pbVX->setValue(p->controller->joystickAxesValues[ui->sbVX->value()]);
-        ui->pbVY->setValue(p->controller->joystickAxesValues[ui->sbVY->value()]);
-        ui->pbVZ->setValue(p->controller->joystickAxesValues[ui->sbVZ->value()]);
+        qDebug() << "Displaying 1 axis values";
+        Q_ASSERT(ui->sbTL->value() < numAxes && ui->sbTL->value() >= 0);
+        ui->pbTL->setValue(p->controller->getJoystickAxesValues(ui->sbTL->value()));
+        qDebug() << ui->pbTL->value();
+        qDebug() << "Displaying 2 axis values";
+        Q_ASSERT(ui->sbTR->value() < numAxes && ui->sbTR->value() >= 0);
+        ui->pbTR->setValue(p->controller->getJoystickAxesValues(ui->sbTR->value()));
+        qDebug() << ui->pbTR->value();
+        qDebug() << "Displaying 3 axis values";
+        Q_ASSERT(ui->sbV->value() < numAxes && ui->sbV->value() >= 0);
+        ui->pbV->setValue(p->controller->getJoystickAxesValues(ui->sbV->value()));
+        qDebug() << ui->pbV->value();
+        qDebug() << "Displaying 4 axis values";
+        Q_ASSERT(ui->sbVX->value() < numAxes && ui->sbVX->value() >= 0);
+        ui->pbVX->setValue(p->controller->getJoystickAxesValues(ui->sbVX->value()));
+        qDebug() << ui->pbVX->value();
+        qDebug() << "Displaying 5 axis values";
+        Q_ASSERT(ui->sbVY->value() < numAxes && ui->sbVY->value() >= 0);
+        ui->pbVY->setValue(p->controller->getJoystickAxesValues(ui->sbVY->value()));
+        qDebug() << ui->pbVY->value();
+        qDebug() << "Displaying 6 axis values";
+        Q_ASSERT(ui->sbVZ->value() < numAxes && ui->sbVZ->value() >= 0);
+        ui->pbVZ->setValue(p->controller->getJoystickAxesValues(ui->sbVZ->value()));
+        qDebug() << ui->pbVZ->value();
 
         //Display hat value
+        qDebug() << "Displaying hat value!";
         ui->leCurrentHat->setText(QString::number(p->controller->getJoystickCurrentHatValue()));
 
         //Display currently pressed buttons
+        qDebug() << "Displaying button values!";
         QString temp;
         QList<int> tempList = p->controller->getJoystickCurrentButtonValue();
-        if(tempList[0] == -1)   //if no button pressed
+        if(tempList.count())
         {
-            temp.append(" ");
-        }
-        else if(tempList.count() == 1)   //if only one item
-        {
-            temp.append(QString::number(tempList[0]));
-        }
-        else    //if multiple buttons are pressed
-        {
-            temp.append(QString::number(tempList[0]));
-            for(int i=1;i<tempList.count();i++)
+            if(tempList[0] == -1)   //if no button pressed
             {
-                temp.append(", ");
-                temp.append(QString::number(i));
+                temp.append(" ");
             }
+            else if(tempList.count() == 1)   //if only one item
+            {
+                temp.append(QString::number(tempList[0]));
+            }
+            else    //if multiple buttons are pressed
+            {
+                for(int i=0;i<tempList.count();i++) //should fix crash as of 8/1/2012
+                {
+                    temp.append(QString::number(i));
+                    temp.append(", ");
+                }
+                if(temp.endsWith(QChar(','), Qt::CaseInsensitive))
+                    temp.chop(temp.count()-1);  //remove last comma
+            }
+            ui->leCurrentButton->setText(temp);
         }
-        ui->leCurrentButton->setText(temp);
+        else
+            qWarning() << "tempList has no values" << tempList;
+
     }
 }

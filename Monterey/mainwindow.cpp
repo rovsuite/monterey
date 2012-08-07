@@ -189,6 +189,7 @@ void MainWindow::setupCustomWidgets()
     ui->niVoltage->setMaxValue(50);
     ui->niVoltage->setMajorTicks(6);
     ui->niVoltage->setMinorTicks(4);
+    qDebug() << "Setup the voltage needle indicator" << ui->niVoltage;
 
     //Setup the depth plot
     QString depthTitle = "Depth (";
@@ -199,12 +200,12 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->xAxis->setTickStep(1000);    //set to 1000ms gaps
     ui->plotDepth->xAxis->setTickLabels(false); //hide labels
     ui->plotDepth->setColor(this->palette().background().color());
-    qDebug() << "Setup the graph!";
+    qDebug() << "Setup the graph!" << ui->plotDepth;
 
     //Setup the compass
     QBrush brush = this->palette().window();
     ui->dvCompass->setBackgroundBrush(brush);
-    qDebug() << "Setup the compass!";
+    qDebug() << "Setup the compass!" << ui->dvCompass;
 
     //Setup the QScale
     ui->scaleDepth->setMaximum(10);
@@ -213,6 +214,7 @@ void MainWindow::setupCustomWidgets()
     scaleTitle.append(controller->rov->sensorDepth->getUnits());
     scaleTitle.append(")");
     ui->gbDepthScale->setTitle(scaleTitle);
+    qDebug() << "Setup the depth scale!" << ui->scaleDepth;
 
     //Setup array of QLCDNumbers for sensor readouts
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());

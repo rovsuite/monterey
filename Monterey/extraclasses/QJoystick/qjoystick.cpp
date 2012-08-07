@@ -51,6 +51,8 @@ void QJoystick::setJoystick(int js)
     buttonsToggled.clear(); //konstad
     hatsPrevious.clear();   //Konstad
     hatsToggled.clear();    //konstad
+    buttons.clear();    //konstad
+    hats.clear();   //konstad
 
     //SDL_JoystickClose(m_joystick);    //changed by Konstad to possibly fix crashing issue
     m_joystick = SDL_JoystickOpen(js);
@@ -59,11 +61,17 @@ void QJoystick::setJoystick(int js)
     {
         buttonsPrevious.append(false);  //start with all set to false
         buttonsToggled.append(false);   //start with all set to false
+        buttons.append(false);
     }
     for(int i=0;i<SDL_JoystickNumHats(m_joystick);i++)
     {
         hatsPrevious.append(0);
         hatsToggled.append(false);
+        hats.append(0);
+    }
+    for(int i=0;i<SDL_JoystickNumAxes(m_joystick);i++)
+    {
+        axis.append(0);
     }
 }
 
@@ -97,9 +105,9 @@ int QJoystick::availableJoysticks()
 
 void QJoystick::getdata()
 {
-    axis.clear();
-    buttons.clear();
-    hats.clear();   //konstad
+    //axis.clear(); //modified by konstad
+    //buttons.clear();  //modified by konstad
+    //hats.clear();   //konstad
 
 
         SDL_Event event;
@@ -108,12 +116,14 @@ void QJoystick::getdata()
 
     for(int i=0;i<SDL_JoystickNumAxes(m_joystick);i++)
     {
-        axis.append(SDL_JoystickGetAxis(m_joystick,i));
+        //axis.append(SDL_JoystickGetAxis(m_joystick,i));   //commented out by Konstad
+        axis[i] = SDL_JoystickGetAxis(m_joystick, i);
     }
 
     for(int i=0;i<SDL_JoystickNumButtons(m_joystick);i++)
     {
-        buttons.append(SDL_JoystickGetButton(m_joystick,i));
+        //buttons.append(SDL_JoystickGetButton(m_joystick,i));  //commented out by konstad
+        buttons[i] = SDL_JoystickGetButton(m_joystick, i);
         if(buttons[i] == true && buttonsPrevious[i] == false)  //if the button just turned true (Konstad)
         {
             buttonsToggled[i] = !buttonsToggled[i];
@@ -123,7 +133,8 @@ void QJoystick::getdata()
     }
     for(int i=0;i<SDL_JoystickNumHats(m_joystick); i++) //konstad
     {
-        hats.append(SDL_JoystickGetHat(m_joystick,i));
+        //hats.append(SDL_JoystickGetHat(m_joystick,i));
+        hats[i] = SDL_JoystickGetHat(m_joystick, i);
         if(hats[i] != hatsPrevious[i] && hats[i] != 0)    //if hat moved and NO neutral
         {
             hatsToggled[i] = !hatsToggled[i];

@@ -26,6 +26,7 @@ private slots:
 private:
     Ui::ROVMappings *ui;
     QTimer *updateTimer;
+    int numAxes;
 };
 
 #endif // ROVMAPPINGS_H

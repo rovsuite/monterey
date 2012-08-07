@@ -13,8 +13,10 @@ QROVController::QROVController(QObject *parent) :
 {
     QMutex mutex;
     mutex.lock();
+    numberOfAxes = 0;
     rov = new QROV(numberOfMotors, numberOfRelays, numberOfServos, this);
     joy = new QJoystick();
+    qDebug() << "Joystick: " << joy;
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
     rxSocket = new QUdpSocket(this);
     txSocket = new QUdpSocket(this);
@@ -93,10 +95,18 @@ void QROVController::initJoysticks()
     {
         joyAttached = true;
         joy->setJoystick(0);
+        numberOfAxes = joy->joystickNumAxes(0);
+        joystickAxesValues.clear();
+        for(int i=0;i<numberOfAxes;i++)
+        {
+            joystickAxesValues.append(0);
+        }
+        qDebug() << "Joystick attached";
     }
     else
     {
         joyAttached = false;
+        qWarning() << "No joystick attached!";
 
     }
     monitorJoystick->compareState(joyAttached);
@@ -131,6 +141,18 @@ QStringList QROVController::getJoystickNames()
     }
     mutex.unlock();
     return joystickNames;
+}
+
+int QROVController::getJoystickCurrentHatValue()
+{
+    if(!joy->hats.isEmpty())
+    {
+        return joy->hats[0];
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 QList<int> QROVController::getJoystickCurrentButtonValue()
@@ -386,12 +408,10 @@ void QROVController::sendTahoe()
 
 void QROVController::noJoystick()
 {
-
     for(int i=0;i<rov->listMotors.count();i++)
     {
         rov->listMotors[i]->setValue(1500); //set everything neutral
     }
-
 }
 
 int QROVController::getPortTOBI()
@@ -660,10 +680,9 @@ void QROVController::updateJoystickData()
             }
         }
     }
-    joystickAxesValues.clear(); //empty the list
-    foreach(int i, joy->axis)
+    for(int i=0;i<numberOfAxes;i++) //record the values of the axes
     {
-        joystickAxesValues.append(i);
+        joystickAxesValues[i] = joy->axis[i];
     }
 
     //Execute vector math

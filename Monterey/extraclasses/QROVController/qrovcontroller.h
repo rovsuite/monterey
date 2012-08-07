@@ -60,12 +60,13 @@ public slots:
     void readMappings();    //!< Read adjustable mappings
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
-    int getJoystickNumberAxes() { return joy->axis.count(); }   //!< Get the number of axes
-    int getJoystickNumberButtons() { return joy->buttons.count(); } //!< Get the number of buttons
-    int getJoystickCurrentHatValue() { return joy->hats[0]; }    //!< Get the current hat value
+    int getJoystickNumberAxes() { return numberOfAxes; }   //!< Get the number of axes
+    int getJoystickNumberButtons() { return joy->joystickNumButtons(0); } //!< Get the number of buttons
+    int getJoystickCurrentHatValue();    //!< Get the current hat value
     QList<int> getJoystickCurrentButtonValue();    //!< Get the (first in list) currently pressed button if one is pressed
     int getJoyID() { return joyID; }    //!< get the ID of the currently selected joystick
     void setJoyID(int j) { joyID = j; } //!< set the joystick to be read
+    int getJoystickAxesValues(int index) { return joystickAxesValues[index]; }
 
     //Networking
     void processPacket();   //!< Process the packet received from the ROV
@@ -114,6 +115,7 @@ public slots:
     void joystickButtonClicked(int buttonID);
     void joystickHatClicked(int hatID);
 
+
     //Error functions
     void setErrorTOBI();    //!< use to say that there is a TOBI error
     void setErrorTIBO();   //!< use to say that there is a TIBO error
@@ -147,6 +149,7 @@ private:
     int joysAvail;
     int joyID;
     bool joyAttached;
+    int numberOfAxes;
 
     QTime *diveTime;
     QTimer *packetTimer;
