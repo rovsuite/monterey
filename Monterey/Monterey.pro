@@ -74,6 +74,12 @@ INCLUDEPATH += ../Monterey/extraclasses/QActivityMonitor/ \
 RESOURCES += \
     resources.qrc
 
+#Linux
+unix:!macx{
+LIBS += -lSDL
+}
+
+#OSX
 macx{
 ICON = monterey.icns
 
@@ -85,6 +91,7 @@ OTHER_FILES += \
     ../Monterey/extraclasses/SDL/SDLMain.m
 }
 
+#Windows
 win32{
 RC_FILE = monterey.rc
 

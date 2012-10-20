@@ -10,7 +10,6 @@
 
 #include "SDL/SDL.h"
 
-
 class QJoystick : public QObject
 {
     Q_OBJECT

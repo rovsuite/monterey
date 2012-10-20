@@ -915,7 +915,7 @@
   <customwidget>
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header>extraclasses/qcustomplot/qcustomplot.h</header>
+   <header>extraclasses/QCustomPlot/qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

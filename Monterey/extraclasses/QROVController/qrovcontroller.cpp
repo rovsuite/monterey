@@ -1,5 +1,6 @@
 #include "qrovcontroller.h"
 #include <QDebug>
+#include "SDL/SDL.h"
 
 #define numberOfMotors 6
 #define numberOfRelays 3
