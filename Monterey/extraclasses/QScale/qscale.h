@@ -20,7 +20,7 @@
 #ifndef QSCALE_H
 #define QSCALE_H
 
-#include <QtGui/QWidget>
+#include <QtWidgets>
 
 class QScale : public QWidget
 {

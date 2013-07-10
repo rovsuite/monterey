@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <stdlib.h>
 
 //
 // Clone of Sparkle's SUStandardVersionComparator.m, so here's original author's

@@ -32,7 +32,7 @@
 #ifndef QNEEDLEINDICATOR_H
 #define QNEEDLEINDICATOR_H
 
-#include <QtGui/QWidget>
+#include <QtWidgets>
 #include <QDebug>
 #include <QResizeEvent>
 #include <QPainter>

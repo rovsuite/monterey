@@ -679,7 +679,7 @@ void QROVController::updateJoystickData()
     joy->getdata(); //read the joystick (within QJoystick)
 
     //Bilinear reading code
-    bilinearThreshold = bilinearRatio/1.0;
+    bilinearThreshold = 1.0/bilinearRatio;
     if(bilinearEnabled)
     {
         for(int i=0;i<joy->axis.count();i++)    //for each axis value

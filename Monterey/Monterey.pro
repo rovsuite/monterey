@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network svg declarative
+QT       += core gui network svg declarative widgets
 
 TARGET = Monterey
 VERSION = 2.0
@@ -108,5 +108,5 @@ OTHER_FILES += \
 
 # Fervor autoupdater
 !include("../Monterey/extraclasses/Fervor/Fervor.pri") {
-    error("Unabled to include Fervor autoupdater.")
+   error("Unabled to include Fervor autoupdater.")
 }
