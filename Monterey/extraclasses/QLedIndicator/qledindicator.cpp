@@ -38,6 +38,16 @@ void QLedIndicator::resizeEvent(QResizeEvent *event) {
     update();
 }
 
+void QLedIndicator::click()
+{
+    //leave empty :) By Konstad 7/10/2013
+}
+
+void QLedIndicator::mousePressEvent(QMouseEvent *e)
+{
+    //leave empty :) By Konstad 7/10/2013
+}
+
 void QLedIndicator::paintEvent(QPaintEvent *event) {
     qreal realSize = qMin(width(), height());
 
