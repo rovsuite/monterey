@@ -10,4 +10,10 @@
         <file>resources/ROV.png</file>
         <file>resources/HeadingIndicator.qml</file>
     </qresource>
+    <qresource prefix="/qml">
+        <file>resources/CurrentDepthReadout.qml</file>
+        <file>resources/Tape.qml</file>
+        <file>resources/Tick.qml</file>
+        <file>resources/TickBar.qml</file>
+    </qresource>
 </RCC>

@@ -4,10 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network svg declarative widgets
+QT       += core gui network svg widgets quick webkit
 
 TARGET = Monterey
-VERSION = 2.0
+VERSION = 3.0
 TEMPLATE = app
 
 SOURCES += main.cpp\
@@ -30,6 +30,7 @@ SOURCES += main.cpp\
     extraclasses/QJoystick/qjoystick.cpp \
     extraclasses/QVectorDrive2/qvectordrive2.cpp \
     extraclasses/QCustomPlot/qcustomplot.cpp \
+    extraclasses/DepthTape/depthtape.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -49,7 +50,8 @@ HEADERS  += mainwindow.h \
     extraclasses/QROVSensor/qrovsensor.h \
     extraclasses/QJoystick/qjoystick.h \
     extraclasses/QVectorDrive2/qvectordrive2.h \
-    extraclasses/QCustomPlot/qcustomplot.h
+    extraclasses/QCustomPlot/qcustomplot.h \
+    extraclasses/DepthTape/depthtape.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \
@@ -99,12 +101,12 @@ DEFINES += SDL_WIN
 LIBS += -lSDL.dll
 }
 
-OTHER_FILES += \
-    resources/ROV.png \
-    resources/hsi_face.svg.png \
-    resources/any_casing.svg.png \
-    resources/Compass.qml \
-    resources/HeadingIndicator.qml \
+#OTHER_FILES += \
+ #   resources/ROV.png \
+  #  resources/hsi_face.svg.png \
+   # resources/any_casing.svg.png \
+    #resources/Compass.qml \
+    #resources/HeadingIndicator.qml \
 
 # Fervor autoupdater
 !include("../Monterey/extraclasses/Fervor/Fervor.pri") {

@@ -18,6 +18,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "extraclasses/Fervor/fvupdater.h"
+#include <QtWebKit>
+#include <QWebView>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -93,6 +95,7 @@ void MainWindow::showAbout()
 {
     // TODO: Add about more information
     dialogAbout = new ROVAbout(this);
+    dialogAbout->setAttribute(Qt::WA_DeleteOnClose);
     dialogAbout->exec();
 }
 
@@ -100,6 +103,7 @@ void MainWindow::showDebug()
 {
     // TODO: Add more debug code
     dialogDebug = new ROVDebug(this);
+    dialogDebug->setAttribute(Qt::WA_DeleteOnClose);
     dialogDebug->show();
 }
 
@@ -107,12 +111,14 @@ void MainWindow::showMappings()
 {
     // TODO: Add mapping code
     dialogMappings = new ROVMappings(this);
+    dialogMappings->setAttribute(Qt::WA_DeleteOnClose);
     dialogMappings->show();
 }
 
 void MainWindow::showSettings()
 {
     dialogSettings = new ROVSettings(this);
+    dialogSettings->setAttribute(Qt::WA_DeleteOnClose);
     connect(dialogSettings, SIGNAL(callLoadSettings()), this, SLOT(loadSettings()));    //connect the signal to load the settings
     dialogSettings->show();
 }
@@ -134,10 +140,6 @@ void MainWindow::loadSettings()
 
     //Load the units
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
-    QString label = "Depth (";
-    label.append(controller->rov->sensorDepth->getUnits());
-    label.append(")");
-    ui->gbDepthScale->setTitle(label);
     QString depthTitle = "Depth (";
     depthTitle.append(controller->rov->sensorDepth->getUnits());
     depthTitle.append(")");
@@ -150,12 +152,14 @@ void MainWindow::loadSettings()
     ui->labSensor1->setText(controller->rov->sensorOther1->getName());
 
     //Load the thresholds
-    ui->scaleDepth->setMaximum(controller->rov->sensorDepth->getMax());
     ui->plotDepth->yAxis->setRange(0,-1*controller->rov->sensorDepth->getMax());
     ui->plotDepth->replot();    //repaint the element to update the title and range
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
+
+    //Refresh the depth tape
+    depthTape->setMaxDepth((int)controller->rov->sensorDepth->getMax());
 }
 
 void MainWindow::setupCustomWidgets()
@@ -200,14 +204,6 @@ void MainWindow::setupCustomWidgets()
         led->setOffColor2(QColor(128,128,0));
     }
 
-    //Setup the needle indicator
-    ui->niVoltage->setLabel("Voltage");
-    ui->niVoltage->setMinValue(0);
-    ui->niVoltage->setMaxValue(50);
-    ui->niVoltage->setMajorTicks(6);
-    ui->niVoltage->setMinorTicks(4);
-    qDebug() << "Setup the voltage needle indicator" << ui->niVoltage;
-
     //Setup the depth plot
     QString depthTitle = "Depth (";
     depthTitle.append(controller->rov->sensorDepth->getUnits());
@@ -219,26 +215,18 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->setColor(this->palette().background().color());
     qDebug() << "Setup the graph!" << ui->plotDepth;
 
-    //Setup the compass
-    QBrush brush = this->palette().window();
-    ui->dvCompass->setBackgroundBrush(brush);
-    qDebug() << "Setup the compass!" << ui->dvCompass;
-
-    //Setup the QScale
-    ui->scaleDepth->setMaximum(10);
-    QString scaleTitle;
-    scaleTitle.append("Depth (");
-    scaleTitle.append(controller->rov->sensorDepth->getUnits());
-    scaleTitle.append(")");
-    ui->gbDepthScale->setTitle(scaleTitle);
-    qDebug() << "Setup the depth scale!" << ui->scaleDepth;
-
     //Setup array of QLCDNumbers for sensor readouts
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
     ui->labUnitsHeading->setText(controller->rov->sensorCompass->getUnits());
     ui->labUnitsVoltage->setText(controller->rov->sensorVoltage->getUnits());
     ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
+
+    setupDepthTape();
+    QWebView* webCamViewer = new QWebView(this);
+    webCamViewer->setObjectName("webCamViewer");
+    ui->gridLayoutHUD->addWidget(webCamViewer,0,1,4,4);
+    webCamViewer->load(QUrl("http://www.google.com"));
 }
 
 void MainWindow::onCalledClickRelayButton(QPushButton *button)
@@ -271,8 +259,6 @@ void MainWindow::onCalledServoChange(int id, int direction)
 
 void MainWindow::refreshGUI()
 {
-    //controller->motherFunction();   //run the ROV control engine through its polling loop
-
     loadData(); //load data from the controller object
     displayTime();  //display the current time
     showDiveTimer();  //show the time according to the dive timer
@@ -301,6 +287,12 @@ void MainWindow::displayTahoe()
 void MainWindow::checkForUpdates()
 {
     FvUpdater::sharedUpdater()->CheckForUpdatesNotSilent();
+}
+
+void MainWindow::setupDepthTape()
+{
+    depthTape = new DepthTape((int)controller->rov->sensorDepth->getMax(), this);
+    ui->gridLayoutHUD->addWidget(depthTape->container, 0,0,4,1);
 }
 
 void MainWindow::ledDisplay()
@@ -437,14 +429,6 @@ void MainWindow::loadData()
     ui->lcdHeading->display(controller->rov->sensorCompass->getValue());
 
     //Display the data graphically
-    ui->niVoltage->setValue(controller->rov->sensorVoltage->getValue());
-    QObject *rootObject = dynamic_cast<QObject*>(ui->dvCompass->rootObject());
-    QObject *background = rootObject->findChild<QObject *>(QString("compassBackground"));
-    if(background)
-        background->setProperty("rotation", (-1*controller->rov->sensorCompass->getValue()));
-    else
-        qDebug() << "Couldn't find QML compass background image";
-    ui->scaleDepth->setValue(controller->rov->sensorDepth->getValue());
     //Graph the depth
     //Depth
     depthPoints.append(-1*controller->rov->sensorDepth->getValue());
@@ -463,6 +447,7 @@ void MainWindow::loadData()
         ui->plotDepth->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 100)));
     }
     ui->plotDepth->replot();
+    depthTape->onDepthChange(controller->rov->sensorDepth->getValue());
 }
 
 void MainWindow::displayTime()

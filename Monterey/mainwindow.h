@@ -16,10 +16,16 @@
 #include <QSettings>
 #include <QPointF>
 #include <QThread>
-#include <QtDeclarative>
 #include <QBrush>
 #include <QColor>
 #include <QPushButton>
+#include <QLabel>
+#include <QSlider>
+#include <QGroupBox>
+#include <QLCDNumber>
+#include <QTextEdit>
+
+#include "extraclasses/DepthTape/depthtape.h"
 
 namespace Ui {
     class MainWindow;
@@ -74,6 +80,7 @@ private slots:
     void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
     void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
     void checkForUpdates(); //!< Check online for updates to Monterey
+    void setupDepthTape();  //!< Configure the depth tape
 
 private:
     QString *version;
@@ -89,6 +96,7 @@ private:
     QVector<double> depthPoints;
     QVector<double> seconds;
     QTime *graphTime;
+    DepthTape *depthTape;
 
     QTimer *guiTimer;
 
