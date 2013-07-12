@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     extraclasses/QJoystick/qjoystick.cpp \
     extraclasses/QVectorDrive2/qvectordrive2.cpp \
     extraclasses/QCustomPlot/qcustomplot.cpp \
-    extraclasses/DepthTape/depthtape.cpp
+    extraclasses/DepthTape/depthtape.cpp \
+    extraclasses/DiveTimer/divetimer.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -51,7 +52,8 @@ HEADERS  += mainwindow.h \
     extraclasses/QJoystick/qjoystick.h \
     extraclasses/QVectorDrive2/qvectordrive2.h \
     extraclasses/QCustomPlot/qcustomplot.h \
-    extraclasses/DepthTape/depthtape.h
+    extraclasses/DepthTape/depthtape.h \
+    extraclasses/DiveTimer/divetimer.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \

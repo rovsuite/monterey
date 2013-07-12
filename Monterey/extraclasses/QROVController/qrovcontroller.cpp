@@ -56,7 +56,7 @@ QROVController::QROVController(QObject *parent) :
     myVectorDrive = new QVectorDrive2(this);
     myVectorDrive->initVector(MOTORMIN, MOTORMAX, 0, 0, 0);
 
-    diveTime = new QTime();
+    diveTimer = new DiveTimer(this);
     packetTimer = new QTimer(this);
     packetTimer->setInterval(45);
 
@@ -228,6 +228,19 @@ void QROVController::processPacket()
     rov->sensorVoltage->setValue(voltage);
     rov->sensorOther0->setValue(sens0);
     rov->sensorOther1->setValue(sens1);
+
+    if(diveTimer->hasStarted() && rov->sensorDepth->getValue() <= 0)    //if the ROV is at the surface, pause the dive timer
+    {
+        diveTimer->pause();
+    }
+    else if(diveTimer->hasStarted() && rov->sensorDepth->getValue() > 0)    //if the ROV is underwater and the dive timer has started BUT MAY BE PAUSED
+    {
+        diveTimer->resume();
+    }
+    else if(!diveTimer->hasStarted() && rov->sensorDepth->getValue() > 0)   //if the ROV is underwater and the dive timer hasn't started
+    {
+        diveTimer->start();
+    }
 
     emit receivedPacket(rxPacket);
     emit noErrorTIBO();
@@ -765,38 +778,12 @@ void QROVController::setErrorTahoe()
     mutex.unlock();
 }
 
-void QROVController::diveTimeStart()
-{
-    diveTime->start();
-}
-
 void QROVController::diveTimeReset()
 {
-    diveTime->restart();
+    diveTimer->reset();
 }
 
 QString QROVController::diveTimeString()
 {
-    QMutex mutex;
-    mutex.lock();
-    QString diveTimeString;
-    if(diveTime->isValid())
-    {
-    unsigned int hours = diveTime->elapsed() / (1000 * 60 * 60);    //convert milliseconds to hours
-    unsigned int minutes = (diveTime->elapsed() % (1000 * 60 * 60)) / (1000 * 60);  //convert to minutes
-    unsigned int seconds = ((diveTime->elapsed() % (1000 * 60 * 60)) % (1000*60)) / 1000;    //convert to seconds
-
-    diveTimeString.append(QString::number(hours).rightJustified(2, '0'));   //add leading zeros
-    diveTimeString.append(":");
-    diveTimeString.append(QString::number(minutes).rightJustified(2,'0'));  //add leading zeros
-    diveTimeString.append(":");
-    diveTimeString.append(QString::number(seconds).rightJustified(2, '0')); //add leading zeros
-    }
-    else
-    {
-        diveTimeString.append("00:00:00");
-    }
-
-    mutex.unlock();
-    return diveTimeString;
+    return diveTimer->diveTimeString();
 }

@@ -744,7 +744,6 @@
     </property>
     <addaction name="actionRescan_Joysticks"/>
     <addaction name="separator"/>
-    <addaction name="actionDive_Timer_Start"/>
     <addaction name="actionDive_Timer_Reset"/>
    </widget>
    <addaction name="menuFile"/>
@@ -783,27 +782,12 @@
     <string>Timer - Start</string>
    </property>
   </action>
-  <action name="actionDive_Timer_Sop">
-   <property name="text">
-    <string>Dive Timer - Sop</string>
-   </property>
-  </action>
-  <action name="actionDive_Timer_Start">
-   <property name="text">
-    <string>Dive Timer - Start</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionDive_Timer_Stop">
-   <property name="text">
-    <string>Dive Timer - Stop</string>
-   </property>
-  </action>
   <action name="actionDive_Timer_Reset">
    <property name="text">
     <string>Dive Timer - Reset</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset the dive timer</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>

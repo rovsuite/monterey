@@ -19,6 +19,7 @@
 #include "qjoystick.h"
 #include "extraclasses/QVectorDrive2/qvectordrive2.h"
 #include "extraclasses/QBoolMonitor/qboolmonitor.h"
+#include "extraclasses/DiveTimer/divetimer.h"
 
 class QROVController : public QObject
 {
@@ -122,7 +123,6 @@ public slots:
     void setErrorTahoe();   //!< use to say that Monterey is getting packets from Monterey
 
     //Dive timer
-    void diveTimeStart();   //!< Start the dive timer
     void diveTimeReset();   //!< Reset the dive timer
     QString diveTimeString(); //!< Convert the milliseconds to minutes and hours and display in the gui
 
@@ -151,10 +151,8 @@ private:
     bool joyAttached;
     int numberOfAxes;
 
-    QTime *diveTime;
+    DiveTimer *diveTimer;
     QTimer *packetTimer;
-
-    //QMutex *mutex;
 
     bool bilinearEnabled;
     bool vectorEnabled;

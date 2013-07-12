@@ -94,7 +94,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout())); //show the about window
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));  //exit the application
     connect(ui->actionDebug, SIGNAL(triggered()), this, SLOT(showDebug())); //show the debug window
-    connect(ui->actionDive_Timer_Start, SIGNAL(triggered()),this->controller, SLOT(diveTimeStart()));
     connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()), this->controller, SLOT(diveTimeReset()));
     connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(showSettings()));
@@ -494,7 +493,7 @@ void MainWindow::displayTime()
 {
     QTime time;
     QString timeString;
-    timeString = time.currentTime().toString("hh:mm:ss ap");
+    timeString = time.currentTime().toString("hh:mm:ss");
     ui->labCurrentTime->setText(timeString);
 }
 
