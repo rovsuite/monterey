@@ -28,5 +28,6 @@ Rectangle {
         width: 3
         height: page.height
         color: "#0275ac"
+        opacity: 0
     }
 }

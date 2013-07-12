@@ -29,7 +29,7 @@ Rectangle {
         color: "#bcd5fe"
         z:1
         text: currentDepthRectangle.currentDepth
-        font.family: "OCR A Std"
+        //font.family: "Alfphabet"
         font.pixelSize: 12
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter

@@ -21,7 +21,7 @@ Item {
         id: depthText
         color: "#0275ac"
         text: tick.text;
-        font.family: "OCR A Std"
+        //font.family: "Alfphabet"
         font.pixelSize: 12
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter

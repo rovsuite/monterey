@@ -13,6 +13,7 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
     viewer->setSource(QUrl("qrc:/qml/resources/Tape.qml"));
     viewer->rootContext()->setContextProperty("DepthTape", this);
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
+    viewer->setColor(Qt::transparent);
 
     QObject *verticalBar = viewer->rootObject()->findChild<QObject*>("verticalBar");
 
@@ -35,12 +36,13 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
     QQuickItem *currentDepthReadoutItem = qobject_cast<QQuickItem*>(currentDepthReadout);
     QQmlProperty::write(currentDepthReadout, "parent", QVariant::fromValue<QObject*>(viewer->rootObject()));
     QQmlEngine::setObjectOwnership(currentDepthReadout, QQmlEngine::CppOwnership);
-    currentDepthReadoutItem->setX(tickList.last()->property("x").toInt() + tickList.last()->property("paintedWidth").toInt() + 10);
+    //currentDepthReadoutItem->setX(tickList.last()->property("x").toInt() + tickList.last()->property("paintedWidth").toInt() + 20);
+    currentDepthReadoutItem->setX(100 - currentDepthReadoutItem->width());
     currentDepthReadoutItem->setY(viewer->height()/2 - currentDepthReadoutItem->height()/2);
 
     verticalBar->setProperty("x", currentDepthReadoutItem->x() + currentDepthReadoutItem->width() - 2);
     verticalBar->setProperty("height", container->height());
-    viewer->rootObject()->setProperty("width", verticalBar->property("x").toInt() + verticalBar->property("width").toInt());
+    viewer->rootObject()->setProperty("width", verticalBar->property("x").toInt());
     container->setMaximumWidth(viewer->rootObject()->property("width").toInt());
 
     for(int i = 0;i<maxDepth+1;i++)
@@ -54,7 +56,7 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
         tickBarItem->setProperty("y", tickList[i]->property("y").toInt() - (tickList[i]->property("height").toInt()/2));
         if(verticalBar)
         {
-            tickBarItem->setProperty("width", verticalBar->property("x").toInt() - tickBarItem->x());
+            tickBarItem->setProperty("width", viewer->rootObject()->property("width").toInt() - tickBarItem->x());
         }
         else
         {
@@ -87,7 +89,7 @@ void DepthTape::onDepthChange(double depth)
     }
 }
 
-void DepthTape::setMaxDepth(int maxDepth)
+void DepthTape::setMaxDepth(int maxDepth)   //DOESN'T CURRENTLY WORK
 {
     int currentCount = tickList.count();
     qDebug() << "Current: " << currentCount << ", New: " << maxDepth;

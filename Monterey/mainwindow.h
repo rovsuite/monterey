@@ -81,6 +81,7 @@ private slots:
     void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
     void checkForUpdates(); //!< Check online for updates to Monterey
     void setupDepthTape();  //!< Configure the depth tape
+    void showFullscreen(bool fullscreen);
 
 private:
     QString *version;

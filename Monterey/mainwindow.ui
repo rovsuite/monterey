@@ -26,7 +26,7 @@
    <string>Monterey ROV Controller</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout_5" columnstretch="1,7,2">
+   <layout class="QGridLayout" name="gridLayout_5" columnstretch="2,8,3">
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
@@ -35,11 +35,12 @@
          <widget class="QLabel" name="label_11">
           <property name="font">
            <font>
+            <pointsize>8</pointsize>
             <stylestrategy>PreferAntialias</stylestrategy>
            </font>
           </property>
           <property name="text">
-           <string>Current time:</string>
+           <string>Time:</string>
           </property>
          </widget>
         </item>
@@ -47,6 +48,7 @@
          <widget class="QLabel" name="labCurrentTime">
           <property name="font">
            <font>
+            <pointsize>8</pointsize>
             <stylestrategy>PreferAntialias</stylestrategy>
            </font>
           </property>
@@ -59,6 +61,7 @@
          <widget class="QLabel" name="label_13">
           <property name="font">
            <font>
+            <pointsize>8</pointsize>
             <stylestrategy>PreferAntialias</stylestrategy>
            </font>
           </property>
@@ -71,6 +74,7 @@
          <widget class="QLabel" name="labDiveTime">
           <property name="font">
            <font>
+            <pointsize>8</pointsize>
             <stylestrategy>PreferAntialias</stylestrategy>
            </font>
           </property>
@@ -732,6 +736,7 @@
     </property>
     <addaction name="actionDebug"/>
     <addaction name="actionJoystick_mappings"/>
+    <addaction name="actionFullscreen"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -828,6 +833,20 @@
   <action name="actionCheck_for_Updates">
    <property name="text">
     <string>Check for Updates</string>
+   </property>
+  </action>
+  <action name="actionFullscreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fullscreen</string>
+   </property>
+   <property name="toolTip">
+    <string>Make the application go fullscreen.</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

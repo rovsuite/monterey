@@ -32,6 +32,37 @@ MainWindow::MainWindow(QWidget *parent) :
     title.append(version);
     this->setWindowTitle(title);
 
+    /*
+    //Set the new font
+    QFont font = this->font();
+    //font.setFamily("Alfphabet");
+    QApplication::setFont(font);
+    QPalette palette = this->palette();
+    QBrush brush = palette.brush(QPalette::Window);
+    brush.setColor(QColor("#000000"));
+    palette.setBrush(QPalette::Window, brush);
+    brush = palette.brush(QPalette::WindowText);
+    brush.setColor(QColor("#bcd5fe"));
+    palette.setBrush(QPalette::WindowText, brush);
+
+    QList<QObject*> widgets = this->findChildren<QObject*>();
+    foreach(QObject* widget, widgets)
+    {
+        QWidget* widgetPointer = qobject_cast<QGroupBox*>(widget);
+        if(widgetPointer)
+        {
+            widgetPointer->setPalette(palette);
+        }
+        QGroupBox* groupBox = qobject_cast<QGroupBox*>(widget);
+        if(groupBox)
+        {
+            groupBox->setStyleSheet("QGroupBox { border: 2px solid #0275ac }");
+        }
+    }
+    this->setPalette(palette);
+    */
+
+
     guiTimer = new QTimer(this);
     guiTimer->setInterval(50); //refresh the gui 20x a second
 
@@ -69,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(showSettings()));
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
     connect(ui->actionCheck_for_Updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
+    connect(ui->actionFullscreen, SIGNAL(toggled(bool)), this, SLOT(showFullscreen(bool)));
     connect(controller, SIGNAL(errorTIBO()), this, SLOT(errorTIBO()));
     connect(controller, SIGNAL(errorTOBI()), this, SLOT(errorTOBI()));
     connect(controller, SIGNAL(noErrorTIBO()),this, SLOT(noErrorTIBO()));
@@ -293,6 +325,14 @@ void MainWindow::setupDepthTape()
 {
     depthTape = new DepthTape((int)controller->rov->sensorDepth->getMax(), this);
     ui->gridLayoutHUD->addWidget(depthTape->container, 0,0,4,1);
+}
+
+void MainWindow::showFullscreen(bool fullscreen)
+{
+    if(fullscreen)
+        this->showFullScreen();
+    else
+        this->showNormal();
 }
 
 void MainWindow::ledDisplay()

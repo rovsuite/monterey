@@ -29,7 +29,7 @@ void QActivityMonitor::display(QString message)
     QString toDisplay("(");
     toDisplay.append(time.currentTime().toString("hh:mm:ss"));
     toDisplay.append(")");
-    toDisplay.append('\t');
+    toDisplay.append(" ");
     toDisplay.append(message);
 
     activityDisplay->append(toDisplay);
