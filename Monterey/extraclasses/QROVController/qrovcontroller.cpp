@@ -305,7 +305,7 @@ void QROVController::sendPacket()
 
 void QROVController::sendDebug()
 {
-    // TODO: Add in code to send debug packet
+    //code to send debug packet?
 }
 
 void QROVController::processTahoe()
@@ -359,7 +359,6 @@ void QROVController::sendTahoe()
 {
     QMutex mutex;
     mutex.lock();
-    // TODO: Add Tahoe syncing function
     QString packet;
     packet.append(QString::number((int)comTOBI));
     packet.append(" ");
@@ -612,7 +611,6 @@ void QROVController::joystickButtonClicked(int buttonID)
 
 void QROVController::joystickHatClicked(int hatID)
 {
-    //TODO: FIX FLICKER
     QMutex mutex;
     mutex.lock();
     qDebug() << "In joystickHatClicked(int hatID) function";
@@ -759,8 +757,6 @@ void QROVController::updateJoystickData()
         rov->listMotors[2]->setValue((int)((percentV * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
 
     }
-
-    // TODO: Add hat and button reading
     mutex.unlock();
 }
 

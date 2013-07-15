@@ -21,8 +21,6 @@ SOURCES += main.cpp\
     rovsettings.cpp \
     rovmappings.cpp \
     rovabout.cpp \
-    extraclasses/QScale/qscale.cpp \
-    extraclasses/QNeedleIndicator/qneedleindicator.cpp \
     extraclasses/QLedIndicator/qledindicator.cpp \
     extraclasses/QROV/qrov.cpp \
     extraclasses/QROVController/qrovcontroller.cpp \
@@ -45,8 +43,6 @@ HEADERS  += mainwindow.h \
     rovsettings.h \
     rovmappings.h \
     rovabout.h \
-    extraclasses/QScale/qscale.h \
-    extraclasses/QNeedleIndicator/qneedleindicator.h \
     extraclasses/QLedIndicator/qledindicator.h \
     extraclasses/QROV/qrov.h \
     extraclasses/QROVController/qrovcontroller.h \
@@ -71,8 +67,6 @@ INCLUDEPATH += ../Monterey/extraclasses/QActivityMonitor/ \
                 ../Monterey/extraclasses/QROVMotor/ \
                 ../Monterey/extraclasses/QROVRelay/ \
                 ../Monterey/extraclasses/QROVServo/ \
-                ../Monterey/extraclasses/QScale/ \
-                ../Monterey/extraclasses/QNeedleIndicator/ \
                 ../Monterey/extraclasses/QLedIndicator/ \
                 ../Monterey/extraclasses/QROV/ \
                 ../Monterey/extraclasses/QROVController/ \
@@ -107,13 +101,6 @@ RC_FILE = monterey.rc
 DEFINES += SDL_WIN
 LIBS += -lSDL.dll
 }
-
-#OTHER_FILES += \
- #   resources/ROV.png \
-  #  resources/hsi_face.svg.png \
-   # resources/any_casing.svg.png \
-    #resources/Compass.qml \
-    #resources/HeadingIndicator.qml \
 
 # Fervor autoupdater
 !include("../Monterey/extraclasses/Fervor/Fervor.pri") {

@@ -131,7 +131,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::showAbout()
 {
-    // TODO: Add about more information
     dialogAbout = new ROVAbout(this);
     dialogAbout->setAttribute(Qt::WA_DeleteOnClose);
     dialogAbout->exec();
@@ -139,7 +138,6 @@ void MainWindow::showAbout()
 
 void MainWindow::showDebug()
 {
-    // TODO: Add more debug code
     dialogDebug = new ROVDebug(this);
     dialogDebug->setAttribute(Qt::WA_DeleteOnClose);
     dialogDebug->show();
@@ -147,7 +145,6 @@ void MainWindow::showDebug()
 
 void MainWindow::showMappings()
 {
-    // TODO: Add mapping code
     dialogMappings = new ROVMappings(this);
     dialogMappings->setAttribute(Qt::WA_DeleteOnClose);
     dialogMappings->show();

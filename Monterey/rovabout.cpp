@@ -26,7 +26,6 @@ ROVAbout::ROVAbout(QWidget *parent) :
     ui->setupUi(this);
 
     //Display the text
-    // TODO: Finish adding text for about information
     QFile aboutFile(":/text/resources/plainabout.txt");    //held in the qresource
 
     if(!aboutFile.open(QIODevice::ReadOnly))   //if file is readable

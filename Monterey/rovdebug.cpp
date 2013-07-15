@@ -34,8 +34,6 @@ ROVDebug::ROVDebug(QWidget *parent) :
     ui->lcdPortTOBI->display(p->controller->getPortTOBI());
     connect(p->controller, SIGNAL(sentPacket(QString)), this, SLOT(displayTOBIPacket(QString)));
     connect(p->controller, SIGNAL(receivedPacket(QString)), this, SLOT(displayTIBOPacket(QString)));
-
-    //TODO: Add more debug information
 }
 
 ROVDebug::~ROVDebug()
@@ -45,7 +43,7 @@ ROVDebug::~ROVDebug()
 
 void ROVDebug::updateGUI()
 {
-    //TODO: Any debug stuff to add here on a timer?
+    //Any debug stuff to add here on a timer
 }
 
 void ROVDebug::displayTIBOPacket(QString toDisp)
