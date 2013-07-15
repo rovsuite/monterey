@@ -82,6 +82,12 @@ MainWindow::MainWindow(QWidget *parent) :
     setupCustomWidgets();   //load the settings for the custom widgets
     loadSettings();
 
+
+    webCamViewer = new QWebView(this);  //must call after load settings
+    webCamViewer->setObjectName("webCamViewer");
+    ui->gridLayoutHUD->addWidget(webCamViewer,0,1,4,4);
+    webCamViewer->load(controller->rov->getVideoFeeds().at(0)->url());
+
     if(controller->isJoyAttached())
     {
         activityMonitor->display("Joystick attached");
@@ -111,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
     connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
+    connect(ui->zoomSlider, SIGNAL(sliderMoved(int)), this, SLOT(zoomTheCameraFeed(int)));
 
     guiTimer->start();
     connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
@@ -191,6 +198,12 @@ void MainWindow::loadSettings()
 
     //Refresh the depth tape
     depthTape->setMaxDepth((int)controller->rov->sensorDepth->getMax());
+
+    //Load the proper video channel
+    if(webCamViewer)
+    {
+        webCamViewer->setUrl(controller->rov->getVideoFeeds().at(0)->url());
+    }
 }
 
 void MainWindow::setupCustomWidgets()
@@ -254,10 +267,6 @@ void MainWindow::setupCustomWidgets()
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
     setupDepthTape();
-    QWebView* webCamViewer = new QWebView(this);
-    webCamViewer->setObjectName("webCamViewer");
-    ui->gridLayoutHUD->addWidget(webCamViewer,0,1,4,4);
-    webCamViewer->load(QUrl("http://www.google.com"));
 }
 
 void MainWindow::onCalledClickRelayButton(QPushButton *button)
@@ -332,6 +341,15 @@ void MainWindow::showFullscreen(bool fullscreen)
         this->showFullScreen();
     else
         this->showNormal();
+}
+
+void MainWindow::zoomTheCameraFeed(int zoomAmount)
+{
+    qreal zoom = (qreal)zoomAmount/100.0;
+    if(webCamViewer)
+    {
+        webCamViewer->setZoomFactor(zoom);
+    }
 }
 
 void MainWindow::ledDisplay()

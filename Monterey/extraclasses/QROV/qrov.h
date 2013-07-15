@@ -10,6 +10,7 @@
 #include "qrovrelay.h"
 #include "qrovservo.h"
 #include "qrovsensor.h"
+#include "extraclasses/IpVideoFeed/ipvideofeed.h"
 
 class QROV : public QObject
 {
@@ -40,11 +41,15 @@ public slots:
 
     void setVersion(double v);
     double getVersion();
+
+    void setVideoFeeds(QList<IpVideoFeed*> newFeeds);
+    QList<IpVideoFeed*> getVideoFeeds();
 private:
     int numMotors;
     int numRelays;
     int numServos;
     double version;
+    QList<IpVideoFeed*> videoFeeds;
 };
 
 #endif // QROV_H

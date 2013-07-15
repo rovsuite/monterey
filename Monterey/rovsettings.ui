@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>401</height>
+    <width>751</width>
+    <height>512</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -314,8 +314,19 @@
      </item>
     </layout>
    </item>
+   <item row="3" column="2">
+    <widget class="IpVideoFeedSettingsWidget" name="ipVideoFeedSettings0" native="true"/>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>IpVideoFeedSettingsWidget</class>
+   <extends>QWidget</extends>
+   <header>../extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

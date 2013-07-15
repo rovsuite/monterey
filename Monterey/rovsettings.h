@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QSettings>
+#include "extraclasses/IpVideoFeed/ipvideofeed.h"
 
 namespace Ui {
     class ROVSettings;
@@ -27,6 +28,7 @@ private slots:
 private:
     Ui::ROVSettings *ui;
     QSettings *mySettings;
+    QList<IpVideoFeed*> videoFeeds;
 };
 
 #endif // ROVSETTINGS_H

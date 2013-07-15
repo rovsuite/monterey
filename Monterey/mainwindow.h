@@ -24,6 +24,7 @@
 #include <QGroupBox>
 #include <QLCDNumber>
 #include <QTextEdit>
+#include <QWebView>
 
 #include "extraclasses/DepthTape/depthtape.h"
 
@@ -82,6 +83,7 @@ private slots:
     void checkForUpdates(); //!< Check online for updates to Monterey
     void setupDepthTape();  //!< Configure the depth tape
     void showFullscreen(bool fullscreen);
+    void zoomTheCameraFeed(int zoomAmount);
 
 private:
     QString *version;
@@ -98,6 +100,7 @@ private:
     QVector<double> seconds;
     QTime *graphTime;
     DepthTape *depthTape;
+    QWebView* webCamViewer;
 
     QTimer *guiTimer;
 

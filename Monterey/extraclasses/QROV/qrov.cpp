@@ -30,6 +30,9 @@ QROV::QROV(int motors, int relays, int servos, QObject *parent) :
 
     version = 0;
 
+    IpVideoFeed* videoFeed = new IpVideoFeed("Main", QUrl("http::127.0.0.1:8080"), this);
+    videoFeeds.append(videoFeed);
+
     setNumMotors(motors);
     setNumRelays(relays);
     setNumServos(servos);
@@ -97,4 +100,14 @@ void QROV::setVersion(double v)
 double QROV::getVersion()
 {
     return version;
+}
+
+void QROV::setVideoFeeds(QList<IpVideoFeed *> newFeeds)
+{
+    videoFeeds = newFeeds;
+}
+
+QList<IpVideoFeed *> QROV::getVideoFeeds()
+{
+    return videoFeeds;
 }

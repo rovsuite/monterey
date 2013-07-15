@@ -515,7 +515,17 @@ void QROVController::loadSettings()
     rov->listServos[1]->setButtonUp(mySettings->value("joystick/but/s1/up").toInt());
 
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,xDead,yDead,zDead);
-    //initJoysticks();
+
+    //Video
+    QList<IpVideoFeed*> videoFeeds = rov->getVideoFeeds();
+    for(int i = 0;i<videoFeeds.count();i++)
+    {
+        //mySettings->setValue("videoFeeds/" + i + "/name", rov->getVideoFeeds().at(i)->name());
+        //mySettings->setValue("videoFeeds/" + i + "/url", rov->getVideoFeeds().at(i)->url());
+        videoFeeds[i]->setname(mySettings->value("videoFeeds/" + QString::number(i) + "/name", "Main").toString());
+        videoFeeds[i]->seturl(mySettings->value("videoFeeds/" + QString::number(i) + "/url", "http://127.0.0.1:8080").toUrl());
+    }
+
     mutex.unlock();
 }
 
@@ -573,6 +583,13 @@ void QROVController::saveSettings()
     mySettings->setValue("joystick/but/s0/down", rov->listServos[0]->getButtonDown());
     mySettings->setValue("joystick/but/s1/up", rov->listServos[1]->getButtonUp());
     mySettings->setValue("joystick/but/s1/down", rov->listServos[1]->getButtonDown());
+
+    //Video
+    for(int i = 0;i<rov->getVideoFeeds().count();i++)
+    {
+        mySettings->setValue("videoFeeds/" + QString::number(i) + "/name", rov->getVideoFeeds().at(i)->name());
+        mySettings->setValue("videoFeeds/" + QString::number(i) + "/url", rov->getVideoFeeds().at(i)->url());
+    }
 
     mutex.unlock();
     emit savedSettings("Settings saved");

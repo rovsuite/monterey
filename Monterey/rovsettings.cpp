@@ -18,6 +18,7 @@
 #include "rovsettings.h"
 #include "ui_rovsettings.h"
 #include "mainwindow.h"
+#include "extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h"
 
 ROVSettings::ROVSettings(QWidget *parent) :
     QDialog(parent),
@@ -50,6 +51,10 @@ ROVSettings::ROVSettings(QWidget *parent) :
         ui->listJoysticks->addItem(name);
     }
     ui->listJoysticks->item(0)->setSelected(true);
+
+   videoFeeds = p->controller->rov->getVideoFeeds();
+   ui->ipVideoFeedSettings0->setIpVideoFeed(videoFeeds.at(0));
+
 }
 
 ROVSettings::~ROVSettings()
@@ -80,6 +85,9 @@ void ROVSettings::on_pbSave_clicked()
     p->controller->setMotorLayout(ui->comboMotorLayout->currentIndex());
     p->controller->setBilinearRatio(ui->sbBilinearRatio->value());
     p->controller->setBilinearEnabled(ui->cbBilinearEnabled->isChecked());
+
+    videoFeeds[0] = ui->ipVideoFeedSettings0->getIpVideoFeed();
+    p->controller->rov->setVideoFeeds(videoFeeds);
 
     //Save the settings
     p->controller->saveSettings();

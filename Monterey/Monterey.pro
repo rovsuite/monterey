@@ -31,7 +31,9 @@ SOURCES += main.cpp\
     extraclasses/QVectorDrive2/qvectordrive2.cpp \
     extraclasses/QCustomPlot/qcustomplot.cpp \
     extraclasses/DepthTape/depthtape.cpp \
-    extraclasses/DiveTimer/divetimer.cpp
+    extraclasses/DiveTimer/divetimer.cpp \
+    extraclasses/IpVideoFeed/ipvideofeed.cpp \
+    extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -53,13 +55,16 @@ HEADERS  += mainwindow.h \
     extraclasses/QVectorDrive2/qvectordrive2.h \
     extraclasses/QCustomPlot/qcustomplot.h \
     extraclasses/DepthTape/depthtape.h \
-    extraclasses/DiveTimer/divetimer.h
+    extraclasses/DiveTimer/divetimer.h \
+    extraclasses/IpVideoFeed/ipvideofeed.h \
+    extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \
     rovsettings.ui \
     rovmappings.ui \
     rovabout.ui \
+    extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.ui
 
 INCLUDEPATH += ../Monterey/extraclasses/QActivityMonitor/ \
                 ../Monterey/extraclasses/QBoolMonitor/ \
