@@ -17,7 +17,6 @@
 
 #include "qrovcontroller.h"
 #include <QDebug>
-#include "SDL/SDL.h"
 
 #define numberOfMotors 6
 #define numberOfRelays 3
@@ -135,8 +134,7 @@ void QROVController::initJoysticks()
 
 void QROVController::rescanJoysticks()
 {
-    SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
-    SDL_Init(SDL_INIT_JOYSTICK);
+    joy->reenumerateDevices();
     getJoysAvail(); //recalculate the number of available joysticks
     initJoysticks();    //re-initialize joysticks
 }
