@@ -658,7 +658,6 @@ int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outM
 //joystickButtonClicked and joystickHatClicked functions
 void QROVController::readMappings()
 {
-    // TODO: Add in code to load up joystick mappings
     QMutex mutex;
     mutex.lock();
     for(int h=0; h< joy->hats.count(); h++) //support for multiple hats

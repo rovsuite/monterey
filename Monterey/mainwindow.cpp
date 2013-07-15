@@ -287,9 +287,9 @@ void MainWindow::onCalledServoChange(int id, int direction)
     else if(id == 1)
     {
         if(direction == 1)
-            ui->vsServo0->setValue(ui->vsServo0->value() + 5);
+            ui->vsServo1->setValue(ui->vsServo1->value() + 5);
         else
-            ui->vsServo0->setValue(ui->vsServo0->value() - 5);
+            ui->vsServo1->setValue(ui->vsServo1->value() - 5);
     }
     else
     {
