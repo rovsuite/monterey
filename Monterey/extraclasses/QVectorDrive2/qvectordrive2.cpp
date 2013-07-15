@@ -70,17 +70,35 @@ int QVectorDrive2::maxInt(int a, int b)
 
 int QVectorDrive2::constrainInt(int a, int min, int max)
 {
-    if(min < a && a < max)
+    if(min < max)  //if the arguments are valid
     {
-        return a;
+        if(a < min)
+        {
+            return min;
+        }
+        else if(max < a)
+        {
+            return max;
+        }
+        else
+        {
+            return a;
+        }
     }
-    else if(a <= min && a < max)
+    else    //flip the arguments because they are in the incorrect order
     {
-        return min;
-    }
-    else if(min < a && max <= a)
-    {
-        return max;
+        if(a < max)
+        {
+            return max;
+        }
+        else if(min < a)
+        {
+            return min;
+        }
+        else
+        {
+            return a;
+        }
     }
 }
 
