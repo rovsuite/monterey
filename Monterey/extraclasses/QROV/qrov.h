@@ -10,7 +10,7 @@
 #include "qrovrelay.h"
 #include "qrovservo.h"
 #include "qrovsensor.h"
-#include "extraclasses/IpVideoFeed/ipvideofeed.h"
+#include "../../extraclasses/IpVideoFeed/ipvideofeed.h"
 
 class QROV : public QObject
 {
