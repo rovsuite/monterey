@@ -8,7 +8,7 @@
 #include <QString>
 #include <QList>
 
-#include "SDL/SDL.h"
+#include "../../SDL/SDL.h"
 
 class QJoystick : public QObject
 {
