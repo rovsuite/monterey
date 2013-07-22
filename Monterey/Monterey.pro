@@ -99,6 +99,7 @@ win32{
 RC_FILE = monterey.rc
 
 DEFINES += SDL_WIN
+LIBS += -L../Monterey/depends/windows/
 LIBS += -lSDL.dll
 }
 
