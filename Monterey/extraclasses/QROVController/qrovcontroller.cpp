@@ -456,7 +456,7 @@ void QROVController::loadSettings()
 {
     QMutex mutex;
     mutex.lock();
-    //TDOD: Finish adding settings code and remove it from mainwindow.cpp
+    //TODO: Finish adding settings code and remove it from mainwindow.cpp
 
     //Load relay names
     rov->listRelays[0]->setName(mySettings->value("names/relay0", "relay0").toString());
