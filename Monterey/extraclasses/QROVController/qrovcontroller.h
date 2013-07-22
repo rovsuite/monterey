@@ -17,9 +17,9 @@
 #include <QPushButton>
 #include "qrov.h"
 #include "qjoystick.h"
-#include "extraclasses/QVectorDrive2/qvectordrive2.h"
-#include "extraclasses/QBoolMonitor/qboolmonitor.h"
-#include "extraclasses/DiveTimer/divetimer.h"
+#include "../../extraclasses/QVectorDrive2/qvectordrive2.h"
+#include "../../extraclasses/QBoolMonitor/qboolmonitor.h"
+#include "../../extraclasses/DiveTimer/divetimer.h"
 
 class QROVController : public QObject
 {

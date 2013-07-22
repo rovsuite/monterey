@@ -2,7 +2,7 @@
 #define IPVIDEOFEEDSETTINGSWIDGET_H
 
 #include <QWidget>
-#include "extraclasses/IpVideoFeed/ipvideofeed.h"
+#include "../../extraclasses/IpVideoFeed/ipvideofeed.h"
 
 namespace Ui {
 class IpVideoFeedSettingsWidget;
