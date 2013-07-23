@@ -85,6 +85,28 @@
       </item>
      </layout>
     </item>
+    <item row="1" column="1">
+     <widget class="QSlider" name="zoomSlider">
+      <property name="toolTip">
+       <string>Zoom the camera feed</string>
+      </property>
+      <property name="minimum">
+       <number>0</number>
+      </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
+      <property name="value">
+       <number>100</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::NoTicks</enum>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
@@ -147,6 +169,12 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QGroupBox" name="groupBox_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>2</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>Servos</string>
           </property>
@@ -188,6 +216,12 @@
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>Relays</string>
           </property>
@@ -289,7 +323,7 @@
      </layout>
     </item>
     <item row="0" column="2">
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,1,0,3">
+     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,1,0,3,0">
       <item>
        <widget class="QGroupBox" name="groupBox_3">
         <property name="title">
@@ -702,29 +736,46 @@
         </property>
        </widget>
       </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="buttonClearLog">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Clears the log from this session of Monterey</string>
+          </property>
+          <property name="text">
+           <string>Clear Log</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonCopyLogToClipboard">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Copies the entire log to the clipboard</string>
+          </property>
+          <property name="text">
+           <string>Copy To Clipboard</string>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
-    </item>
-    <item row="1" column="1">
-     <widget class="QSlider" name="zoomSlider">
-      <property name="toolTip">
-       <string>Zoom the camera feed</string>
-      </property>
-      <property name="minimum">
-       <number>0</number>
-      </property>
-      <property name="maximum">
-       <number>1000</number>
-      </property>
-      <property name="value">
-       <number>100</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="tickPosition">
-       <enum>QSlider::NoTicks</enum>
-      </property>
-     </widget>
     </item>
    </layout>
   </widget>
@@ -741,7 +792,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionAbout"/>
     <addaction name="actionCheck_for_Updates"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -768,14 +818,21 @@
     <addaction name="separator"/>
     <addaction name="actionDive_Timer_Reset"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>About Monterey</string>
    </property>
   </action>
   <action name="actionExit">

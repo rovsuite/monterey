@@ -25,6 +25,7 @@
 #include <QLCDNumber>
 #include <QTextEdit>
 #include <QWebView>
+#include <QClipboard>
 
 #include "extraclasses/DepthTape/depthtape.h"
 
@@ -84,6 +85,10 @@ private slots:
     void setupDepthTape();  //!< Configure the depth tape
     void showFullscreen(bool fullscreen);
     void zoomTheCameraFeed(int zoomAmount);
+
+    void on_buttonCopyLogToClipboard_clicked();
+
+    void on_buttonClearLog_clicked();
 
 private:
     QString *version;

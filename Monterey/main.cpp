@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
     QApplication::setApplicationName("Monterey");
     QApplication::setApplicationVersion("3.0 Beta");
     QApplication::setOrganizationName("ROV-Suite");
+
+    // NOTE: Could change this to newer Github website; would break existing settings configurations though
     QApplication::setOrganizationDomain("http://sourceforge.net/p/rov-suite");
 
     FvUpdater::sharedUpdater()->SetFeedURL("https://dl.dropbox.com/u/4649414/ROV-Suite/Appcast.xml");
