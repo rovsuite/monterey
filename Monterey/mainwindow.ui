@@ -792,7 +792,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionAbout"/>
     <addaction name="actionCheck_for_Updates"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -819,14 +818,21 @@
     <addaction name="separator"/>
     <addaction name="actionDive_Timer_Reset"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>About Monterey</string>
    </property>
   </action>
   <action name="actionExit">
