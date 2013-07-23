@@ -536,3 +536,20 @@ void MainWindow::on_vsServo1_valueChanged(int value)
 {
     controller->rov->listServos[1]->setValue(value);
 }
+
+// Copies log to system clipboard for easy sharing
+void MainWindow::on_buttonCopyLogToClipboard_clicked()
+{
+//    This is more of a hack-ish solution
+//    ui->teLog->selectAll();
+//    ui->teLog->copy();
+
+    QClipboard *p_Clipboard = QApplication::clipboard();
+    p_Clipboard->setText(ui->teLog->toPlainText());
+}
+
+// Deletes all log information up to the point when this is clicked
+void MainWindow::on_buttonClearLog_clicked()
+{
+    ui->teLog->clear();
+}
