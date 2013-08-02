@@ -7,7 +7,8 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
 {
     viewer = new QQuickView();
     container = QWidget::createWindowContainer(viewer);
-    container->setMinimumSize(100, 100);
+    container->setMinimumSize(90, 100);
+    container->setMaximumWidth(100);
     container->setFocusPolicy(Qt::TabFocus);
 
     viewer->setSource(QUrl("qrc:/qml/resources/Tape.qml"));
