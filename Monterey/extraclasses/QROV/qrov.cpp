@@ -25,12 +25,13 @@ QROV::QROV(int motors, int relays, int servos, QObject *parent) :
     sensorVoltage = new QROVSensor(this);
     sensorOther0 = new QROVSensor(this);
     sensorOther1 = new QROVSensor(this);
+    piData = new PiData(this);
 
     sensorDepth->setMin(0);
 
     version = 0;
 
-    IpVideoFeed* videoFeed = new IpVideoFeed("Main", QUrl("http::127.0.0.1:8080"), this);
+    IpVideoFeed* videoFeed = new IpVideoFeed("Main", QUrl("http::127.0.0.1:8080/javascript_simple.html"), true, this);
     videoFeeds.append(videoFeed);
 
     setNumMotors(motors);

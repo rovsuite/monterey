@@ -20,6 +20,7 @@
 #include "../../extraclasses/QVectorDrive2/qvectordrive2.h"
 #include "../../extraclasses/QBoolMonitor/qboolmonitor.h"
 #include "../../extraclasses/DiveTimer/divetimer.h"
+#include "../../extraclasses/PiData/pidata.h"
 
 class QROVController : public QObject
 {
@@ -77,6 +78,7 @@ public slots:
     void sendDebug();   //!< Send a debug packet out to any listeners
     void processTahoe();    //!< Process the packet from Tahoe
     void sendTahoe();   //!< Send the packet to Tahoe
+    void processPi();
 
     //ROVContoller interactive functions
     double getBilinearThreshold() { return bilinearThreshold; }
@@ -98,6 +100,7 @@ public slots:
     bool getStatusTOBI() { return comTOBI; }    //!< Return the status of TOBI
     bool getStatusTIBO() { return comTIBO; }    //!< Return the status of TIBO
     bool getStatusTahoe() { return comTahoe; }  //!< Return the status of Tahoe's COM
+    bool getStatusPi() { return comPi; }
     MotorLayout getMotorLayout() { return motorLayout; }  //!< Return the currently set motor layout
     void setMotorLayout(MotorLayout mL) { motorLayout = mL; }   //!< Set the motor layout
     void setMotorLayout(int mL) { motorLayout = (MotorLayout)mL; }   //!< Set the motor layout
@@ -123,6 +126,7 @@ public slots:
     void setErrorTOBI();    //!< use to say that there is a TOBI error
     void setErrorTIBO();   //!< use to say that there is a TIBO error
     void setErrorTahoe();   //!< use to say that Monterey is getting packets from Monterey
+    void setErrorPi();
 
     //Dive timer
     void diveTimeReset();   //!< Reset the dive timer
@@ -139,15 +143,18 @@ private:
     QUdpSocket *rxSocket;
     QUdpSocket *txSocket;
     QUdpSocket *tahoeSocket;
+    QUdpSocket *piSocket;
     unsigned int tiboPort;
     unsigned int tobiPort;
 
     bool comTOBI;
     bool comTIBO;
     bool comTahoe;
+    bool comPi;
     QTimer *timerTOBI;
     QTimer *timerTIBO;
     QTimer *timerTahoe;
+    QTimer *timerPi;
     int joysAvail;
     int joyID;
     bool joyAttached;

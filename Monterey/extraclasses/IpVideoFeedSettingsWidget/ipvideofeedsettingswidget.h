@@ -18,6 +18,17 @@ public:
 
     void setIpVideoFeed(IpVideoFeed* ipVideoFeed);
     IpVideoFeed* getIpVideoFeed();
+
+public slots:
+    void setUrl(QString url);
+    void enableUrlEditing();
+    void disableUrlEditing();
+
+signals:
+    void autoGenerateClicked(bool enabled);
+
+private slots:
+    void onAutoGenerateClicked();
     
 private:
     Ui::IpVideoFeedSettingsWidget *ui;

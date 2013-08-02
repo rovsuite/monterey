@@ -25,6 +25,8 @@ private slots:
 
     void on_pbSave_clicked();
 
+    void onAutoGenerateVideoFeedUrlClicked(bool enabled);
+
 private:
     Ui::ROVSettings *ui;
     QSettings *mySettings;

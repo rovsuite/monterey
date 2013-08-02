@@ -38,12 +38,15 @@ QROVController::QROVController(QObject *parent) :
     rxSocket = new QUdpSocket(this);
     txSocket = new QUdpSocket(this);
     tahoeSocket = new QUdpSocket(this);
+    piSocket = new QUdpSocket(this);
     timerTIBO = new QTimer(this);
     timerTOBI = new QTimer(this);
     timerTahoe = new QTimer(this);
+    timerPi = new QTimer(this);
     comTIBO = false;
     comTOBI = false;
     comTahoe = false;
+    comPi = false;
     monitorTIBO = new QBoolMonitor(this);
     monitorTIBO->setComparisonState(comTIBO);
     monitorTOBI = new QBoolMonitor(this);
@@ -83,16 +86,20 @@ QROVController::QROVController(QObject *parent) :
     timerTIBO->start(ERRORTIMEOUT);
     timerTOBI->start(ERRORTIMEOUT);
     timerTahoe->start(ERRORTIMEOUT);
+    timerPi->start(5000);
 
     tiboPort = 50000;
     tobiPort = 51000;
     tahoeSocket->bind(52000, QUdpSocket::ShareAddress);
+    piSocket->bind(5060, QUdpSocket::ShareAddress);
     rxSocket->bind(tiboPort, QUdpSocket::ShareAddress);
     connect(rxSocket, SIGNAL(readyRead()), this, SLOT(processPacket()));
     connect(tahoeSocket, SIGNAL(readyRead()), this, SLOT(processTahoe()));
+    connect(piSocket, SIGNAL(readyRead()), this, SLOT(processPi()));
     connect(timerTOBI, SIGNAL(timeout()), this, SLOT(setErrorTOBI()));
     connect(timerTIBO, SIGNAL(timeout()),this, SLOT(setErrorTIBO()));
     connect(timerTahoe, SIGNAL(timeout()), this, SLOT(setErrorTahoe()));
+    connect(timerPi, SIGNAL(timeout()), this, SLOT(setErrorPi()));
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
     connect(joy, SIGNAL(toggleStateChanged(int)), this, SLOT(joystickButtonClicked(int)));
     connect(joy, SIGNAL(hatStateChanged(int)), this, SLOT(joystickHatClicked(int)));
@@ -310,7 +317,6 @@ void QROVController::sendDebug()
 
 void QROVController::processTahoe()
 {
-    qDebug() << "Received packet from Tahoe!";
     QMutex mutex;
     mutex.lock();
     QByteArray datagram;
@@ -434,6 +440,37 @@ void QROVController::sendTahoe()
     mutex.unlock();
 }
 
+void QROVController::processPi()
+{
+    QMutex mutex;
+    mutex.lock();
+    QByteArray datagram;
+    QString packet;
+    QHostAddress* piAddress = new QHostAddress;
+
+    do
+    {
+        datagram.resize(piSocket->pendingDatagramSize());
+        piSocket->readDatagram(datagram.data(), datagram.size(), piAddress);
+    }
+    while(piSocket->hasPendingDatagrams());
+    packet = (tr("%1").arg(datagram.data()));   //turn datagram into a string
+
+    double tempC;
+    int uptime;
+
+    QTextStream stream(&packet);
+    stream >> tempC >> uptime;
+
+    rov->piData->setTempC(tempC);
+    rov->piData->setUptimeMs(uptime);
+    rov->piData->setIpAddress(piAddress);
+
+    comPi = true;
+    timerPi->start(5000);
+    mutex.unlock();
+}
+
 void QROVController::noJoystick()
 {
     for(int i=0;i<rov->listMotors.count();i++)
@@ -478,7 +515,7 @@ void QROVController::loadSettings()
     rov->sensorVoltage->setThreshold(mySettings->value("thresholds/voltage", "9").toDouble());
 
     //Load motor settings
-    setMotorLayout(mySettings->value("motors/layout", "0").toInt());
+    setMotorLayout(mySettings->value("motors/layout", "1").toInt());
 
     //Bilinear
     bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
@@ -517,10 +554,9 @@ void QROVController::loadSettings()
     QList<IpVideoFeed*> videoFeeds = rov->getVideoFeeds();
     for(int i = 0;i<videoFeeds.count();i++)
     {
-        //mySettings->setValue("videoFeeds/" + i + "/name", rov->getVideoFeeds().at(i)->name());
-        //mySettings->setValue("videoFeeds/" + i + "/url", rov->getVideoFeeds().at(i)->url());
         videoFeeds[i]->setname(mySettings->value("videoFeeds/" + QString::number(i) + "/name", "Main").toString());
         videoFeeds[i]->seturl(mySettings->value("videoFeeds/" + QString::number(i) + "/url", "http://127.0.0.1:8080").toUrl());
+        videoFeeds[i]->setAutoGenerate(mySettings->value("videoFeeds/" + QString::number(i) + "/autoGenerate", true).toBool());
     }
 
     mutex.unlock();
@@ -586,6 +622,7 @@ void QROVController::saveSettings()
     {
         mySettings->setValue("videoFeeds/" + QString::number(i) + "/name", rov->getVideoFeeds().at(i)->name());
         mySettings->setValue("videoFeeds/" + QString::number(i) + "/url", rov->getVideoFeeds().at(i)->url());
+        mySettings->setValue("videoFeeds/" + QString::number(i) + "/autoGenerate", rov->getVideoFeeds().at(i)->autoGenerate());
     }
 
     mutex.unlock();
@@ -785,6 +822,14 @@ void QROVController::setErrorTahoe()
     QMutex mutex;
     mutex.lock();
     comTahoe = false;
+    mutex.unlock();
+}
+
+void QROVController::setErrorPi()
+{
+    QMutex mutex;
+    mutex.lock();
+    comPi = false;
     mutex.unlock();
 }
 

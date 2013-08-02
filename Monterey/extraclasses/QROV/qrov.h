@@ -11,6 +11,7 @@
 #include "qrovservo.h"
 #include "qrovsensor.h"
 #include "../../extraclasses/IpVideoFeed/ipvideofeed.h"
+#include "../../extraclasses/PiData/pidata.h"
 
 class QROV : public QObject
 {
@@ -26,6 +27,7 @@ public:
     QROVSensor *sensorVoltage;
     QROVSensor *sensorOther0;
     QROVSensor *sensorOther1;
+    PiData *piData;
 
 signals:
 

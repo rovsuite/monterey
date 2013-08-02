@@ -54,6 +54,7 @@ ROVSettings::ROVSettings(QWidget *parent) :
 
    videoFeeds = p->controller->rov->getVideoFeeds();
    ui->ipVideoFeedSettings0->setIpVideoFeed(videoFeeds.at(0));
+   connect(ui->ipVideoFeedSettings0, SIGNAL(autoGenerateClicked(bool)), this, SLOT(onAutoGenerateVideoFeedUrlClicked(bool)));
 
 }
 
@@ -95,4 +96,26 @@ void ROVSettings::on_pbSave_clicked()
     //Then close the window
     emit callLoadSettings();    //emit a signal for the mainwindow to catch to force it to reload the settings
     this->close();
+}
+
+void ROVSettings::onAutoGenerateVideoFeedUrlClicked(bool enabled)
+{
+    MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
+    if(enabled)
+    {
+        QString url;
+        url.append("http://");
+        if(p->controller->rov->piData->ipAddress())
+            url.append(p->controller->rov->piData->ipAddress()->toString());
+        else
+            url.append("127.0.0.1");
+        url.append(":8080/javascript_simple.html");
+        ui->ipVideoFeedSettings0->setUrl(url);
+        ui->ipVideoFeedSettings0->disableUrlEditing();
+    }
+    else
+    {
+        ui->ipVideoFeedSettings0->enableUrlEditing();
+        ui->ipVideoFeedSettings0->setUrl(p->controller->rov->getVideoFeeds().at(0)->url().toString());
+    }
 }
