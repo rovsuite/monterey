@@ -16,7 +16,7 @@ public:
 signals:
     
 public slots:
-    void onDepthChange(double depth);
+    void onDepthChange(double depth, QString units);
     void setMaxDepth(int maxDepth);
 
     void heightChanged(int height);

@@ -52,6 +52,8 @@ public slots:
 
     void onCalledServoChange(int id, int direction);
 
+    void appendToActivityMonitor(QString message);
+
 private slots:
     void on_pbRelay0_clicked();
 

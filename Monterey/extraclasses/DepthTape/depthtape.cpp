@@ -70,13 +70,13 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
     connect(viewer, SIGNAL(heightChanged(int)), this, SLOT(heightChanged(int)));
 }
 
-void DepthTape::onDepthChange(double depth)
+void DepthTape::onDepthChange(double depth, QString units)
 {
     static double lastDepth = 0.0;
     if(lastDepth != depth)
     {
         QString depthString = QString::number(depth, 'f', 1);
-        depthString.append("m");
+        depthString.append(units);
         currentDepthReadout->setProperty("currentDepth", depthString);
         static double lastChange = 0.0;
         double newY = depth * -40.0;

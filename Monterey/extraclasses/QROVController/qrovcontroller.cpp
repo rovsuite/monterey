@@ -791,6 +791,7 @@ void QROVController::setErrorTahoe()
 void QROVController::diveTimeReset()
 {
     diveTimer->reset();
+    emit appendToActivityMonitor("Dive timer reset");
 }
 
 QString QROVController::diveTimeString()

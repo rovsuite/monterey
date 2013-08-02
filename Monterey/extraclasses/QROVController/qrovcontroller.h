@@ -52,6 +52,8 @@ signals:
     void clickRelayButton(QPushButton * pb);
     void changeServo(int id, int direction);
 
+    void appendToActivityMonitor(QString message);
+
 public slots:
     void motherFunction();  //!< Used to loop the application
 

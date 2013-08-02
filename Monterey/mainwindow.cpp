@@ -20,6 +20,7 @@
 #include "extraclasses/Fervor/fvupdater.h"
 #include <QtWebKit>
 #include <QWebView>
+#include <QtDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -63,7 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     */
 
 
-    guiTimer = new QTimer(this);
+    guiTimer = new QTimer;
     guiTimer->setInterval(50); //refresh the gui 20x a second
 
     controller = new QROVController();
@@ -83,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent) :
     loadSettings();
 
 
-    webCamViewer = new QWebView(this);  //must call after load settings
+    webCamViewer = new QWebView;  //must call after load settings
     webCamViewer->setObjectName("webCamViewer");
     ui->gridLayoutHUD->addWidget(webCamViewer,0,1,4,4);
     webCamViewer->load(controller->rov->getVideoFeeds().at(0)->url());
@@ -117,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
     connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
+    connect(controller, SIGNAL(appendToActivityMonitor(QString)), this, SLOT(appendToActivityMonitor(QString)));
     connect(ui->zoomSlider, SIGNAL(sliderMoved(int)), this, SLOT(zoomTheCameraFeed(int)));
 
     guiTimer->start();
@@ -208,7 +210,7 @@ void MainWindow::setupCustomWidgets()
     controller->loadSettings();
 
     //Setup the activity monitor
-    activityMonitor = new QActivityMonitor(ui->teLog, this);
+    activityMonitor = new QActivityMonitor(ui->teLog);
     activityMonitor->display("Monterey started...");
     QString versionDisp("Version: ");
     versionDisp.append(version);
@@ -294,6 +296,18 @@ void MainWindow::onCalledServoChange(int id, int direction)
     }
 }
 
+void MainWindow::appendToActivityMonitor(QString message)
+{
+    if(activityMonitor)
+    {
+        activityMonitor->display(message);
+    }
+    else
+    {
+        qWarning() << "No activityMonitor object!";
+    }
+}
+
 void MainWindow::refreshGUI()
 {
     loadData(); //load data from the controller object
@@ -328,7 +342,7 @@ void MainWindow::checkForUpdates()
 
 void MainWindow::setupDepthTape()
 {
-    depthTape = new DepthTape((int)controller->rov->sensorDepth->getMax(), this);
+    depthTape = new DepthTape((int)controller->rov->sensorDepth->getMax());
     ui->gridLayoutHUD->addWidget(depthTape->container, 0,0,4,1);
 }
 
@@ -501,7 +515,7 @@ void MainWindow::loadData()
         ui->plotDepth->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 100)));
     }
     ui->plotDepth->replot();
-    depthTape->onDepthChange(controller->rov->sensorDepth->getValue());
+    depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
 }
 
 void MainWindow::displayTime()
