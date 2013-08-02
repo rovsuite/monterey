@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     title.append(" ");
     title.append(version);
     this->setWindowTitle(title);
+    this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
     /*
     //Set the new font
