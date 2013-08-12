@@ -16,6 +16,66 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
     viewer->setColor(Qt::transparent);
 
+    initializeTicks(maxDepth);
+
+    connect(viewer, SIGNAL(heightChanged(int)), this, SLOT(heightChanged(int)));
+}
+
+void DepthTape::onDepthChange(double depth, QString units)
+{
+    if(lastDepth != depth)
+    {
+        QString depthString = QString::number(depth, 'f', 1);
+        depthString.append(units);
+        currentDepthReadout->setProperty("currentDepth", depthString);
+        double newY = depth * -40.0;
+        for(int i=0;i<tickList.count();i++)
+        {
+            tickList[i]->setProperty("y", tickList[i]->property("y").toInt() + (int)newY - (int)lastChange);
+            tickBarList[i]->setProperty("y", tickList[i]->property("y").toInt() + (tickList[i]->property("height").toInt()/2));
+        }
+        lastChange = newY;
+        lastDepth = depth;
+    }
+}
+
+void DepthTape::setMaxDepth(int maxDepth)
+{
+    qDebug() << "DepthTape::setMaxDepth called";
+    foreach(QObject* obj, tickList)
+    {
+        if(obj)
+            obj->deleteLater();
+    }
+    tickList.clear();
+    foreach(QObject* obj, tickBarList)
+    {
+        if(obj)
+            obj->deleteLater();
+    }
+    tickBarList.clear();
+
+    if(currentDepthReadout)
+        currentDepthReadout->deleteLater();
+
+    initializeTicks(maxDepth);
+}
+
+void DepthTape::heightChanged(int height)
+{
+    for(int i=0;i<tickList.count();i++)
+    {
+        tickList[i]->setProperty("y", i*40 + (height/2) - (tickList[i]->property("height").toInt()/2));
+    }
+    for(int i=0;i<tickBarList.count();i++)
+    {
+        tickBarList[i]->setProperty("y", i*40 + (height/2) - (tickBarList[i]->property("height").toInt()/2));
+    }
+    currentDepthReadout->setProperty("y", height/2 - currentDepthReadout->property("height").toInt()/2);
+}
+
+void DepthTape::initializeTicks(int maxDepth)
+{
     QObject *verticalBar = viewer->rootObject()->findChild<QObject*>("verticalBar");
 
     for(int i = 0;i<maxDepth+1;i++)
@@ -66,69 +126,9 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
         }
         tickBarList.append(tickBarObject);
     }
+
+    lastChange = 0;
+    lastDepth = 0;
     viewer->show();
-    connect(viewer, SIGNAL(heightChanged(int)), this, SLOT(heightChanged(int)));
-}
-
-void DepthTape::onDepthChange(double depth, QString units)
-{
-    static double lastDepth = 0.0;
-    if(lastDepth != depth)
-    {
-        QString depthString = QString::number(depth, 'f', 1);
-        depthString.append(units);
-        currentDepthReadout->setProperty("currentDepth", depthString);
-        static double lastChange = 0.0;
-        double newY = depth * -40.0;
-        for(int i=0;i<tickList.count();i++)
-        {
-            tickList[i]->setProperty("y", tickList[i]->property("y").toInt() + (int)newY - (int)lastChange);
-            tickBarList[i]->setProperty("y", tickList[i]->property("y").toInt() + (tickList[i]->property("height").toInt()/2));
-        }
-        lastChange = newY;
-        lastDepth = depth;
-    }
-}
-
-void DepthTape::setMaxDepth(int maxDepth)   //DOESN'T CURRENTLY WORK
-{
-    int currentCount = tickList.count();
-    qDebug() << "Current: " << currentCount << ", New: " << maxDepth;
-    for(int i=currentCount;i<maxDepth+1;i++)
-    {
-        //Add more ticks
-        QQmlComponent component(viewer->engine(), QUrl("qrc:/qml/resources/Tick.qml"));
-        QObject *myObject = component.create();
-        QQuickItem *item = qobject_cast<QQuickItem*>(myObject);
-        QQmlProperty::write(myObject, "parent", QVariant::fromValue<QObject*>(viewer->rootObject()));   //parents the new QObject* to the viewer so it will be painted
-        QQmlEngine::setObjectOwnership(myObject, QQmlEngine::CppOwnership); //prevent garbage collection from deleting the object
-        item->setProperty("x", 10);
-        item->setProperty("y", i*40 + (viewer->height()/2) - item->height()/2);
-        item->setProperty("text", i);
-        tickList.append(myObject);
-
-        QQmlComponent tickBarComponent(viewer->engine(), QUrl("qrc:/qml/resources/TickBar.qml"));
-        QObject *tickBarObject = tickBarComponent.create();
-        QQuickItem *tickBarItem = qobject_cast<QQuickItem*>(tickBarObject);
-        QQmlProperty::write(tickBarObject, "parent", QVariant::fromValue<QObject*>(viewer->rootObject()));
-        QQmlEngine::setObjectOwnership(tickBarObject, QQmlEngine::CppOwnership);
-        tickBarItem->setProperty("x", tickList[i]->property("x").toInt() + tickList[i]->property("paintedWidth").toInt() + 5);
-        tickBarItem->setProperty("y", tickList[i]->property("y").toInt() - (tickList[i]->property("height").toInt()/2));
-        tickBarList.append(tickBarObject);
-    }
-    viewer->show();
-}
-
-void DepthTape::heightChanged(int height)
-{
-    for(int i=0;i<tickList.count();i++)
-    {
-        tickList[i]->setProperty("y", i*40 + (height/2) - (tickList[i]->property("height").toInt()/2));
-    }
-    for(int i=0;i<tickBarList.count();i++)
-    {
-        tickBarList[i]->setProperty("y", i*40 + (height/2) - (tickBarList[i]->property("height").toInt()/2));
-    }
-    currentDepthReadout->setProperty("y", height/2 - currentDepthReadout->property("height").toInt()/2);
 }
 

@@ -21,11 +21,16 @@ public slots:
 
     void heightChanged(int height);
 
+private slots:
+    void initializeTicks(int maxDepth);
+
 private:
     QQuickView *viewer;
     QList<QObject*> tickList;
     QList<QObject*> tickBarList;
     QObject* currentDepthReadout;
+    double lastChange;
+    double lastDepth;
     
 };
 
