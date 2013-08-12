@@ -14,7 +14,6 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
     viewer->setSource(QUrl("qrc:/qml/resources/Tape.qml"));
     viewer->rootContext()->setContextProperty("DepthTape", this);
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
-    viewer->setColor(Qt::transparent);
 
     initializeTicks(maxDepth);
 
