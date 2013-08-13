@@ -15,5 +15,8 @@
         <file>resources/Tape.qml</file>
         <file>resources/Tick.qml</file>
         <file>resources/TickBar.qml</file>
+        <file>resources/Compass.qml</file>
+        <file>resources/CompassReadout.qml</file>
+        <file>resources/CompassTick.qml</file>
     </qresource>
 </RCC>

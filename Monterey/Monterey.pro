@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     extraclasses/DiveTimer/divetimer.cpp \
     extraclasses/IpVideoFeed/ipvideofeed.cpp \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.cpp \
-    extraclasses/PiData/pidata.cpp
+    extraclasses/PiData/pidata.cpp \
+    extraclasses/Compass/compass.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -55,7 +56,8 @@ HEADERS  += mainwindow.h \
     extraclasses/DiveTimer/divetimer.h \
     extraclasses/IpVideoFeed/ipvideofeed.h \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h \
-    extraclasses/PiData/pidata.h
+    extraclasses/PiData/pidata.h \
+    extraclasses/Compass/compass.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \

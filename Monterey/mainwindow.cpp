@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     webCamViewer = new QWebView;  //must call after load settings
     webCamViewer->setObjectName("webCamViewer");
-    ui->gridLayoutHUD->addWidget(webCamViewer,0,1,4,4);
+    ui->gridLayoutHUD->addWidget(webCamViewer,1,1,4,3);
     webCamViewer->load(controller->rov->getVideoFeeds().at(0)->url());
 
     if(controller->isJoyAttached())
@@ -267,6 +267,7 @@ void MainWindow::setupCustomWidgets()
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
     setupDepthTape();
+    setupCompass();
 }
 
 void MainWindow::onCalledClickRelayButton(QPushButton *button)
@@ -344,7 +345,14 @@ void MainWindow::checkForUpdates()
 void MainWindow::setupDepthTape()
 {
     depthTape = new DepthTape((int)controller->rov->sensorDepth->getMax());
-    ui->gridLayoutHUD->addWidget(depthTape->container, 0,0,4,1);
+    ui->gridLayoutHUD->addWidget(depthTape->container, 1,0,4,1);
+}
+
+void MainWindow::setupCompass()
+{
+    compass = new Compass;
+    ui->gridLayoutHUD->addWidget(compass->container, 0,0,1,4);
+    qDebug() << "Created compass!";
 }
 
 void MainWindow::showFullscreen(bool fullscreen)
@@ -517,6 +525,7 @@ void MainWindow::loadData()
     }
     ui->plotDepth->replot();
     depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
+    compass->onHeadingChange(controller->rov->sensorCompass->getValue());
 }
 
 void MainWindow::displayTime()

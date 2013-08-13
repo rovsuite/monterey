@@ -28,6 +28,7 @@
 #include <QClipboard>
 
 #include "extraclasses/DepthTape/depthtape.h"
+#include "extraclasses/Compass/compass.h"
 
 namespace Ui {
     class MainWindow;
@@ -85,6 +86,7 @@ private slots:
     void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
     void checkForUpdates(); //!< Check online for updates to Monterey
     void setupDepthTape();  //!< Configure the depth tape
+    void setupCompass();    //!< Configure the compass
     void showFullscreen(bool fullscreen);
     void zoomTheCameraFeed(int zoomAmount);
 
@@ -107,6 +109,7 @@ private:
     QVector<double> seconds;
     QTime *graphTime;
     DepthTape *depthTape;
+    Compass *compass;
     QWebView* webCamViewer;
 
     QTimer *guiTimer;
