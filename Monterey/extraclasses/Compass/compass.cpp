@@ -13,6 +13,8 @@ Compass::Compass(QWidget *parent) :
     viewer->rootContext()->setContextProperty("Compass", this);
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
 
+    viewer->setColor(QColor(100,100,100));
+
     initializeTicks();
 
     connect(viewer, SIGNAL(heightChanged(int)), this, SLOT(resetGraphics()));

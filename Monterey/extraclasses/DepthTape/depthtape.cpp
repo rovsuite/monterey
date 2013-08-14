@@ -15,6 +15,8 @@ DepthTape::DepthTape(int maxDepth, QWidget *parent) :
     viewer->rootContext()->setContextProperty("DepthTape", this);
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
 
+    viewer->setColor(QColor(100,100,100));
+
     initializeTicks(maxDepth);
 
     connect(viewer, SIGNAL(heightChanged(int)), this, SLOT(heightChanged(int)));

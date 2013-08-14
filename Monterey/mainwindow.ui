@@ -335,6 +335,12 @@
            <property name="text">
             <string>TOBI:</string>
            </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
           </widget>
          </item>
          <item row="0" column="1">
@@ -371,6 +377,12 @@
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>TIBO:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="margin">
+            <number>0</number>
            </property>
           </widget>
          </item>
@@ -409,6 +421,12 @@
            <property name="text">
             <string>Tahoe:</string>
            </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
           </widget>
          </item>
          <item row="2" column="1">
@@ -425,6 +443,12 @@
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>Joystick:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="margin">
+            <number>0</number>
            </property>
           </widget>
          </item>
@@ -463,6 +487,12 @@
            <property name="text">
             <string>Voltage:</string>
            </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
           </widget>
          </item>
          <item row="4" column="1">
@@ -499,6 +529,12 @@
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Error:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="margin">
+            <number>0</number>
            </property>
           </widget>
          </item>

@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    //Setup the base of the application
     ui->setupUi(this);
     version = new QString(QApplication::applicationVersion());
     QString title = this->windowTitle();
@@ -34,40 +35,18 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowTitle(title);
     this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
-    /*
-    //Set the new font
-    QFont font = this->font();
-    //font.setFamily("Alfphabet");
-    QApplication::setFont(font);
-    QPalette palette = this->palette();
-    QBrush brush = palette.brush(QPalette::Window);
-    brush.setColor(QColor("#000000"));
-    palette.setBrush(QPalette::Window, brush);
-    brush = palette.brush(QPalette::WindowText);
-    brush.setColor(QColor("#bcd5fe"));
-    palette.setBrush(QPalette::WindowText, brush);
+    //Apply the application theme
+    QFile qss(":/styles/resources/monterey.css", this);
+    qss.open(QFile::ReadOnly);
+    qDebug() << "Applying stylesheet";
+    setStyleSheet(qss.readAll());
+    qss.close();
 
-    QList<QObject*> widgets = this->findChildren<QObject*>();
-    foreach(QObject* widget, widgets)
-    {
-        QWidget* widgetPointer = qobject_cast<QGroupBox*>(widget);
-        if(widgetPointer)
-        {
-            widgetPointer->setPalette(palette);
-        }
-        QGroupBox* groupBox = qobject_cast<QGroupBox*>(widget);
-        if(groupBox)
-        {
-            groupBox->setStyleSheet("QGroupBox { border: 2px solid #0275ac }");
-        }
-    }
-    this->setPalette(palette);
-    */
-
-
+    //GUI refresh timer
     guiTimer = new QTimer;
     guiTimer->setInterval(50); //refresh the gui 20x a second
 
+    //ROV control engine
     controller = new QROVController();
     engineThread = new QThread(this); //create a second thread
     controller->moveToThread(engineThread); //move the QROVController engine to the second thread
@@ -77,14 +56,17 @@ MainWindow::MainWindow(QWidget *parent) :
     controller->rov->listRelays[1]->setQPushButton(ui->pbRelay1);
     controller->rov->listRelays[2]->setQPushButton(ui->pbRelay2);
 
+    //Timer for updating the graph
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
     ui->plotDepth->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 100)));
+
     setupCustomWidgets();   //load the settings for the custom widgets
+
     loadSettings();
 
-
+    //Setup the video feed display
     webCamViewer = new QWebView;  //must call after load settings
     webCamViewer->setObjectName("webCamViewer");
     ui->gridLayoutHUD->addWidget(webCamViewer,1,1,4,3);
@@ -124,7 +106,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     guiTimer->start();
     connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
-
 }
 
 MainWindow::~MainWindow()
