@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
-    ui->plotDepth->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 100)));
+    ui->plotDepth->graph(0)->setBrush(QBrush(QColor(2, 117, 172, 100)));
 
     setupCustomWidgets();   //load the settings for the custom widgets
 
@@ -159,20 +159,12 @@ void MainWindow::loadSettings()
 
     //Load the units
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
-    QString depthTitle = "Depth (";
-    depthTitle.append(controller->rov->sensorDepth->getUnits());
-    depthTitle.append(")");
-    ui->plotDepth->setTitle(depthTitle);
     ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
     //Load the sensor names
     ui->labSensor0->setText(controller->rov->sensorOther0->getName());
     ui->labSensor1->setText(controller->rov->sensorOther1->getName());
-
-    //Load the thresholds
-    ui->plotDepth->yAxis->setRange(0,-1*controller->rov->sensorDepth->getMax());
-    ui->plotDepth->replot();    //repaint the element to update the title and range
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
@@ -230,15 +222,23 @@ void MainWindow::setupCustomWidgets()
     }
 
     //Setup the depth plot
-    QString depthTitle = "Depth (";
-    depthTitle.append(controller->rov->sensorDepth->getUnits());
-    depthTitle.append(")");
+    QString depthTitle = "Depth %";
     ui->plotDepth->setTitle(depthTitle);
-    ui->plotDepth->yAxis->setRange(0,-1*controller->rov->sensorDepth->getMax());
+    ui->plotDepth->yAxis->setRange(0.0,-100);
     ui->plotDepth->xAxis->setTickStep(1000);    //set to 1000ms gaps
     ui->plotDepth->xAxis->setTickLabels(false); //hide labels
-    ui->plotDepth->setColor(this->palette().background().color());
-    qDebug() << "Setup the graph!" << ui->plotDepth;
+    ui->plotDepth->setColor(QColor(100,100,100));
+
+    /*
+    ui->plotDepth->yAxis->setTickLabelColor(QColor(255,255,255));
+    ui->plotDepth->yAxis->setTickPen(QPen(QColor(255,255,255)));
+    ui->plotDepth->yAxis->setSubTickPen(QPen(QColor(255,255,255)));
+    ui->plotDepth->yAxis->setBasePen(QPen(QColor(255,255,255)));
+    ui->plotDepth->xAxis->setTickLabelColor(QColor(255,255,255));
+    ui->plotDepth->xAxis->setTickPen(QPen(QColor(255,255,255)));
+    ui->plotDepth->xAxis->setSubTickPen(QPen(QColor(255,255,255)));
+    ui->plotDepth->xAxis->setBasePen(QPen(QColor(255,255,255)));
+    */
 
     //Setup array of QLCDNumbers for sensor readouts
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
@@ -489,20 +489,20 @@ void MainWindow::loadData()
     //Display the data graphically
     //Graph the depth
     //Depth
-    depthPoints.append(-1*controller->rov->sensorDepth->getValue());
+    depthPoints.append(-100*(controller->rov->sensorDepth->getValue()/controller->rov->sensorDepth->getMax()));
     seconds.append(graphTime->elapsed());
     ui->plotDepth->graph(0)->setData(seconds, depthPoints);
     ui->plotDepth->xAxis->setRangeUpper(graphTime->elapsed());
     ui->plotDepth->xAxis->setRangeLower(graphTime->elapsed() - 10000);
     if(controller->getStatusTIBO() == false) //if ROV is not connected
     {
-        ui->plotDepth->graph(0)->setPen(QPen(Qt::darkGray));
-        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(128, 128, 128, 100)));
+        ui->plotDepth->graph(0)->setPen(QPen(QColor(64,64,64)));
+        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(64, 64, 64, 200)));
     }
     else
     {
-        ui->plotDepth->graph(0)->setPen(QPen(Qt::blue));
-        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 100)));
+        ui->plotDepth->graph(0)->setPen(QPen(QColor(255,255,255)));
+        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(2, 117, 172, 200)));
     }
     ui->plotDepth->replot();
     depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
