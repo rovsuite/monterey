@@ -11,23 +11,10 @@ Rectangle {
     clip: true
 
     function setNightMode() {
-        verticalBar.color = "#2A82DA";
         page.border.color = "#2A82DA"
     }
 
     function setDayMode() {
-        verticalBar.color = "#2A82DA";
         page.border.color = "#2A82DA"
-    }
-
-    Rectangle {
-        id: verticalBar
-        objectName: "verticalBar"
-        x: 50
-        y: 0
-        width: 3
-        height: page.height
-        color: "#2A82DA"
-        opacity: 0
     }
 }

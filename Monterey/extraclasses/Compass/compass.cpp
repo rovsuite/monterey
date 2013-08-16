@@ -52,7 +52,6 @@ void Compass::resetGraphics()
 
 void Compass::initializeTicks()
 {
-    qDebug() << "Compass::initializeTicks";
     //Ticks
     int multiplier = 100;
     int numberOfExtraTicksPerSide = viewer->width()/multiplier;

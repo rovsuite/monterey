@@ -326,7 +326,6 @@ void MainWindow::setupCompass()
 {
     compass = new Compass;
     ui->gridLayoutHUD->addWidget(compass->container, 0,0,1,4);
-    qDebug() << "Created compass!";
 }
 
 void MainWindow::showFullscreen(bool fullscreen)

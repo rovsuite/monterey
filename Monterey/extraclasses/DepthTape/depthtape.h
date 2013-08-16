@@ -18,8 +18,7 @@ signals:
 public slots:
     void onDepthChange(double depth, QString units);
     void setMaxDepth(int maxDepth);
-
-    void heightChanged(int height);
+    void resetGraphics();
 
 private slots:
     void initializeTicks(int maxDepth);
@@ -27,10 +26,10 @@ private slots:
 private:
     QQuickView *viewer;
     QList<QObject*> tickList;
-    QList<QObject*> tickBarList;
     QObject* currentDepthReadout;
     double lastChange;
     double lastDepth;
+    int lastMaxDepth;
     
 };
 

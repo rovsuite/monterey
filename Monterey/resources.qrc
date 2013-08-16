@@ -12,9 +12,8 @@
     </qresource>
     <qresource prefix="/qml">
         <file>resources/CurrentDepthReadout.qml</file>
-        <file>resources/Tape.qml</file>
-        <file>resources/Tick.qml</file>
-        <file>resources/TickBar.qml</file>
+        <file>resources/DepthTape.qml</file>
+        <file>resources/DepthTick.qml</file>
         <file>resources/Compass.qml</file>
         <file>resources/CompassReadout.qml</file>
         <file>resources/CompassTick.qml</file>
