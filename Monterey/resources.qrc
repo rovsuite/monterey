@@ -9,7 +9,6 @@
         <file>resources/hsi_face.svg.png</file>
         <file>resources/ROV.png</file>
         <file>resources/HeadingIndicator.qml</file>
-        <file>resources/triangle_icon.png</file>
     </qresource>
     <qresource prefix="/qml">
         <file>resources/CurrentDepthReadout.qml</file>
@@ -19,8 +18,5 @@
         <file>resources/Compass.qml</file>
         <file>resources/CompassReadout.qml</file>
         <file>resources/CompassTick.qml</file>
-    </qresource>
-    <qresource prefix="/styles">
-        <file>resources/monterey.css</file>
     </qresource>
 </RCC>
