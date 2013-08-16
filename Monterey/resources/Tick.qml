@@ -11,7 +11,7 @@ Item {
     }
 
     function setDayMode() {
-        depthText.color = "#0275ac";
+        depthText.color = "#2A82DA";
     }
 
     property string text;
@@ -19,7 +19,7 @@ Item {
 
     Text {
         id: depthText
-        color: "#0275ac"
+        color: "#2A82DA"
         text: tick.text;
         //font.family: "Alfphabet"
         font.pixelSize: 12

@@ -7,17 +7,17 @@ Rectangle {
     color: "#000000"
     radius: 5
     border.width: 2
-    border.color: "#0275ac"
+    border.color: "#2A82DA"
     clip: true
 
     function setNightMode() {
-        verticalBar.color = "#ff0000";
-        page.border.color = "#ff0000"
+        verticalBar.color = "#2A82DA";
+        page.border.color = "#2A82DA"
     }
 
     function setDayMode() {
-        verticalBar.color = "#0275ac";
-        page.border.color = "#0275ac"
+        verticalBar.color = "#2A82DA";
+        page.border.color = "#2A82DA"
     }
 
     Rectangle {
@@ -27,7 +27,7 @@ Rectangle {
         y: 0
         width: 3
         height: page.height
-        color: "#0275ac"
+        color: "#2A82DA"
         opacity: 0
     }
 }

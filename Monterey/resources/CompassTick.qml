@@ -4,14 +4,14 @@ Rectangle {
     id: headingBar
     width: 2
     height: 12
-    color: "#0275ac"
+    color: "#2A82DA"
 
     function setNightMode() {
         headingBar.color = "#ff0000";
     }
 
     function setDayMode() {
-        headingBar.color = "#0275ac";
+        headingBar.color = "#2A82DA";
     }
 
     property string textToDisplay;
@@ -19,7 +19,7 @@ Rectangle {
 
     Text {
         id: headingText
-        color: "#0275ac"
+        color: "#2A82DA"
         text: textToDisplay
         font.pixelSize: 12
         y: -1 * headingText.paintedHeight - 1

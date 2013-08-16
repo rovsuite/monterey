@@ -20,6 +20,7 @@
 #include "extraclasses/Fervor/fvupdater.h"
 #include <QtWebKit>
 #include <QWebView>
+#include <QPalette>
 #include <QtDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -34,13 +35,6 @@ MainWindow::MainWindow(QWidget *parent) :
     title.append(version);
     this->setWindowTitle(title);
     this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-
-    //Apply the application theme
-    QFile qss(":/styles/resources/monterey.css", this);
-    qss.open(QFile::ReadOnly);
-    qDebug() << "Applying stylesheet";
-    setStyleSheet(qss.readAll());
-    qss.close();
 
     //GUI refresh timer
     guiTimer = new QTimer;
@@ -227,18 +221,17 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->yAxis->setRange(0.0,-100);
     ui->plotDepth->xAxis->setTickStep(1000);    //set to 1000ms gaps
     ui->plotDepth->xAxis->setTickLabels(false); //hide labels
-    ui->plotDepth->setColor(QColor(100,100,100));
+    ui->plotDepth->setColor(this->palette().window().color());
 
-    /*
-    ui->plotDepth->yAxis->setTickLabelColor(QColor(255,255,255));
-    ui->plotDepth->yAxis->setTickPen(QPen(QColor(255,255,255)));
-    ui->plotDepth->yAxis->setSubTickPen(QPen(QColor(255,255,255)));
-    ui->plotDepth->yAxis->setBasePen(QPen(QColor(255,255,255)));
-    ui->plotDepth->xAxis->setTickLabelColor(QColor(255,255,255));
-    ui->plotDepth->xAxis->setTickPen(QPen(QColor(255,255,255)));
-    ui->plotDepth->xAxis->setSubTickPen(QPen(QColor(255,255,255)));
-    ui->plotDepth->xAxis->setBasePen(QPen(QColor(255,255,255)));
-    */
+    ui->plotDepth->yAxis->setTickLabelColor(this->palette().windowText().color());
+    ui->plotDepth->yAxis->setTickPen(QPen(this->palette().windowText().color()));
+    ui->plotDepth->yAxis->setSubTickPen(QPen(this->palette().windowText().color()));
+    ui->plotDepth->yAxis->setBasePen(QPen(this->palette().windowText().color()));
+    ui->plotDepth->xAxis->setTickLabelColor(this->palette().windowText().color());
+    ui->plotDepth->xAxis->setTickPen(QPen(this->palette().windowText().color()));
+    ui->plotDepth->xAxis->setSubTickPen(QPen(this->palette().windowText().color()));
+    ui->plotDepth->xAxis->setBasePen(QPen(this->palette().windowText().color()));
+    ui->plotDepth->setTitleColor(this->palette().windowText().color());
 
     //Setup array of QLCDNumbers for sensor readouts
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
@@ -496,13 +489,15 @@ void MainWindow::loadData()
     ui->plotDepth->xAxis->setRangeLower(graphTime->elapsed() - 10000);
     if(controller->getStatusTIBO() == false) //if ROV is not connected
     {
-        ui->plotDepth->graph(0)->setPen(QPen(QColor(64,64,64)));
-        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(64, 64, 64, 200)));
+        ui->plotDepth->graph(0)->setPen(QPen(this->palette().alternateBase().color()));
+        ui->plotDepth->graph(0)->setBrush(QBrush(this->palette().alternateBase().color()));
     }
     else
     {
-        ui->plotDepth->graph(0)->setPen(QPen(QColor(255,255,255)));
-        ui->plotDepth->graph(0)->setBrush(QBrush(QColor(2, 117, 172, 200)));
+        ui->plotDepth->graph(0)->setPen(QPen(this->palette().windowText().color()));
+        QColor graphColor = this->palette().highlight().color();
+        graphColor.setAlpha(128);
+        ui->plotDepth->graph(0)->setBrush(QBrush(graphColor));
     }
     ui->plotDepth->replot();
     depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());

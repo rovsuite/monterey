@@ -10,7 +10,7 @@ Rectangle {
     color: "#000000"
     radius: 3
     border.width: 2
-    border.color: "#0275ac"
+    border.color: "#2A82DA"
 
     property string currentDepth: "0"
 
@@ -20,13 +20,13 @@ Rectangle {
     }
 
     function setDayMode() {
-        currentDepthRectangle.border.color = "#0275ac";
-        currentDepthReadout.color = "#bcd5fe";
+        currentDepthRectangle.border.color = "#2A82DA";
+        currentDepthReadout.color = "#ffffff";
     }
 
     Text {
         id: currentDepthReadout
-        color: "#bcd5fe"
+        color: "#ffffff"
         z:1
         text: currentDepthRectangle.currentDepth
         //font.family: "Alfphabet"

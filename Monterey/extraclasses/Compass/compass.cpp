@@ -13,7 +13,7 @@ Compass::Compass(QWidget *parent) :
     viewer->rootContext()->setContextProperty("Compass", this);
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
 
-    viewer->setColor(QColor(100,100,100));
+    viewer->setColor(QColor(53,53,53));
 
     initializeTicks();
 

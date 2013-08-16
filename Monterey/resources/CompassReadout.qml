@@ -6,7 +6,7 @@ Rectangle {
     color: "#000000"
     radius: 3
     border.width: 2
-    border.color: "#0275ac"
+    border.color: "#2A82DA"
 
     property string currentHeading: "0"
 
@@ -16,13 +16,13 @@ Rectangle {
     }
 
     function setDayMode() {
-        currentHeadingRectangle.border.color = "#0275ac";
-        currentHeadingReadout.color = "#bcd5fe";
+        currentHeadingRectangle.border.color = "#2A82DA";
+        currentHeadingReadout.color = "#ffffff";
     }
 
     Text {
         id: currentHeadingReadout
-        color: "#bcd5fe"
+        color: "#ffffff"
         z:1
         text: currentHeadingRectangle.currentHeading
         font.pixelSize: 12
