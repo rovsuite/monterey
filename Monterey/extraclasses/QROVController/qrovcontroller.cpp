@@ -553,9 +553,10 @@ void QROVController::loadSettings()
     for(int i = 0;i<videoFeeds.count();i++)
     {
         videoFeeds[i]->setname(mySettings->value("videoFeeds/" + QString::number(i) + "/name", "Main").toString());
-        videoFeeds[i]->seturl(mySettings->value("videoFeeds/" + QString::number(i) + "/url", "http://127.0.0.1:8080").toUrl());
+        videoFeeds[i]->seturl(mySettings->value("videoFeeds/" + QString::number(i) + "/url", "http://127.0.0.1:8080/javascript_simple.html").toUrl());
         videoFeeds[i]->setAutoGenerate(mySettings->value("videoFeeds/" + QString::number(i) + "/autoGenerate", true).toBool());
     }
+    rov->setVideoFeeds(videoFeeds);
 
     mutex.unlock();
 }

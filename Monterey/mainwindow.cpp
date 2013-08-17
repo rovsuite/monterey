@@ -21,6 +21,7 @@
 #include <QtWebKit>
 #include <QWebView>
 #include <QPalette>
+#include <QMessageBox>
 #include <QtDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -54,17 +55,16 @@ MainWindow::MainWindow(QWidget *parent) :
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
-    ui->plotDepth->graph(0)->setBrush(QBrush(QColor(2, 117, 172, 100)));
-
-    setupCustomWidgets();   //load the settings for the custom widgets
-
-    loadSettings();
+    //ui->plotDepth->graph(0)->setBrush(QBrush(QColor(2, 117, 172, 100)));
 
     //Setup the video feed display
     webCamViewer = new QWebView;  //must call after load settings
     webCamViewer->setObjectName("webCamViewer");
     ui->gridLayoutHUD->addWidget(webCamViewer,1,1,4,3);
-    webCamViewer->load(controller->rov->getVideoFeeds().at(0)->url());
+
+    setupCustomWidgets();   //load the settings for the custom widgets
+
+    loadSettings();
 
     if(controller->isJoyAttached())
     {
@@ -166,10 +166,21 @@ void MainWindow::loadSettings()
     //Refresh the depth tape
     depthTape->setMaxDepth((int)controller->rov->sensorDepth->getMax());
 
+    qDebug() << "IP Video URL: " << controller->rov->getVideoFeeds().first()->url();
     //Load the proper video channel
-    if(webCamViewer)
+    if(webCamViewer && controller->rov->getVideoFeeds().first()->url().isValid())
     {
-        webCamViewer->setUrl(controller->rov->getVideoFeeds().at(0)->url());
+        webCamViewer->load(controller->rov->getVideoFeeds().first()->url());
+        webCamViewer->show();
+    }
+    else
+    {
+        QMessageBox errorMessageBox;
+        errorMessageBox.setText("Error setting the video feed URL.");
+        errorMessageBox.setInformativeText("The URL is invalid.  Please change it in the settings!");
+        errorMessageBox.setStandardButtons(QMessageBox::Ok);
+        errorMessageBox.setDefaultButton(QMessageBox::Ok);
+        errorMessageBox.exec();
     }
 }
 

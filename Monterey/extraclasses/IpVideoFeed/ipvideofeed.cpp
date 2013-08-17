@@ -33,6 +33,12 @@ void IpVideoFeed::setname(QString arg)
 
 void IpVideoFeed::seturl(QUrl arg)
 {
+    QString checkForHttp = arg.toString();
+    if(!checkForHttp.contains("http://", Qt::CaseInsensitive))
+    {
+        checkForHttp.prepend("http://");
+        arg.setUrl(checkForHttp);
+    }
     if (m_url != arg) {
         m_url = arg;
         emit urlChanged(arg);
