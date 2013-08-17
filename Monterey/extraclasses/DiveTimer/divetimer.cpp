@@ -59,6 +59,6 @@ bool DiveTimer::hasStarted()
 
 void DiveTimer::onTick()
 {
-    if(!paused)
+    if(!paused && started)
         secondsElapsed++;
 }

@@ -33,7 +33,6 @@ QROVController::QROVController(QObject *parent) :
     numberOfAxes = 0;
     rov = new QROV(numberOfMotors, numberOfRelays, numberOfServos, this);
     joy = new QJoystick();
-    qDebug() << "Joystick: " << joy;
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
     rxSocket = new QUdpSocket(this);
     txSocket = new QUdpSocket(this);
@@ -135,7 +134,6 @@ void QROVController::initJoysticks()
     }
     monitorJoystick->compareState(joyAttached);
     mutex.unlock();
-    qDebug() << "joysticks setup";
 }
 
 

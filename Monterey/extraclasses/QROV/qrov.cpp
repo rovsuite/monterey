@@ -28,6 +28,7 @@ QROV::QROV(int motors, int relays, int servos, QObject *parent) :
     piData = new PiData(this);
 
     sensorDepth->setMin(0);
+    sensorDepth->setValue(0);
 
     version = 0;
 
