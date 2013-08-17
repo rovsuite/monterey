@@ -20,6 +20,16 @@ QHostAddress *PiData::ipAddress() const
     return m_ipAddress;
 }
 
+double PiData::usedMemory() const
+{
+    return m_usedMemory;
+}
+
+double PiData::usedCpu() const
+{
+    return m_usedCpu;
+}
+
 void PiData::setTempC(double arg)
 {
     if (m_tempC != arg) {
@@ -36,4 +46,20 @@ void PiData::setUptimeMs(int arg)
 void PiData::setIpAddress(QHostAddress *arg)
 {
     m_ipAddress = arg;
+}
+
+void PiData::setUsedMemory(double arg)
+{
+    if (m_usedMemory != arg) {
+        m_usedMemory = arg;
+        emit usedMemoryChanged(arg);
+    }
+}
+
+void PiData::setUsedCpu(double arg)
+{
+    if (m_usedCpu != arg) {
+        m_usedCpu = arg;
+        emit usedCpuChanged(arg);
+    }
 }
