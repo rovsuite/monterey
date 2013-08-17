@@ -4,6 +4,8 @@ Monterey is a FOSS ROV controller that is one of the modules of ROV-suite (http:
 
 The theme is a modified version of QuantumCD's Dark Fusion (contingencycoder.wordpress.com).
 
+The graphing widget is QCustomPlot (qcustomplot.com).
+
 If you have any issues, questions, comments, ideas, etc, please contact me!
 
 Thanks for trying it out! 

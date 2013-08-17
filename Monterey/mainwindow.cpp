@@ -55,7 +55,6 @@ MainWindow::MainWindow(QWidget *parent) :
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
-    //ui->plotDepth->graph(0)->setBrush(QBrush(QColor(2, 117, 172, 100)));
 
     //Setup the video feed display
     webCamViewer = new QWebView;  //must call after load settings
@@ -229,7 +228,7 @@ void MainWindow::setupCustomWidgets()
     //Setup the depth plot
     QString depthTitle = "Depth %";
     ui->plotDepth->setTitle(depthTitle);
-    ui->plotDepth->yAxis->setRange(0.0,-100);
+    ui->plotDepth->yAxis->setRange(0,-100);
     ui->plotDepth->xAxis->setTickStep(1000);    //set to 1000ms gaps
     ui->plotDepth->xAxis->setTickLabels(false); //hide labels
     ui->plotDepth->setColor(this->palette().window().color());
@@ -243,6 +242,15 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->xAxis->setSubTickPen(QPen(this->palette().windowText().color()));
     ui->plotDepth->xAxis->setBasePen(QPen(this->palette().windowText().color()));
     ui->plotDepth->setTitleColor(this->palette().windowText().color());
+    QVector<QString> depthLabels;
+    QVector<double> depthTicks;
+    depthLabels << "0%" << "25%" << "50%" << "75%" << "max";
+    depthTicks << 0 << -25 << -50 << -75 <<  -100;
+    ui->plotDepth->yAxis->setAutoTickLabels(false);
+    ui->plotDepth->yAxis->setAutoTicks(false);
+    ui->plotDepth->yAxis->setTickVector(depthTicks);
+    ui->plotDepth->yAxis->setTickVectorLabels(depthLabels);
+    ui->plotDepth->xAxis->setGrid(true);
 
     //Setup array of QLCDNumbers for sensor readouts
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
