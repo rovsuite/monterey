@@ -456,13 +456,17 @@ void QROVController::processPi()
 
     double tempC;
     int uptime;
+    double usedMemoryPercentage;
+    double usedCpuPercentage;
 
     QTextStream stream(&packet);
-    stream >> tempC >> uptime;
+    stream >> tempC >> uptime >> usedMemoryPercentage >> usedCpuPercentage;
 
     rov->piData->setTempC(tempC);
     rov->piData->setUptimeMs(uptime);
     rov->piData->setIpAddress(piAddress);
+    rov->piData->setUsedMemory(usedMemoryPercentage);
+    rov->piData->setUsedCpu(usedCpuPercentage);
 
     comPi = true;
     timerPi->start(5000);
