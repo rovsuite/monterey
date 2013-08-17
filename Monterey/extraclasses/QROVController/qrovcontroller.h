@@ -95,6 +95,7 @@ public slots:
     void noJoystick();   //!< Put the ROV motors into a neutral state if the joystick is not attached
     int getPortTOBI();  //!< Get the TOBI port
     int getPortTIBO();  //!< Get the TIBO port
+    int getPortRpiTibo(); //!< Get the port that the Raspberry Pi sends to
     int getJoysAvail() { joysAvail = joy->availableJoysticks(); return joysAvail; }    //!< Return the number of attached joysticks
     bool isJoyAttached() {return joyAttached; } //!< Return the joystick attached status
     bool getStatusTOBI() { return comTOBI; }    //!< Return the status of TOBI

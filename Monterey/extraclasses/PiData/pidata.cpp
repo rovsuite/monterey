@@ -10,9 +10,9 @@ double PiData::tempC() const
     return m_tempC;
 }
 
-int PiData::uptimeMs() const
+int PiData::uptimeS() const
 {
-    return m_uptimeMs;
+    return m_uptimeS;
 }
 
 QHostAddress *PiData::ipAddress() const
@@ -38,9 +38,9 @@ void PiData::setTempC(double arg)
     }
 }
 
-void PiData::setUptimeMs(int arg)
+void PiData::setUptimeS(int arg)
 {
-    m_uptimeMs = arg;
+    m_uptimeS = arg;
 }
 
 void PiData::setIpAddress(QHostAddress *arg)

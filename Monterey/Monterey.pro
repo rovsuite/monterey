@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     extraclasses/IpVideoFeed/ipvideofeed.cpp \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.cpp \
     extraclasses/PiData/pidata.cpp \
-    extraclasses/Compass/compass.cpp
+    extraclasses/Compass/compass.cpp \
+    extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -57,14 +58,16 @@ HEADERS  += mainwindow.h \
     extraclasses/IpVideoFeed/ipvideofeed.h \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h \
     extraclasses/PiData/pidata.h \
-    extraclasses/Compass/compass.h
+    extraclasses/Compass/compass.h \
+    extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \
     rovsettings.ui \
     rovmappings.ui \
     rovabout.ui \
-    extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.ui
+    extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.ui \
+    extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.ui
 
 INCLUDEPATH += ../Monterey/extraclasses/QActivityMonitor/ \
                 ../Monterey/extraclasses/QBoolMonitor/ \

@@ -455,7 +455,7 @@ void QROVController::processPi()
     packet = (tr("%1").arg(datagram.data()));   //turn datagram into a string
 
     double tempC;
-    int uptime;
+    double uptime;
     double usedMemoryPercentage;
     double usedCpuPercentage;
 
@@ -463,10 +463,13 @@ void QROVController::processPi()
     stream >> tempC >> uptime >> usedMemoryPercentage >> usedCpuPercentage;
 
     rov->piData->setTempC(tempC);
-    rov->piData->setUptimeMs(uptime);
+    rov->piData->setUptimeS((int)uptime);
     rov->piData->setIpAddress(piAddress);
     rov->piData->setUsedMemory(usedMemoryPercentage);
     rov->piData->setUsedCpu(usedCpuPercentage);
+
+    qDebug() << packet;
+    qDebug() << tempC << " " << uptime << " " << " " << usedMemoryPercentage << " " << usedCpuPercentage;
 
     comPi = true;
     timerPi->start(5000);
@@ -489,6 +492,11 @@ int QROVController::getPortTOBI()
 int QROVController::getPortTIBO()
 {
     return tiboPort;
+}
+
+int QROVController::getPortRpiTibo()
+{
+    return piSocket->localPort();
 }
 
 void QROVController::loadSettings()
