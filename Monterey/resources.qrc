@@ -17,6 +17,6 @@
         <file>resources/Compass.qml</file>
         <file>resources/CompassReadout.qml</file>
         <file>resources/CompassTick.qml</file>
-        <file>resources/LEDIndicator.qml</file>
+        <file>resources/LedIndicator.qml</file>
     </qresource>
 </RCC>

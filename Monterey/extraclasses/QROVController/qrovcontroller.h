@@ -34,6 +34,8 @@ public:
     QBoolMonitor *monitorTOBI;
     QBoolMonitor *monitorTIBO;
     QBoolMonitor *monitorJoystick;
+    QBoolMonitor *monitorTahoe;
+    QBoolMonitor *monitorRPi;
     enum MotorLayout{vectorDrive, tankDrive};
 
 signals:

@@ -21,7 +21,6 @@ SOURCES += main.cpp\
     rovsettings.cpp \
     rovmappings.cpp \
     rovabout.cpp \
-    extraclasses/QLedIndicator/qledindicator.cpp \
     extraclasses/QROV/qrov.cpp \
     extraclasses/QROVController/qrovcontroller.cpp \
     extraclasses/QROVSensor/qrovsensor.cpp \
@@ -34,7 +33,8 @@ SOURCES += main.cpp\
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.cpp \
     extraclasses/PiData/pidata.cpp \
     extraclasses/Compass/compass.cpp \
-    extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.cpp
+    extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.cpp \
+    extraclasses/LedIndicator/ledindicator.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -46,7 +46,6 @@ HEADERS  += mainwindow.h \
     rovsettings.h \
     rovmappings.h \
     rovabout.h \
-    extraclasses/QLedIndicator/qledindicator.h \
     extraclasses/QROV/qrov.h \
     extraclasses/QROVController/qrovcontroller.h \
     extraclasses/QROVSensor/qrovsensor.h \
@@ -59,7 +58,8 @@ HEADERS  += mainwindow.h \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h \
     extraclasses/PiData/pidata.h \
     extraclasses/Compass/compass.h \
-    extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.h
+    extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.h \
+    extraclasses/LedIndicator/ledindicator.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \

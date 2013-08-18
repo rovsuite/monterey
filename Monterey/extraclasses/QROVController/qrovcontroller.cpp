@@ -50,6 +50,10 @@ QROVController::QROVController(QObject *parent) :
     monitorTIBO->setComparisonState(comTIBO);
     monitorTOBI = new QBoolMonitor(this);
     monitorTOBI->setComparisonState(comTOBI);
+    monitorTahoe = new QBoolMonitor(this);
+    monitorTahoe->setComparisonState(comTahoe);
+    monitorRPi = new QBoolMonitor(this);
+    monitorRPi->setComparisonState(comPi);
     motorLayout = vectorDrive;
     monitorJoystick = new QBoolMonitor(this);
     monitorJoystick->setComparisonState(joyAttached);
@@ -354,6 +358,7 @@ void QROVController::processTahoe()
     rov->listServos[0]->setValue(servo0);
     rov->listServos[1]->setValue(servo1);
     comTahoe = true;
+    monitorTahoe->compareState(comTahoe);
     timerTahoe->start(ERRORTIMEOUT);
     mutex.unlock();
     emit onTahoeProcessed();    //tell the GUI to update itself
@@ -468,10 +473,8 @@ void QROVController::processPi()
     rov->piData->setUsedMemory(usedMemoryPercentage);
     rov->piData->setUsedCpu(usedCpuPercentage);
 
-    qDebug() << packet;
-    qDebug() << tempC << " " << uptime << " " << " " << usedMemoryPercentage << " " << usedCpuPercentage;
-
     comPi = true;
+    monitorRPi->compareState(comPi);
     timerPi->start(5000);
     mutex.unlock();
 }
@@ -833,6 +836,7 @@ void QROVController::setErrorTahoe()
     QMutex mutex;
     mutex.lock();
     comTahoe = false;
+    monitorTahoe->compareState(comTahoe);
     mutex.unlock();
 }
 
@@ -841,6 +845,7 @@ void QROVController::setErrorPi()
     QMutex mutex;
     mutex.lock();
     comPi = false;
+    monitorRPi->compareState(comPi);
     mutex.unlock();
 }
 

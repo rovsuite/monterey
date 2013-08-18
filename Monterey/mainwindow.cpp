@@ -41,6 +41,12 @@ MainWindow::MainWindow(QWidget *parent) :
     guiTimer = new QTimer;
     guiTimer->setInterval(50); //refresh the gui 20x a second
 
+    //Prepare status light struct
+    statusLights.com = 0;
+    statusLights.joystick = 0;
+    statusLights.rPi = 0;
+    statusLights.tahoe = 0;
+
     //ROV control engine
     controller = new QROVController();
     engineThread = new QThread(this); //create a second thread
@@ -68,10 +74,12 @@ MainWindow::MainWindow(QWidget *parent) :
     if(controller->isJoyAttached())
     {
         activityMonitor->display("Joystick attached");
+        statusLights.joystick->setStatus(true);
     }
     else
     {
         activityMonitor->display("Joystick not attached");
+        statusLights.joystick->setStatus(false);
     }
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout())); //show the about window
@@ -83,14 +91,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
     connect(ui->actionCheck_for_Updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
     connect(ui->actionFullscreen, SIGNAL(toggled(bool)), this, SLOT(showFullscreen(bool)));
-    connect(controller, SIGNAL(errorTIBO()), this, SLOT(errorTIBO()));
-    connect(controller, SIGNAL(errorTOBI()), this, SLOT(errorTOBI()));
-    connect(controller, SIGNAL(noErrorTIBO()),this, SLOT(noErrorTIBO()));
-    connect(controller, SIGNAL(noErrorTOBI()), this, SLOT(noErrorTOBI()));
     connect(controller->monitorTIBO, SIGNAL(stateChanged()), this, SLOT(lostTIBO()));
     connect(controller->monitorTOBI, SIGNAL(stateChanged()), this, SLOT(lostTOBI()));
-    connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
+    connect(controller->monitorTahoe, SIGNAL(stateChanged()), this, SLOT(lostTahoe()));
+    connect(controller->monitorRPi, SIGNAL(stateChanged()), this, SLOT(lostRPi()));
+    connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
     connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
     connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
@@ -194,36 +200,43 @@ void MainWindow::setupCustomWidgets()
     versionDisp.append(version);
     activityMonitor->display(versionDisp);
 
-    //Setup the LEDs
-    QList<QLedIndicator*> red;
-    red.append(ui->ledErrorR);
-    red.append(ui->ledJoystickR);
-    red.append(ui->ledTIBOR);
-    red.append(ui->ledTOBIR);
-    red.append(ui->ledVoltageR);
-
-    foreach(QLedIndicator* led, red)
+    //Setup status lights
+    QGridLayout * statusGrid = qobject_cast<QGridLayout*>(ui->groupBoxStatus->layout());
+    if(statusLights.com != 0)
     {
-        led->setOnColor1(QColor(255,0,0));
-        led->setOnColor2(QColor(192,0,0));
-        led->setOffColor1(QColor(28,0,0));
-        led->setOffColor2(QColor(128,0,0));
+        delete statusLights.com;
     }
+    statusLights.com = new LedIndicator;
+    statusLights.com->setIndicatorTitle("COM");
+    statusLights.com->setStatus(false);
+    statusGrid->addWidget(statusLights.com->container, 0, 0, 1, 1);
 
-    QList<QLedIndicator*> yellow;
-    yellow.append(ui->ledErrorY);
-    yellow.append(ui->ledJoystickY);
-    yellow.append(ui->ledTIBOY);
-    yellow.append(ui->ledTOBIY);
-    yellow.append(ui->ledVoltageY);
-
-    foreach(QLedIndicator* led, yellow)
+    if(statusLights.rPi != 0)
     {
-        led->setOnColor1(QColor(255,255,0));
-        led->setOnColor2(QColor(192,192,0));
-        led->setOffColor1(QColor(28,28,0));
-        led->setOffColor2(QColor(128,128,0));
+        delete statusLights.rPi;
     }
+    statusLights.rPi = new LedIndicator;
+    statusLights.rPi->setIndicatorTitle("RPi");
+    statusLights.rPi->setStatus(false);
+    statusGrid->addWidget(statusLights.rPi->container, 0, 1, 1, 1);
+
+    if(statusLights.joystick != 0)
+    {
+        delete statusLights.joystick;
+    }
+    statusLights.joystick = new LedIndicator;
+    statusLights.joystick->setIndicatorTitle("Joystick");
+    statusLights.joystick->setStatus(false);
+    statusGrid->addWidget(statusLights.joystick->container, 1, 0, 1, 1);
+
+    if(statusLights.tahoe != 0)
+    {
+        delete statusLights.tahoe;
+    }
+    statusLights.tahoe = new LedIndicator;
+    statusLights.tahoe->setIndicatorTitle("Tahoe");
+    statusLights.tahoe->setStatus(false);
+    statusGrid->addWidget(statusLights.tahoe->container, 1, 1, 1, 1);
 
     //Setup the depth plot
     QString depthTitle = "Depth %";
@@ -308,16 +321,21 @@ void MainWindow::refreshGUI()
     loadData(); //load data from the controller object
     displayTime();  //display the current time
     showDiveTimer();  //show the time according to the dive timer
-    ledDisplay();   //light up the LEDs
     thresholdCheck();   //check for values exceeding thresholds
 }
 
 void MainWindow::lostJoystick()
 {
     if(controller->isJoyAttached())
+    {
         activityMonitor->display("Joystick attached");
+        statusLights.joystick->setStatus(true);
+    }
     else
+    {
         activityMonitor->display("Joystick detached");
+        statusLights.joystick->setStatus(false);
+    }
 }
 
 void MainWindow::displayTahoe()
@@ -364,118 +382,65 @@ void MainWindow::zoomTheCameraFeed(int zoomAmount)
     }
 }
 
-void MainWindow::ledDisplay()
-{
-    //Joystick
-    if(controller->isJoyAttached() == true)
-    {
-        ui->ledJoystickG->setChecked(true);
-        ui->ledJoystickY->setChecked(false);
-        ui->ledJoystickR->setChecked(false);
-    }
-    else
-    {
-        ui->ledJoystickG->setChecked(false);
-        ui->ledJoystickY->setChecked(false);
-        ui->ledJoystickR->setChecked(true);
-    }
-
-    //Voltage
-    if(controller->rov->sensorVoltage->getValue() >= controller->rov->sensorVoltage->getMax())
-    {
-        ui->ledVoltageG->setChecked(false);
-        ui->ledVoltageR->setChecked(false);
-        ui->ledVoltageY->setChecked(true);
-    }
-    else if(controller->rov->sensorVoltage->getValue() < 1)
-    {
-        ui->ledVoltageG->setChecked(false);
-        ui->ledVoltageR->setChecked(true);
-        ui->ledVoltageY->setChecked(false);
-    }
-    else
-    {
-        ui->ledVoltageG->setChecked(true);
-        ui->ledVoltageR->setChecked(false);
-        ui->ledVoltageY->setChecked(false);
-    }
-
-    //Tahoe LED
-    if(controller->getStatusTahoe())    //if Tahoe is connected
-    {
-        ui->ledTahoe->setChecked(true);
-    }
-    else
-    {
-        ui->ledTahoe->setChecked(false);
-    }
-
-    //Error LED
-    if(ui->ledJoystickR->isChecked() || ui->ledTIBOR->isChecked() || ui->ledTOBIR->isChecked() || ui->ledVoltageR->isChecked())
-    {
-        ui->ledErrorG->setChecked(false);
-        ui->ledErrorR->setChecked(true);
-        ui->ledErrorY->setChecked(false);
-    }
-    else if(ui->ledJoystickY->isChecked() || ui->ledTIBOY->isChecked() || ui->ledTOBIY->isChecked() || ui->ledVoltageY->isChecked())
-    {
-        ui->ledErrorG->setChecked(false);
-        ui->ledErrorR->setChecked(false);
-        ui->ledErrorY->setChecked(true);
-    }
-    else
-    {
-        ui->ledErrorG->setChecked(true);
-        ui->ledErrorR->setChecked(false);
-        ui->ledErrorY->setChecked(false);
-    }
-}
-
-void MainWindow::noErrorTOBI()
-{
-    ui->ledTOBIG->setChecked(true);
-    ui->ledTOBIR->setChecked(false);
-    ui->ledTOBIY->setChecked(false);
-}
-
-void MainWindow::noErrorTIBO()
-{
-    ui->ledTIBOG->setChecked(true);
-    ui->ledTIBOR->setChecked(false);
-    ui->ledTIBOY->setChecked(false);
-}
-
-void MainWindow::errorTOBI()
-{
-    ui->ledTOBIG->setChecked(false);
-    ui->ledTOBIR->setChecked(true);
-    ui->ledTOBIY->setChecked(false);
-}
-
-void MainWindow::errorTIBO()
-{
-    ui->ledTIBOG->setChecked(false);
-    ui->ledTIBOR->setChecked(true);
-    ui->ledTIBOY->setChecked(false);
-}
-
 void MainWindow::lostTOBI()
 {
     if(controller->getStatusTOBI())
+    {
         activityMonitor->display("Gained TOBI");
+        if(controller->getStatusTIBO()) //if also receiving
+            statusLights.com->setStatus(true);
+    }
     else
+    {
         activityMonitor->display("Lost TOBI");
+        statusLights.com->setStatus(false);
+    }
 }
 
 void MainWindow::lostTIBO()
 {
     if(controller->getStatusTIBO())
+    {
         activityMonitor->display("Gained TIBO");
+        if(controller->getStatusTOBI()) //if also sending
+            statusLights.com->setStatus(true);
+    }
     else
+    {
         activityMonitor->display("Lost TIBO");
+        statusLights.com->setStatus(false);
+    }
 }
 
-void MainWindow::thresholdCheck()
+void MainWindow::lostTahoe()
+{
+    if(controller->getStatusTahoe())
+    {
+        activityMonitor->display("Gained Tahoe COM");
+        statusLights.tahoe->setStatus(true);
+    }
+    else
+    {
+        activityMonitor->display("Lost Tahoe COM");
+        statusLights.tahoe->setStatus(false);
+    }
+}
+
+void MainWindow::lostRPi()
+{
+    if(controller->getStatusPi())
+    {
+        activityMonitor->display("Gained Raspberry Pi COM");
+        statusLights.rPi->setStatus(true);
+    }
+    else
+    {
+        activityMonitor->display("Lost Raspberry Pi COM");
+        statusLights.rPi->setStatus(false);
+    }
+}
+
+void MainWindow::thresholdCheck()   //TODO: REMOVE
 {
     //if the ROV is too deep
     if(controller->rov->sensorDepth->getValue() > controller->rov->sensorDepth->getThreshold())

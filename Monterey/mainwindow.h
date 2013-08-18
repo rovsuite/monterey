@@ -29,6 +29,7 @@
 
 #include "extraclasses/DepthTape/depthtape.h"
 #include "extraclasses/Compass/compass.h"
+#include "extraclasses/LedIndicator/ledindicator.h"
 
 namespace Ui {
     class MainWindow;
@@ -71,13 +72,10 @@ private slots:
     void showMappings();    //!< show the joystick mapping dialog
     void showSettings();    //!< show the settings dialog
     void showDiveTimer();   //!< Display the dive timer
-    void ledDisplay();  //!< Light up the LEDs based on each important status
-    void noErrorTOBI(); //!< Light up the green TOBI LED
-    void noErrorTIBO(); //!< Light up the green TIBO LED
-    void errorTOBI();    //!< Light up the red TOBI LED
-    void errorTIBO();   //!< Light up the red TIBO LED
     void lostTOBI();    //!< Add TOBI lost/gained to the activity monitor
     void lostTIBO();    //!< Add TIBO lost/gained to the activity monitor
+    void lostTahoe();   //!< Add Tahoe COM lost/gained to the activity monitor
+    void lostRPi(); //!< Add RPi COM lost/gained to the activity monitor
     void thresholdCheck();  //!< Check the input values to see if they reach thresholds and alert the user if they do
     void loadData();    //!< Load the data from the ROV controller and display it
     void displayTime(); //!< Display the current time
@@ -115,6 +113,13 @@ private:
     QTimer *guiTimer;
 
     QThread *engineThread;
+
+    struct StatusLights {
+    LedIndicator *com;
+    LedIndicator *joystick;
+    LedIndicator *rPi;
+    LedIndicator *tahoe;
+    }statusLights;
 };
 
 #endif // MAINWINDOW_H
