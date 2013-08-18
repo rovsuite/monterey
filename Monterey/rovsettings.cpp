@@ -105,8 +105,8 @@ void ROVSettings::onAutoGenerateVideoFeedUrlClicked(bool enabled)
     {
         QString url;
         url.append("http://");
-        if(p->controller->rov->piData->ipAddress())
-            url.append(p->controller->rov->piData->ipAddress()->toString());
+        if(!p->controller->rov->piData->ipAddress().isNull())
+            url.append(p->controller->rov->piData->ipAddress().toString());
         else
             url.append("127.0.0.1");
         url.append(":8080/javascript_simple.html");
