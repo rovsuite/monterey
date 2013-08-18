@@ -464,7 +464,7 @@ void QROVController::processPi()
 
     rov->piData->setTempC(tempC);
     rov->piData->setUptimeS((int)uptime);
-    rov->piData->setIpAddress(piAddress);
+    rov->piData->setIpAddress(*piAddress);
     rov->piData->setUsedMemory(usedMemoryPercentage);
     rov->piData->setUsedCpu(usedCpuPercentage);
 

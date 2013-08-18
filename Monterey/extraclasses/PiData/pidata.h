@@ -9,7 +9,7 @@ class PiData : public QObject
     Q_OBJECT
     Q_PROPERTY(double tempC READ tempC WRITE setTempC NOTIFY tempCChanged)
     Q_PROPERTY(int uptimeS READ uptimeS WRITE setUptimeS)
-    Q_PROPERTY(QHostAddress* ipAddress READ ipAddress WRITE setIpAddress)
+    Q_PROPERTY(QHostAddress ipAddress READ ipAddress WRITE setIpAddress)
     Q_PROPERTY(double usedMemory READ usedMemory WRITE setUsedMemory NOTIFY usedMemoryChanged)
     Q_PROPERTY(double usedCpu READ usedCpu WRITE setUsedCpu NOTIFY usedCpuChanged)
 
@@ -20,7 +20,7 @@ public:
 
     int uptimeS() const;
 
-    QHostAddress* ipAddress() const;
+    QHostAddress ipAddress() const;
 
     double usedMemory() const;
 
@@ -40,7 +40,7 @@ public slots:
 
     void setUptimeS(int arg);
 
-    void setIpAddress(QHostAddress* arg);
+    void setIpAddress(QHostAddress arg);
 
     void setUsedMemory(double arg);
 
@@ -49,7 +49,7 @@ public slots:
 private:
     double m_tempC;
     int m_uptimeS;
-    QHostAddress* m_ipAddress;
+    QHostAddress m_ipAddress;
     double m_usedMemory;
     double m_usedCpu;
 };
