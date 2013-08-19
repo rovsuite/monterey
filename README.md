@@ -34,3 +34,19 @@ Notes:
 -------
 
 Monterey can compile on OSX, Windows and Linux just fine, but keep in mind that Monterey is being developed in a Windows environment.  
+
+How can I help make Monterey better?
+-------------------------------------
+There are many ways you can help (even if you can't write code), and all of them are greatly appreciated!
+
+-Bug reports: These are incredibly useful and help make Monterey better for everyone.  If bugs aren't reported to the developers, how can they fix them?
+
+-Feature requests: Want a feature added? Simply ask for it!  Go to the "Issues" page and create an issue tagged as "enhancement".  It's that simple!
+
+-Code contributions:  If you've written some cool code or fixed some bugs, don't be afraid to ask for a pull request!
+
+-Hardware: If you've made a cool ROV, write about it online and, if you want, share plans with people!  Monterey is a cool application, but it doesn't do much without an ROV attached to the other end of it...
+
+-Join the project!  Anyone who wants to is allowed to join the ROV-Suite project.
+
+-Finally, spread the word!
