@@ -116,7 +116,7 @@ void MainWindow::showAbout()
 {
     dialogAbout = new ROVAbout(this);
     dialogAbout->setAttribute(Qt::WA_DeleteOnClose);
-    dialogAbout->exec();
+    dialogAbout->show();
 }
 
 void MainWindow::showDebug()
