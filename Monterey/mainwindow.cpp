@@ -61,6 +61,9 @@ MainWindow::MainWindow(QWidget *parent) :
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
+    ui->plotRPiCpuTempC->addGraph();
+    ui->plotSensor0->addGraph();
+    ui->plotVoltage->addGraph();
 
     //Setup the video feed display
     webCamViewer = new QWebView;  //must call after load settings
@@ -164,6 +167,8 @@ void MainWindow::loadSettings()
     //Load the sensor names
     ui->labSensor0->setText(controller->rov->sensorOther0->getName());
     ui->labSensor1->setText(controller->rov->sensorOther1->getName());
+    ui->plotSensor0->setTitle(controller->rov->sensorOther0->getName());
+    ui->plotSensor0->replot();  //refreshes the title
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
@@ -238,23 +243,48 @@ void MainWindow::setupCustomWidgets()
     statusLights.tahoe->setStatus(false);
     statusGrid->addWidget(statusLights.tahoe->container, 1, 1, 1, 1);
 
-    //Setup the depth plot
-    QString depthTitle = "Depth %";
-    ui->plotDepth->setTitle(depthTitle);
-    ui->plotDepth->yAxis->setRange(0,-100);
-    ui->plotDepth->xAxis->setTickStep(1000);    //set to 1000ms gaps
-    ui->plotDepth->xAxis->setTickLabels(false); //hide labels
-    ui->plotDepth->setColor(this->palette().window().color());
+    //Setup the plots
+    auto setStyleOnPlot = [this]( QCustomPlot *plot )
+    {
+        plot->yAxis->setTickLabelColor(this->palette().windowText().color());
+        plot->yAxis->setTickPen(QPen(this->palette().windowText().color()));
+        plot->yAxis->setSubTickPen(QPen(this->palette().windowText().color()));
+        plot->yAxis->setBasePen(QPen(this->palette().windowText().color()));
+        plot->xAxis->setTickLabelColor(this->palette().windowText().color());
+        plot->xAxis->setTickPen(QPen(this->palette().windowText().color()));
+        plot->xAxis->setSubTickPen(QPen(this->palette().windowText().color()));
+        plot->xAxis->setBasePen(QPen(this->palette().windowText().color()));
+        plot->setTitleColor(this->palette().windowText().color());
+        plot->setColor(this->palette().window().color());
 
-    ui->plotDepth->yAxis->setTickLabelColor(this->palette().windowText().color());
-    ui->plotDepth->yAxis->setTickPen(QPen(this->palette().windowText().color()));
-    ui->plotDepth->yAxis->setSubTickPen(QPen(this->palette().windowText().color()));
-    ui->plotDepth->yAxis->setBasePen(QPen(this->palette().windowText().color()));
-    ui->plotDepth->xAxis->setTickLabelColor(this->palette().windowText().color());
-    ui->plotDepth->xAxis->setTickPen(QPen(this->palette().windowText().color()));
-    ui->plotDepth->xAxis->setSubTickPen(QPen(this->palette().windowText().color()));
-    ui->plotDepth->xAxis->setBasePen(QPen(this->palette().windowText().color()));
-    ui->plotDepth->setTitleColor(this->palette().windowText().color());
+        plot->xAxis->setTickStep(1000);    //set to 1000ms gaps
+        plot->xAxis->setTickLabels(false); //hide labels
+
+        plot->graph(0)->setPen(QPen(this->palette().windowText().color()));
+        QColor graphColor = this->palette().highlight().color();
+        graphColor.setAlpha(128);
+        plot->graph(0)->setBrush(QBrush(graphColor));
+    };
+    //Depth Plot
+    ui->plotDepth->setTitle("Depth %");
+    ui->plotDepth->yAxis->setRange(0,-100);
+    setStyleOnPlot(ui->plotDepth);
+
+    //Voltage Plot
+    ui->plotVoltage->setTitle("Voltage");
+    setStyleOnPlot(ui->plotVoltage);
+
+    //Raspberry Pi CPU temperature C Plot
+    QString rPiTitle = "RPi CPU Temp ";
+    rPiTitle.append(QChar(0x00B0));
+    rPiTitle.append("C");
+    ui->plotRPiCpuTempC->setTitle(rPiTitle);
+    setStyleOnPlot(ui->plotRPiCpuTempC);
+
+    //Sensor0 graph
+    ui->plotSensor0->setTitle(controller->rov->sensorOther0->getName());
+    setStyleOnPlot(ui->plotSensor0);
+
     QVector<QString> depthLabels;
     QVector<double> depthTicks;
     depthLabels << "0%" << "25%" << "50%" << "75%" << "max";
@@ -463,26 +493,40 @@ void MainWindow::loadData()
     ui->lcdHeading->display(controller->rov->sensorCompass->getValue());
 
     //Display the data graphically
-    //Graph the depth
-    //Depth
     depthPoints.append(-100*(controller->rov->sensorDepth->getValue()/controller->rov->sensorDepth->getMax()));
+    voltagePoints.append(controller->rov->sensorVoltage->getValue());
+    rPiCpuTempCPoints.append(controller->rov->piData->tempC());
+    sensor0Points.append(controller->rov->sensorOther0->getValue());
     seconds.append(graphTime->elapsed());
-    ui->plotDepth->graph(0)->setData(seconds, depthPoints);
-    ui->plotDepth->xAxis->setRangeUpper(graphTime->elapsed());
-    ui->plotDepth->xAxis->setRangeLower(graphTime->elapsed() - 10000);
-    if(controller->getStatusTIBO() == false) //if ROV is not connected
+
+    auto loadGraphData = [this]( QCustomPlot *plot, QVector<double> dataPoints, bool autoAdjustYAxis, bool canBeNegative)
     {
-        ui->plotDepth->graph(0)->setPen(QPen(this->palette().alternateBase().color()));
-        ui->plotDepth->graph(0)->setBrush(QBrush(this->palette().alternateBase().color()));
-    }
-    else
-    {
-        ui->plotDepth->graph(0)->setPen(QPen(this->palette().windowText().color()));
-        QColor graphColor = this->palette().highlight().color();
-        graphColor.setAlpha(128);
-        ui->plotDepth->graph(0)->setBrush(QBrush(graphColor));
-    }
-    ui->plotDepth->replot();
+        plot->graph(0)->setData(this->seconds, dataPoints);
+        plot->xAxis->setRangeUpper(this->graphTime->elapsed());
+        plot->xAxis->setRangeLower(this->graphTime->elapsed() - 30000);
+
+        if(autoAdjustYAxis)
+        {
+            plot->yAxis->setRangeUpper((int)dataPoints.last() + 10);
+
+            int lower = (int)dataPoints.last() - 10;
+            if(!canBeNegative && lower < 0)
+            {
+                plot->yAxis->setRangeLower(0);
+            }
+            else
+            {
+                plot->yAxis->setRangeLower(lower);
+            }
+        }
+        plot->replot();
+    };
+
+    loadGraphData(ui->plotDepth, depthPoints, false, true);
+    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints, true, true);
+    loadGraphData(ui->plotSensor0, sensor0Points, true, true);
+    loadGraphData(ui->plotVoltage, voltagePoints, true, false);
+
     depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
     compass->onHeadingChange(controller->rov->sensorCompass->getValue());
 }

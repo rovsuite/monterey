@@ -104,6 +104,9 @@ private:
     QSettings *mySettings;
 
     QVector<double> depthPoints;
+    QVector<double> voltagePoints;
+    QVector<double> rPiCpuTempCPoints;
+    QVector<double> sensor0Points;
     QVector<double> seconds;
     QTime *graphTime;
     DepthTape *depthTape;

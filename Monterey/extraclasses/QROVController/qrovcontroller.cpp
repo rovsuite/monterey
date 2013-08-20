@@ -514,7 +514,7 @@ void QROVController::loadSettings()
     rov->listRelays[2]->setName(mySettings->value("names/relay2", "relay2").toString());
 
     //Load the units
-    rov->sensorDepth->setUnits(mySettings->value("units/depth", "meters").toString());
+    rov->sensorDepth->setUnits(mySettings->value("units/depth", "m").toString());
     rov->sensorOther0->setUnits(mySettings->value("units/sensor0", "units").toString());
     rov->sensorOther1->setUnits(mySettings->value("units/sensor1", "units").toString());
 
