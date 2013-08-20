@@ -167,8 +167,17 @@ void MainWindow::loadSettings()
     //Load the sensor names
     ui->labSensor0->setText(controller->rov->sensorOther0->getName());
     ui->labSensor1->setText(controller->rov->sensorOther1->getName());
-    ui->plotSensor0->setTitle(controller->rov->sensorOther0->getName());
-    ui->plotSensor0->replot();  //refreshes the title
+    QCPPlotTitle *title = 0;
+    title = qobject_cast<QCPPlotTitle*>(ui->plotSensor0->plotLayout()->element(0,0));
+    if(title != 0)
+    {
+        title->setText(controller->rov->sensorOther0->getName());
+        ui->plotSensor0->plotLayout()->addElement(0,0,title);
+        ui->plotSensor0->replot();  //refreshes the title
+    }
+    else
+        qWarning() << "No QCPPlotTitle on " << ui->plotSensor0;
+
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
@@ -244,7 +253,7 @@ void MainWindow::setupCustomWidgets()
     statusGrid->addWidget(statusLights.tahoe->container, 1, 1, 1, 1);
 
     //Setup the plots
-    auto setStyleOnPlot = [this]( QCustomPlot *plot )
+    auto setStyleOnPlot = [this]( QCustomPlot *plot, QString titleString )
     {
         plot->yAxis->setTickLabelColor(this->palette().windowText().color());
         plot->yAxis->setTickPen(QPen(this->palette().windowText().color()));
@@ -254,8 +263,17 @@ void MainWindow::setupCustomWidgets()
         plot->xAxis->setTickPen(QPen(this->palette().windowText().color()));
         plot->xAxis->setSubTickPen(QPen(this->palette().windowText().color()));
         plot->xAxis->setBasePen(QPen(this->palette().windowText().color()));
-        plot->setTitleColor(this->palette().windowText().color());
-        plot->setColor(this->palette().window().color());
+        plot->setBackground(QBrush(this->palette().window().color()));
+        plot->plotLayout()->insertRow(0);
+        QCPPlotTitle *title = new QCPPlotTitle(plot);
+        title->setText(titleString);
+        title->setTextColor(this->palette().windowText().color());
+        QFont font;
+        font.setFamily(font.defaultFamily());
+        font.setPointSize(12);
+        font.setBold(true);
+        plot->setFont(font);
+        plot->plotLayout()->addElement(0, 0, title);
 
         plot->xAxis->setTickStep(1000);    //set to 1000ms gaps
         plot->xAxis->setTickLabels(false); //hide labels
@@ -266,24 +284,20 @@ void MainWindow::setupCustomWidgets()
         plot->graph(0)->setBrush(QBrush(graphColor));
     };
     //Depth Plot
-    ui->plotDepth->setTitle("Depth %");
     ui->plotDepth->yAxis->setRange(0,-100);
-    setStyleOnPlot(ui->plotDepth);
+    setStyleOnPlot(ui->plotDepth, "Depth %");
 
     //Voltage Plot
-    ui->plotVoltage->setTitle("Voltage");
-    setStyleOnPlot(ui->plotVoltage);
+    setStyleOnPlot(ui->plotVoltage, "Voltage");
 
     //Raspberry Pi CPU temperature C Plot
     QString rPiTitle = "RPi CPU Temp ";
     rPiTitle.append(QChar(0x00B0));
     rPiTitle.append("C");
-    ui->plotRPiCpuTempC->setTitle(rPiTitle);
-    setStyleOnPlot(ui->plotRPiCpuTempC);
+    setStyleOnPlot(ui->plotRPiCpuTempC, rPiTitle);
 
     //Sensor0 graph
-    ui->plotSensor0->setTitle(controller->rov->sensorOther0->getName());
-    setStyleOnPlot(ui->plotSensor0);
+    setStyleOnPlot(ui->plotSensor0, controller->rov->sensorOther0->getName());
 
     QVector<QString> depthLabels;
     QVector<double> depthTicks;
@@ -293,7 +307,7 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->yAxis->setAutoTicks(false);
     ui->plotDepth->yAxis->setTickVector(depthTicks);
     ui->plotDepth->yAxis->setTickVectorLabels(depthLabels);
-    ui->plotDepth->xAxis->setGrid(true);
+    //ui->plotDepth->xAxis->setGrid(true);
 
     //Setup array of QLCDNumbers for sensor readouts
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
