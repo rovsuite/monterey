@@ -107,7 +107,6 @@ private:
     QVector<double> voltagePoints;
     QVector<double> rPiCpuTempCPoints;
     QVector<double> sensor0Points;
-    QVector<double> seconds;
     QTime *graphTime;
     DepthTape *depthTape;
     Compass *compass;

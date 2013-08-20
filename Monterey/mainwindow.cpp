@@ -171,8 +171,12 @@ void MainWindow::loadSettings()
     title = qobject_cast<QCPPlotTitle*>(ui->plotSensor0->plotLayout()->element(0,0));
     if(title != 0)
     {
-        title->setText(controller->rov->sensorOther0->getName());
-        ui->plotSensor0->plotLayout()->addElement(0,0,title);
+        QCPPlotTitle *newTitle = new QCPPlotTitle(ui->plotSensor0);
+        newTitle->setText(controller->rov->sensorOther0->getName());
+        newTitle->setFont(title->font());
+        newTitle->setTextColor(title->textColor());
+        ui->plotSensor0->plotLayout()->remove(title);
+        ui->plotSensor0->plotLayout()->addElement(0,0,newTitle);
         ui->plotSensor0->replot();  //refreshes the title
     }
     else
@@ -511,19 +515,23 @@ void MainWindow::loadData()
     voltagePoints.append(controller->rov->sensorVoltage->getValue());
     rPiCpuTempCPoints.append(controller->rov->piData->tempC());
     sensor0Points.append(controller->rov->sensorOther0->getValue());
-    seconds.append(graphTime->elapsed());
 
-    auto loadGraphData = [this]( QCustomPlot *plot, QVector<double> dataPoints, bool autoAdjustYAxis, bool canBeNegative)
+    int timeElapsed = graphTime->elapsed();
+
+    auto loadGraphData = [this, timeElapsed]( QCustomPlot *plot, double dataPoint, bool autoAdjustYAxis, bool canBeNegative)
     {
-        plot->graph(0)->setData(this->seconds, dataPoints);
-        plot->xAxis->setRangeUpper(this->graphTime->elapsed());
-        plot->xAxis->setRangeLower(this->graphTime->elapsed() - 30000);
+        plot->graph(0)->addData(timeElapsed, dataPoint);
+        plot->xAxis->setRangeUpper(timeElapsed);
+        plot->xAxis->setRangeLower(timeElapsed - 30000);
+
+        //Remove no longer visible data
+        plot->graph(0)->removeDataBefore(timeElapsed - 30000);
 
         if(autoAdjustYAxis)
         {
-            plot->yAxis->setRangeUpper((int)dataPoints.last() + 10);
+            plot->yAxis->setRangeUpper((int)dataPoint + 10);
 
-            int lower = (int)dataPoints.last() - 10;
+            int lower = (int)dataPoint - 10;
             if(!canBeNegative && lower < 0)
             {
                 plot->yAxis->setRangeLower(0);
@@ -536,10 +544,10 @@ void MainWindow::loadData()
         plot->replot();
     };
 
-    loadGraphData(ui->plotDepth, depthPoints, false, true);
-    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints, true, true);
-    loadGraphData(ui->plotSensor0, sensor0Points, true, true);
-    loadGraphData(ui->plotVoltage, voltagePoints, true, false);
+    loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
+    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, true);
+    loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
+    loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
 
     depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
     compass->onHeadingChange(controller->rov->sensorCompass->getValue());
