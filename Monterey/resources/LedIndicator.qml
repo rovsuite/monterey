@@ -7,9 +7,8 @@ Rectangle
     property bool isStatusOn: true
     property string indicatorTitle
     property real backgroundColorOpacity: 0.35
+    property int collapseHeight: 50
 
-    width: 120
-    height: 70
     color: Qt.rgba(0.14, 0.7, 0.95, backgroundColorOpacity)
 
     border.width: 2;
@@ -20,7 +19,7 @@ Rectangle
         id: title
 
         width: parent.width
-        height: parent.width * 0.2 // 40% of the main rect's height
+        height: parent.height * 0.2
 
         anchors.top: parent.top
         anchors.topMargin: 5
@@ -30,7 +29,7 @@ Rectangle
         color: Qt.rgba(0.14, 0.7, 0.95, 0.8)
         font.bold: true
         horizontalAlignment: Text.AlignHCenter
-        font.pointSize: 14
+        font.pointSize: 12
     }
 
     Text
@@ -41,13 +40,14 @@ Rectangle
         height: parent.height * 0.8
 
         anchors.top: title.bottom
+        anchors.topMargin: background.height > collapseHeight ? parent.height * 0.15 : 5
 
         text: isStatusOn ? "On" : "Off"
         font.family: "Arial"
         color: "white"
         font.bold: true
         horizontalAlignment: Text.AlignHCenter
-        font.pointSize: 18
+        font.pointSize: background.height > collapseHeight ? 18 : 12
     }
 
     states: [
