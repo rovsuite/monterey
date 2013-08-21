@@ -11,7 +11,7 @@ LedIndicator::LedIndicator(QWidget *parent) :
     viewer->rootContext()->setContextProperty("LedIndicator", this);
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
 
-    viewer->setColor(QColor(53,53,53));
+    viewer->setColor(qApp->palette().window().color());
 }
 
 void LedIndicator::setIndicatorTitle(QString title)
