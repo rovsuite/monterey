@@ -31,5 +31,5 @@ void LedIndicator::setStatus(bool on)
 
 bool LedIndicator::status()
 {
-    viewer->rootObject()->property("isStatusOn").toBool();
+    return viewer->rootObject()->property("isStatusOn").toBool();
 }

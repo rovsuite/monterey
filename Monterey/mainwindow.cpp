@@ -226,7 +226,6 @@ void MainWindow::setupCustomWidgets()
     }
     statusLights.com = new LedIndicator;
     statusLights.com->setIndicatorTitle("COM");
-    statusLights.com->setStatus(false);
     statusGrid->addWidget(statusLights.com->container, 0, 0, 1, 1);
 
     if(statusLights.rPi != 0)
@@ -235,7 +234,6 @@ void MainWindow::setupCustomWidgets()
     }
     statusLights.rPi = new LedIndicator;
     statusLights.rPi->setIndicatorTitle("RPi");
-    statusLights.rPi->setStatus(false);
     statusGrid->addWidget(statusLights.rPi->container, 0, 1, 1, 1);
 
     if(statusLights.joystick != 0)
@@ -244,7 +242,6 @@ void MainWindow::setupCustomWidgets()
     }
     statusLights.joystick = new LedIndicator;
     statusLights.joystick->setIndicatorTitle("Joystick");
-    statusLights.joystick->setStatus(false);
     statusGrid->addWidget(statusLights.joystick->container, 1, 0, 1, 1);
 
     if(statusLights.tahoe != 0)
@@ -253,7 +250,6 @@ void MainWindow::setupCustomWidgets()
     }
     statusLights.tahoe = new LedIndicator;
     statusLights.tahoe->setIndicatorTitle("Tahoe");
-    statusLights.tahoe->setStatus(false);
     statusGrid->addWidget(statusLights.tahoe->container, 1, 1, 1, 1);
 
     //Setup the plots
@@ -458,13 +454,10 @@ void MainWindow::lostTOBI()
     if(controller->getStatusTOBI())
     {
         activityMonitor->display("Gained TOBI");
-        if(controller->getStatusTIBO()) //if also receiving
-            statusLights.com->setStatus(true);
     }
     else
     {
         activityMonitor->display("Lost TOBI");
-        statusLights.com->setStatus(false);
     }
 }
 
@@ -473,13 +466,10 @@ void MainWindow::lostTIBO()
     if(controller->getStatusTIBO())
     {
         activityMonitor->display("Gained TIBO");
-        if(controller->getStatusTOBI()) //if also sending
-            statusLights.com->setStatus(true);
     }
     else
     {
         activityMonitor->display("Lost TIBO");
-        statusLights.com->setStatus(false);
     }
 }
 
@@ -488,12 +478,10 @@ void MainWindow::lostTahoe()
     if(controller->getStatusTahoe())
     {
         activityMonitor->display("Gained Tahoe COM");
-        statusLights.tahoe->setStatus(true);
     }
     else
     {
         activityMonitor->display("Lost Tahoe COM");
-        statusLights.tahoe->setStatus(false);
     }
 }
 
@@ -502,12 +490,10 @@ void MainWindow::lostRPi()
     if(controller->getStatusPi())
     {
         activityMonitor->display("Gained Raspberry Pi COM");
-        statusLights.rPi->setStatus(true);
     }
     else
     {
         activityMonitor->display("Lost Raspberry Pi COM");
-        statusLights.rPi->setStatus(false);
     }
 }
 
@@ -574,6 +560,16 @@ void MainWindow::loadData()
 
     depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
     compass->onHeadingChange(controller->rov->sensorCompass->getValue());
+
+    //Light up the indicators
+    if(controller->getStatusTIBO() != statusLights.com->status())
+        statusLights.com->setStatus(!statusLights.com->status());
+
+    if(controller->getStatusPi() != statusLights.rPi->status())
+        statusLights.rPi->setStatus(controller->getStatusPi());
+
+    if(controller->getStatusTahoe() != statusLights.tahoe->status())
+        statusLights.tahoe->setStatus(controller->getStatusTahoe());
 }
 
 void MainWindow::displayTime()

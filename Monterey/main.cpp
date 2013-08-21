@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QApplication::setApplicationName("Monterey");
-    QApplication::setApplicationVersion("3.0 Beta");
+    QApplication::setApplicationVersion("3.0");
     QApplication::setOrganizationName("ROV-Suite");
 
     a.setStyle(QStyleFactory::create("Fusion"));

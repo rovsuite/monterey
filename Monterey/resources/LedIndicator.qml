@@ -4,7 +4,7 @@ Rectangle
 {
     id: background
 
-    property bool isStatusOn: true
+    property bool isStatusOn: false
     property string indicatorTitle
     property real backgroundColorOpacity: 0.35
     property int collapseHeight: 50
