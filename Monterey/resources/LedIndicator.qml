@@ -40,7 +40,7 @@ Rectangle
         height: parent.height * 0.8
 
         anchors.top: title.bottom
-        anchors.topMargin: background.height > collapseHeight ? parent.height * 0.15 : 5
+        anchors.topMargin: background.height > collapseHeight ? parent.height * 0.15 : 10
 
         text: isStatusOn ? "On" : "Off"
         font.family: "Arial"
