@@ -37,6 +37,7 @@ ROVAbout::ROVAbout(QWidget *parent) :
     QString aboutText = in.readAll();
 
     ui->teAbout->append(aboutText);
+    ui->teAbout->moveCursor(QTextCursor::Start);
 
     aboutFile.close();  //close the file
 
