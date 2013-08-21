@@ -259,6 +259,7 @@ void MainWindow::setupCustomWidgets()
     //Setup the plots
     auto setStyleOnPlot = [this]( QCustomPlot *plot, QString titleString )
     {
+        //Colors
         plot->yAxis->setTickLabelColor(this->palette().windowText().color());
         plot->yAxis->setTickPen(QPen(this->palette().windowText().color()));
         plot->yAxis->setSubTickPen(QPen(this->palette().windowText().color()));
@@ -268,6 +269,13 @@ void MainWindow::setupCustomWidgets()
         plot->xAxis->setSubTickPen(QPen(this->palette().windowText().color()));
         plot->xAxis->setBasePen(QPen(this->palette().windowText().color()));
         plot->setBackground(QBrush(this->palette().window().color()));
+
+        plot->graph(0)->setPen(QPen(this->palette().windowText().color()));
+        QColor graphColor = this->palette().highlight().color();
+        graphColor.setAlpha(128);
+        plot->graph(0)->setBrush(QBrush(graphColor));
+
+        //Title
         plot->plotLayout()->insertRow(0);
         QCPPlotTitle *title = new QCPPlotTitle(plot);
         title->setText(titleString);
@@ -279,14 +287,14 @@ void MainWindow::setupCustomWidgets()
         plot->setFont(font);
         plot->plotLayout()->addElement(0, 0, title);
 
+        //xAxis
         plot->xAxis->setTickStep(1000);    //set to 1000ms gaps
         plot->xAxis->setTickLabels(false); //hide labels
 
-        plot->graph(0)->setPen(QPen(this->palette().windowText().color()));
-        QColor graphColor = this->palette().highlight().color();
-        graphColor.setAlpha(128);
-        plot->graph(0)->setBrush(QBrush(graphColor));
+        //yAxis
+        plot->yAxis->setAutoTickCount(3);
     };
+
     //Depth Plot
     ui->plotDepth->yAxis->setRange(0,-100);
     setStyleOnPlot(ui->plotDepth, "Depth %");
