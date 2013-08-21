@@ -270,6 +270,15 @@ void MainWindow::setupCustomWidgets()
         plot->xAxis->setBasePen(QPen(this->palette().windowText().color()));
         plot->setBackground(QBrush(this->palette().window().color()));
 
+        plot->yAxis2->setTickLabelColor(this->palette().windowText().color());
+        plot->yAxis2->setTickPen(QPen(this->palette().windowText().color()));
+        plot->yAxis2->setSubTickPen(QPen(this->palette().windowText().color()));
+        plot->yAxis2->setBasePen(QPen(this->palette().windowText().color()));
+        plot->xAxis2->setTickLabelColor(this->palette().windowText().color());
+        plot->xAxis2->setTickPen(QPen(this->palette().windowText().color()));
+        plot->xAxis2->setSubTickPen(QPen(this->palette().windowText().color()));
+        plot->xAxis2->setBasePen(QPen(this->palette().windowText().color()));
+
         plot->graph(0)->setPen(QPen(this->palette().windowText().color()));
         QColor graphColor = this->palette().highlight().color();
         graphColor.setAlpha(128);
@@ -290,9 +299,15 @@ void MainWindow::setupCustomWidgets()
         //xAxis
         plot->xAxis->setTickStep(1000);    //set to 1000ms gaps
         plot->xAxis->setTickLabels(false); //hide labels
+        plot->xAxis->grid()->setVisible(false);
 
         //yAxis
         plot->yAxis->setAutoTickCount(3);
+
+        //Show axes on all edges
+        plot->axisRect()->setupFullAxesBox();
+        connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
+        connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)), plot->xAxis2, SLOT(setRange(QCPRange)));
     };
 
     //Depth Plot
@@ -553,7 +568,7 @@ void MainWindow::loadData()
     };
 
     loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
-    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, true);
+    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
     loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
     loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
 
