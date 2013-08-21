@@ -39,7 +39,6 @@ ROVSettings::ROVSettings(QWidget *parent) :
     ui->leNamesSensor1->setText(p->controller->rov->sensorOther1->getName());
 
     ui->sbDepth->setValue(p->controller->rov->sensorDepth->getThreshold());
-    ui->sbVoltage->setValue(p->controller->rov->sensorVoltage->getThreshold());
 
     ui->comboMotorLayout->setCurrentIndex((int)p->controller->getMotorLayout());
     ui->cbBilinearEnabled->setChecked(p->controller->getBilinearEnabled());
@@ -82,7 +81,6 @@ void ROVSettings::on_pbSave_clicked()
     p->controller->rov->sensorOther0->setName(ui->leNamesSensor0->text());
     p->controller->rov->sensorOther1->setName(ui->leNamesSensor1->text());
     p->controller->rov->sensorDepth->setThreshold(ui->sbDepth->value());
-    p->controller->rov->sensorVoltage->setThreshold(ui->sbVoltage->value());
     p->controller->setMotorLayout(ui->comboMotorLayout->currentIndex());
     p->controller->setBilinearRatio(ui->sbBilinearRatio->value());
     p->controller->setBilinearEnabled(ui->cbBilinearEnabled->isChecked());
