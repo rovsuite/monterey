@@ -71,23 +71,49 @@ void Compass::initializeTicks()
         x = x + multiplier * (i - indexOfZeroTick);
         item->setProperty("x", x);
 
+        auto replaceNumbersWithHeadingLetter = [item](int heading)
+        {
+            if(heading == 0)
+            {
+                item->setProperty("textToDisplay", "N");
+            }
+            else if(heading == 90)
+            {
+                item->setProperty("textToDisplay", "E");
+            }
+            else if(heading == 180)
+            {
+                item->setProperty("textToDisplay", "S");
+            }
+            else if(heading == 270)
+            {
+                item->setProperty("textToDisplay", "W");
+            }
+            else
+                item->setProperty("textToDisplay", QString::number(heading));
+        };
+
         if( i == indexOfZeroTick)   //the centered "0" tick
         {
-            item->setProperty("textToDisplay", QString::number(0));
+            item->setProperty("textToDisplay", "N");
         }
         else if( i > indexOfZeroTick && i <= indexOfZeroTick + 35)   //"normal" range of ticks
         {
-            item->setProperty("textToDisplay", QString::number((i - indexOfZeroTick) * 10));
+            int heading = (i - indexOfZeroTick) * 10;
+            replaceNumbersWithHeadingLetter(heading);
+
         }
         else if (i > indexOfZeroTick && i > indexOfZeroTick + 35)
         {
             int indexToDisplay = i - (indexOfZeroTick + 36);
-            item->setProperty("textToDisplay", QString::number(indexToDisplay * 10));
+            int heading = indexToDisplay * 10;
+            replaceNumbersWithHeadingLetter(heading);
         }
         else if (i < indexOfZeroTick)
         {
             int indexToDisplay = indexOfZeroTick - i;
-            item->setProperty("textToDisplay", QString::number((36 - indexToDisplay) * 10));
+            int heading = (36 - indexToDisplay) * 10;
+            replaceNumbersWithHeadingLetter(heading);
         }
         else
         {
