@@ -165,8 +165,8 @@ void MainWindow::loadSettings()
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
     //Load the sensor names
-    ui->labSensor0->setText(controller->rov->sensorOther0->getName());
-    ui->labSensor1->setText(controller->rov->sensorOther1->getName());
+    ui->labSensor0->setText(controller->rov->sensorOther0->getName() + ":");
+    ui->labSensor1->setText(controller->rov->sensorOther1->getName() + ":");
     QCPPlotTitle *title = 0;
     title = qobject_cast<QCPPlotTitle*>(ui->plotSensor0->plotLayout()->element(0,0));
     if(title != 0)
