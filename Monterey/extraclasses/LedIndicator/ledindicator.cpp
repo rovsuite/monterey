@@ -11,7 +11,7 @@ LedIndicator::LedIndicator(QWidget *parent) :
     viewer->rootContext()->setContextProperty("LedIndicator", this);
     viewer->setResizeMode(QQuickView::SizeRootObjectToView);
 
-    viewer->setColor(qApp->palette().window().color());
+    refreshPalette();
 }
 
 void LedIndicator::setIndicatorTitle(QString title)
@@ -32,4 +32,20 @@ void LedIndicator::setStatus(bool on)
 bool LedIndicator::status()
 {
     return viewer->rootObject()->property("isStatusOn").toBool();
+}
+
+void LedIndicator::refreshPalette()
+{
+    QPalette p = this->palette();
+
+    viewer->setColor(p.window().color());
+    viewer->rootObject()->setProperty("textColor", p.text().color());
+    viewer->rootObject()->setProperty("borderColor", p.text().color());
+
+    QColor backgroundColor = p.highlight().color();
+    backgroundColor.setAlpha(90);
+    viewer->rootObject()->setProperty("backgroundColor", backgroundColor);
+
+    QColor titleColor = p.highlight().color();
+    viewer->rootObject()->setProperty("titleColor", titleColor);
 }

@@ -3,26 +3,19 @@ import QtQuick 2.0
 Rectangle {
     id: currentHeadingRectangle
     z:1
-    color: "#000000"
+    color: backgroundColor
     radius: 3
     border.width: 2
-    border.color: "#2A82DA"
+    border.color: borderColor
 
     property string currentHeading: "0"
-
-    function setNightMode() {
-        currentHeadingRectangle.border.color = "#ff0000";
-        currentHeadingReadout.color = "#ff0000";
-    }
-
-    function setDayMode() {
-        currentHeadingRectangle.border.color = "#2A82DA";
-        currentHeadingReadout.color = "#ffffff";
-    }
+    property color backgroundColor: "#000000"
+    property color textColor: "#ffffff"
+    property color borderColor: "#2A82DA"
 
     Text {
         id: currentHeadingReadout
-        color: "#ffffff"
+        color: textColor
         z:1
         text: currentHeadingRectangle.currentHeading
         font.pixelSize: 12

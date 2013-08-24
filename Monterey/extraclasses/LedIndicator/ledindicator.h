@@ -21,6 +21,8 @@ public slots:
     void setStatus(bool on);
     bool status();
 
+    void refreshPalette();
+
 private:
     QQuickView *viewer;
     

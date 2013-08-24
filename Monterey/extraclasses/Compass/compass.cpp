@@ -50,6 +50,28 @@ void Compass::resetGraphics()
     initializeTicks();
 }
 
+void Compass::refreshPalette()
+{
+    QPalette p = this->palette();
+    viewer->setColor(p.window().color());
+    viewer->rootObject()->setProperty("color", p.base().color());
+    viewer->rootObject()->setProperty("borderColor", p.highlight().color());
+
+    foreach(QObject *obj, viewer->rootObject()->findChildren<QObject*>())
+    {
+        qDebug() << obj;
+    }
+
+	for(int i=0; i<tickList.count(); i++)
+    {
+        tickList[i]->setProperty("colorToDisplay", p.highlight().color());
+    }
+
+    currentHeadingReadout->setProperty("backgroundColor", p.base().color());
+    currentHeadingReadout->setProperty("textColor", p.text().color());
+    currentHeadingReadout->setProperty("borderColor", p.highlight().color());
+}
+
 void Compass::initializeTicks()
 {
     //Ticks
@@ -135,5 +157,6 @@ void Compass::initializeTicks()
     currentHeadingReadoutItem->setY(viewer->height() - currentHeadingReadoutItem->height() + 5);    //+5 for the border
     lastChange = 0;
     lastHeading = 0;
+    refreshPalette();
     viewer->show();
 }

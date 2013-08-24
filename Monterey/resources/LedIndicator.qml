@@ -6,13 +6,16 @@ Rectangle
 
     property bool isStatusOn: false
     property string indicatorTitle
-    property real backgroundColorOpacity: 0.35
     property int collapseHeight: 50
+    property color borderColor: "white"
+    property color textColor: "white"
+    property color backgroundColor: "white"
+    property color titleColor: "black"
 
-    color: Qt.rgba(0.14, 0.7, 0.95, backgroundColorOpacity)
+    color: backgroundColor
 
     border.width: 2;
-    border.color: "white"
+    border.color: borderColor
 
     Text
     {
@@ -26,7 +29,7 @@ Rectangle
 
         text: indicatorTitle
         font.family: "Arial"
-        color: Qt.rgba(0.14, 0.7, 0.95, 0.8)
+        color: titleColor
         font.bold: true
         horizontalAlignment: Text.AlignHCenter
         font.pointSize: 12
@@ -44,7 +47,7 @@ Rectangle
 
         text: isStatusOn ? "On" : "Off"
         font.family: "Arial"
-        color: "white"
+        color: textColor
         font.bold: true
         horizontalAlignment: Text.AlignHCenter
         font.pointSize: background.height > collapseHeight ? 18 : 12

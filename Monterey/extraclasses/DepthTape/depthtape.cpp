@@ -69,6 +69,23 @@ void DepthTape::resetGraphics()
     initializeTicks(lastMaxDepth);
 }
 
+void DepthTape::refreshPalette()
+{
+    QPalette p = this->palette();
+    viewer->setColor(p.window().color());
+    viewer->rootObject()->setProperty("color", p.base().color());
+    viewer->rootObject()->setProperty("borderColor", p.highlight().color());
+
+    for(int i =0; i<tickList.count();i++)
+    {
+        tickList[i]->setProperty("colorToDisplay", p.highlight().color());
+    }
+
+    currentDepthReadout->setProperty("backgroundColor", p.base().color());
+    currentDepthReadout->setProperty("borderColor", p.highlight().color());
+    currentDepthReadout->setProperty("textColor", p.text().color());
+}
+
 void DepthTape::initializeTicks(int maxDepth)
 {
     QQmlComponent currentDepthReadoutComponent(viewer->engine(), QUrl("qrc:/qml/resources/CurrentDepthReadout.qml"));
@@ -97,5 +114,6 @@ void DepthTape::initializeTicks(int maxDepth)
 
     lastChange = 0;
     lastDepth = 0;
+    refreshPalette();
     viewer->show();
 }

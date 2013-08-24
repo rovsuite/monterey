@@ -7,26 +7,19 @@ Rectangle {
     z:1
     width: 60
     height: 45
-    color: "#000000"
+    color: backgroundColor
     radius: 3
     border.width: 2
-    border.color: "#2A82DA"
+    border.color: borderColor
 
     property string currentDepth: "0"
-
-    function setNightMode() {
-        currentDepthRectangle.border.color = "#ff0000";
-        currentDepthReadout.color = "#ff0000";
-    }
-
-    function setDayMode() {
-        currentDepthRectangle.border.color = "#2A82DA";
-        currentDepthReadout.color = "#ffffff";
-    }
+    property color backgroundColor: "#000000"
+    property color textColor: "#ffffff"
+    property color borderColor: "#2A82DA"
 
     Text {
         id: currentDepthReadout
-        color: "#ffffff"
+        color: textColor
         z:1
         text: currentDepthRectangle.currentDepth
         //font.family: "Alfphabet"

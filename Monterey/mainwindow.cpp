@@ -277,7 +277,7 @@ void MainWindow::setupCustomWidgets()
 
         plot->graph(0)->setPen(QPen(this->palette().windowText().color()));
         QColor graphColor = this->palette().highlight().color();
-        graphColor.setAlpha(128);
+        graphColor.setAlpha(90);
         plot->graph(0)->setBrush(QBrush(graphColor));
 
         //Title

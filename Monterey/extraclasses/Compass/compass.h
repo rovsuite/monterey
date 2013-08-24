@@ -19,6 +19,8 @@ public slots:
     void onHeadingChange(int heading);
     void resetGraphics();
 
+    void refreshPalette();  //call after setting palette
+
 private slots:
     void initializeTicks();
 

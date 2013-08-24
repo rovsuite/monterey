@@ -7,15 +7,8 @@ Rectangle {
     color: "#000000"
     radius: 5
     border.width: 2
-    border.color: "#2A82DA"
+    border.color: borderColor
     clip: true
 
-    function setNightMode() {
-        page.border.color = "#ff0000"
-    }
-
-    function setDayMode() {
-        page.border.color = "#2A82DA"
-    }
+    property color borderColor: "#2A82DA"
 }
-

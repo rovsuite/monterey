@@ -20,6 +20,8 @@ public slots:
     void setMaxDepth(int maxDepth);
     void resetGraphics();
 
+    void refreshPalette();
+
 private slots:
     void initializeTicks(int maxDepth);
 
