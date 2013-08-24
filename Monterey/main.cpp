@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
     QApplication::setOrganizationDomain("http://github.com/rovsuite");
 
-    FvUpdater::sharedUpdater()->SetFeedURL("http://raw.github.com/rovsuite/monterey/master/Monterey/updaterfiles/Appcast.xml");
+    FvUpdater::sharedUpdater()->SetFeedURL("https://dl.dropboxusercontent.com/u/4649414/ROV-Suite/Appcast.xml");
     FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
     MainWindow w;
     w.show();
