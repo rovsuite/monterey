@@ -8,7 +8,7 @@
 
 	<channel>
 		<title>Monterey's Changelog</title>
-		<link>https://dl.dropbox.com/u/4649414/ROV-Suite/Appcast.xml</link>
+		<link>https://raw.github.com/rovsuite/monterey/master/Monterey/updaterfiles/Appcast.xml</link>
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<atom:link href="https://raw.github.com/rovsuite/monterey/master/Monterey/updaterfiles/Appcast.xml" rel="self" type="application/rss+xml" />
