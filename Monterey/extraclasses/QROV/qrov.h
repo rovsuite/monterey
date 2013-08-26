@@ -19,6 +19,8 @@ class QROV : public QObject
 public:
     QROV(int motors, int relays, int servos, QObject *parent);
 
+    enum MotorLayout{vectorDrive, tankDrive};
+    MotorLayout motorLayout;
     QList<QROVMotor*> listMotors;
     QList<QROVRelay*> listRelays;
     QList<QROVServo*> listServos;

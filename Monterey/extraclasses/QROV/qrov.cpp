@@ -35,6 +35,8 @@ QROV::QROV(int motors, int relays, int servos, QObject *parent) :
     IpVideoFeed* videoFeed = new IpVideoFeed("Main", QUrl("http::127.0.0.1:8080/javascript_simple.html"), true, this);
     videoFeeds.append(videoFeed);
 
+    motorLayout = QROV::tankDrive;
+
     setNumMotors(motors);
     setNumRelays(relays);
     setNumServos(servos);

@@ -32,7 +32,6 @@ public:
     QROV *rov;
     QList<int> joystickAxesValues;
     QBoolMonitor *monitorJoystick;
-    enum MotorLayout{vectorDrive, tankDrive};
 
 signals:
     void onMotherFunctionCompleted();
@@ -66,34 +65,30 @@ public slots:
     int getJoystickAxesValues(int index) { return joystickAxesValues[index]; }
     int getJoysAvail() { joysAvail = joy->availableJoysticks(); return joysAvail; }    //!< Return the number of attached joysticks
     bool isJoyAttached() { return joyAttached; } //!< Return the joystick attached status
-    int getAxisX() { return axisX; }    //!< Get the axis x ID
-    void setAxisX(int x) { axisX = x; }
-    int getAxisY() { return axisY; }
-    void setAxisY(int y) { axisY = y; }
-    int getAxisZ() { return axisZ; }
-    void setAxisZ(int z) { axisZ = z; }
-    int getAxisV() { return axisV; }
-    void setAxisV(int v) { axisV = v; }
-    int getAxisL() { return axisL; }
-    void setAxisL(int l) { axisL = l; }
-    int getAxisR() { return axisR; }
-    void setAxisR(int r) { axisR = r; }
+    int getAxisX() { return joySettings.axisX; }    //!< Get the axis x ID
+    void setAxisX(int x) { joySettings.axisX = x; }
+    int getAxisY() { return joySettings.axisY; }
+    void setAxisY(int y) { joySettings.axisY = y; }
+    int getAxisZ() { return joySettings.axisZ; }
+    void setAxisZ(int z) { joySettings.axisZ = z; }
+    int getAxisV() { return joySettings.axisV; }
+    void setAxisV(int v) { joySettings.axisV = v; }
+    int getAxisL() { return joySettings.axisL; }
+    void setAxisL(int l) { joySettings.axisL = l; }
+    int getAxisR() { return joySettings.axisR; }
+    void setAxisR(int r) { joySettings.axisR = r; }
 
     //Motor math
-    MotorLayout getMotorLayout() { return motorLayout; }  //!< Return the currently set motor layout
-    void setMotorLayout(MotorLayout mL) { motorLayout = mL; }   //!< Set the motor layout
-    void setMotorLayout(int mL) { motorLayout = (MotorLayout)mL; }   //!< Set the motor layout
-    double getBilinearThreshold() { return bilinearThreshold; }
-    void setBilinearRatio(double r) { bilinearRatio = r; }
-    double getBilinearRatio() { return bilinearRatio; }
-    void setBilinearEnabled(bool b) { bilinearEnabled = b; }
-    bool getBilinearEnabled() { return bilinearEnabled; }
-    void setXDeadzone(int x) { xDead = x; }
-    int getXDeadzone() { return xDead; }
-    void setYDeadzone(int y) { yDead = y; }
-    int getYDeadzone() { return yDead; }
-    void setZDeadzone(int z) { zDead = z; }
-    int getZDeadzone() { return zDead; }
+    void setBilinearRatio(double r) { joySettings.bilinearRatio = r; }
+    double getBilinearRatio() { return joySettings.bilinearRatio; }
+    void setBilinearEnabled(bool b) { joySettings.bilinearEnabled = b; }
+    bool getBilinearEnabled() { return joySettings.bilinearEnabled; }
+    void setXDeadzone(int x) { joySettings.deadX = x; }
+    int getXDeadzone() { return joySettings.deadX; }
+    void setYDeadzone(int y) { joySettings.deadY = y; }
+    int getYDeadzone() { return joySettings.deadY; }
+    void setZDeadzone(int z) { joySettings.deadZ = z; }
+    int getZDeadzone() { return joySettings.deadZ; }
 
     //Networking
     int getPortTOBI();  //!< Get the TOBI port
@@ -156,21 +151,26 @@ private:
 
     //Motor math
     QVectorDrive2 *myVectorDrive;   //vector drive object
-    bool bilinearEnabled;
-    bool vectorEnabled;
-    double bilinearThreshold;
-    double bilinearRatio;
-    int xDead;
-    int yDead;
-    int zDead;
-    int axisX;
-    int axisY;
-    int axisZ;
-    int axisV;
-    int axisL;
-    int axisR;
-    MotorLayout motorLayout;
 
+    struct JoystickSettings {
+        //Deadzones
+        int deadX;
+        int deadY;
+        int deadZ;
+
+        //Axes
+        int axisX;
+        int axisY;
+        int axisZ;
+        int axisV;
+        int axisL;
+        int axisR;
+
+        //Motor value math settings
+        bool vectorEnabled;
+        bool bilinearEnabled;
+        double bilinearRatio;
+    }joySettings;
 };
 
 #endif // QROVCONTROLLER_H

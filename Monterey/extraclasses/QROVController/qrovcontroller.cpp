@@ -59,8 +59,6 @@ QROVController::QROVController(QObject *parent) :
     captureTahoe = new UdpCapture(TAHOERXPORT, ERRORTIMEOUT, this);
     capturePi = new UdpCapture(PIRXPORT, PITIMEOUT, this);
 
-    motorLayout = vectorDrive;
-
     monitorJoystick = new QBoolMonitor(this);
     monitorJoystick->setComparisonState(joyAttached);
     joyID = 0;
@@ -85,11 +83,10 @@ QROVController::QROVController(QObject *parent) :
         m->setMinimum(MOTORMIN);
     }
 
-    bilinearEnabled = true;
-    vectorEnabled = true;
+    joySettings.bilinearEnabled = true;
+    joySettings.vectorEnabled = true;
 
-    bilinearRatio = 1.5;
-    bilinearThreshold = bilinearRatio / 1.0;
+    joySettings.bilinearRatio = 1.5;
 
     loadSettings();
 
@@ -246,7 +243,7 @@ void QROVController::sendPacket()
     QByteArray txDatagram;
     QString txPacket;
 
-    if(motorLayout == vectorDrive)  //if vector drive
+    if(rov->motorLayout == QROV::vectorDrive)  //if vector drive
     {
         foreach(QROVMotor *m, rov->listMotors)
         {
@@ -479,23 +476,22 @@ void QROVController::loadSettings()
     rov->sensorVoltage->setThreshold(mySettings->value("thresholds/voltage", "9").toDouble());
 
     //Load motor settings
-    setMotorLayout(mySettings->value("motors/layout", "1").toInt());
+    rov->motorLayout = QROV::MotorLayout(mySettings->value("motors/layout", "1").toInt());
 
     //Bilinear
-    bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
-    bilinearRatio = mySettings->value("bilinear/ratio", "1.5").toDouble();
-    bilinearThreshold = bilinearRatio/1.0;
+    joySettings.bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
+    joySettings.bilinearRatio = mySettings->value("bilinear/ratio", "1.5").toDouble();
 
     //Joystick
-    axisX = mySettings->value("joystick/x", "0").toInt();
-    axisY = mySettings->value("joystick/y", "0").toInt();
-    axisZ = mySettings->value("joystick/z", "0").toInt();
-    axisV = mySettings->value("joystick/v", "0").toInt();
-    axisL = mySettings->value("joystick/l", "0").toInt();
-    axisR = mySettings->value("joystick/r", "0").toInt();
-    xDead = mySettings->value("joystick/deadX", "0").toInt();
-    yDead = mySettings->value("joystick/deadY", "0").toInt();
-    zDead = mySettings->value("joystick/deadZ", "0").toInt();
+    joySettings.axisX = mySettings->value("joystick/x", "0").toInt();
+    joySettings.axisY = mySettings->value("joystick/y", "0").toInt();
+    joySettings.axisZ = mySettings->value("joystick/z", "0").toInt();
+    joySettings.axisV = mySettings->value("joystick/v", "0").toInt();
+    joySettings.axisL = mySettings->value("joystick/l", "0").toInt();
+    joySettings.axisR = mySettings->value("joystick/r", "0").toInt();
+    joySettings.deadX = mySettings->value("joystick/deadX", "0").toInt();
+    joySettings.deadY = mySettings->value("joystick/deadY", "0").toInt();
+    joySettings.deadZ = mySettings->value("joystick/deadZ", "0").toInt();
     joyID = mySettings->value("joystick/id", "0").toInt();
     rov->listRelays[0]->setButton(mySettings->value("joystick/but/r0").toInt());
     rov->listRelays[1]->setButton(mySettings->value("joystick/but/r1").toInt());
@@ -512,7 +508,7 @@ void QROVController::loadSettings()
     rov->listServos[1]->setButtonDown(mySettings->value("joystick/but/s1/down").toInt());
     rov->listServos[1]->setButtonUp(mySettings->value("joystick/but/s1/up").toInt());
 
-    myVectorDrive->initVector(MOTORMIN,MOTORMAX,xDead,yDead,zDead);
+    myVectorDrive->initVector(MOTORMIN,MOTORMAX,joySettings.deadX,joySettings.deadY,joySettings.deadZ);
 
     //Video
     QList<IpVideoFeed*> videoFeeds = rov->getVideoFeeds();
@@ -550,22 +546,22 @@ void QROVController::saveSettings()
     mySettings->setValue("thresholds/voltage", rov->sensorVoltage->getThreshold());
 
     //Motors
-    mySettings->setValue("motors/layout", motorLayout);
+    mySettings->setValue("motors/layout", rov->motorLayout);
 
     //Bilinear
-    mySettings->setValue("bilinear/enabled", bilinearEnabled);
-    mySettings->setValue("bilinear/ratio", bilinearRatio);
+    mySettings->setValue("bilinear/enabled", joySettings.bilinearEnabled);
+    mySettings->setValue("bilinear/ratio", joySettings.bilinearRatio);
 
     //Joystick
-    mySettings->setValue("joystick/x", axisX);
-    mySettings->setValue("joystick/y", axisY);
-    mySettings->setValue("joystick/z", axisZ);
-    mySettings->setValue("joystick/v", axisV);
-    mySettings->setValue("joystick/l", axisL);
-    mySettings->setValue("joystick/r", axisR);
-    mySettings->setValue("joystick/deadX", xDead);
-    mySettings->setValue("joystick/deadY", yDead);
-    mySettings->setValue("joystick/deadZ", zDead);
+    mySettings->setValue("joystick/x", joySettings.axisX);
+    mySettings->setValue("joystick/y", joySettings.axisY);
+    mySettings->setValue("joystick/z", joySettings.axisZ);
+    mySettings->setValue("joystick/v", joySettings.axisV);
+    mySettings->setValue("joystick/l", joySettings.axisL);
+    mySettings->setValue("joystick/r", joySettings.axisR);
+    mySettings->setValue("joystick/deadX", joySettings.deadX);
+    mySettings->setValue("joystick/deadY", joySettings.deadY);
+    mySettings->setValue("joystick/deadZ", joySettings.deadZ);
     mySettings->setValue("joystick/id", joyID);
     mySettings->setValue("joystick/but/r0", rov->listRelays[0]->getButton());
     mySettings->setValue("joystick/but/r1", rov->listRelays[1]->getButton());
@@ -697,7 +693,6 @@ void QROVController::readMappings()
     mutex.unlock();
 }
 
-
 void QROVController::updateJoystickData()
 {
     QMutex mutex;
@@ -705,22 +700,22 @@ void QROVController::updateJoystickData()
     joy->getdata(); //read the joystick (within QJoystick)
 
     //Bilinear reading code
-    bilinearThreshold = 1.0/bilinearRatio;
-    if(bilinearEnabled)
+    double bilinearThreshold = 1.0/joySettings.bilinearRatio;
+    if(joySettings.bilinearEnabled)
     {
         for(int i=0;i<joy->axis.count();i++)    //for each axis value
         {
             if((bilinearThreshold * -32768) <= joy->axis[i] && joy->axis[i] <= (bilinearThreshold * 32767)) //if the stick is within the range
             {
-                joy->axis[i] = (joy->axis[i] / bilinearRatio);
+                joy->axis[i] = (joy->axis[i] / joySettings.bilinearRatio);
             }
             else if((bilinearThreshold * 32767) < joy->axis[i] && joy->axis[i] <= 32767)  //if the stick is in upper section of range
             {
-                joy->axis[i] = ((bilinearRatio * joy->axis[i]) + ((bilinearRatio * -32767)+32767));
+                joy->axis[i] = ((joySettings.bilinearRatio * joy->axis[i]) + ((joySettings.bilinearRatio * -32767)+32767));
             }
             else if(-32768 <= joy->axis[i] && joy->axis[i] < (bilinearThreshold * -32768))    //if the stick is in the lower section of range
             {
-                joy->axis[i] = ((bilinearRatio * joy->axis[i]) + ((bilinearRatio * 32768)-32768));
+                joy->axis[i] = ((joySettings.bilinearRatio * joy->axis[i]) + ((joySettings.bilinearRatio * 32768)-32768));
             }
         }
     }
@@ -730,9 +725,9 @@ void QROVController::updateJoystickData()
     }
 
     //Execute vector math
-    if(motorLayout == vectorDrive)
+    if(rov->motorLayout == QROV::vectorDrive)
     {
-        myVectorDrive->vectorMath(joy->axis[axisX],joy->axis[axisY],joy->axis[axisZ],joy->axis[axisV],false);
+        myVectorDrive->vectorMath(joy->axis[joySettings.axisX],joy->axis[joySettings.axisY],joy->axis[joySettings.axisZ],joy->axis[joySettings.axisV],false);
 
         if(rov->getNumMotors() == 6)
         {
@@ -752,16 +747,16 @@ void QROVController::updateJoystickData()
 
         const double motorRange = MOTORMAX - MOTORMIN;
 
-        joy->axis[axisL] = joy->axis[axisL] + 32768;
-        double percentL = ((double)joy->axis[axisL] / 65355.0);
+        joy->axis[joySettings.axisL] = joy->axis[joySettings.axisL] + 32768;
+        double percentL = ((double)joy->axis[joySettings.axisL] / 65355.0);
         rov->listMotors[0]->setValue((int)((percentL * motorRange) + MOTORMIN));
 
-        joy->axis[axisR] = joy->axis[axisR] + 32768;
-        double percentR = ((double)joy->axis[axisR] / 65355.0);
+        joy->axis[joySettings.axisR] = joy->axis[joySettings.axisR] + 32768;
+        double percentR = ((double)joy->axis[joySettings.axisR] / 65355.0);
         rov->listMotors[1]->setValue((int)((percentR * motorRange) + MOTORMIN));
 
-        joy->axis[axisV] = joy->axis[axisV] + 32768;
-        double percentV = ((double)joy->axis[axisV] / 65355.0);
+        joy->axis[joySettings.axisV] = joy->axis[joySettings.axisV] + 32768;
+        double percentV = ((double)joy->axis[joySettings.axisV] / 65355.0);
         rov->listMotors[2]->setValue((int)((percentV * motorRange) + MOTORMIN));
 
     }
