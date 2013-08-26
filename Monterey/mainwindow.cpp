@@ -447,7 +447,6 @@ void MainWindow::setupCompass()
 void MainWindow::loadUiGeometry()
 {
     QFile settingsFile(mySettings->fileName());
-    qDebug() << settingsFile.exists();
     if(settingsFile.exists())
     {
         mySettings->beginGroup("mainWindow");
