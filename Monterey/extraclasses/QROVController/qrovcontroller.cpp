@@ -18,46 +18,53 @@
 #include "qrovcontroller.h"
 #include <QDebug>
 
+/* Settings area where the user can tweak monterey for their own personal
+ * use.  Please change these numbers as you see fit.  The timeout values
+ * are measured in milliseconds.  Please note that any change in motors,
+ * relays or servos will need to be manually propagated to the UI.
+ */
+
 #define numberOfMotors 6
 #define numberOfRelays 3
 #define numberOfServos 2
-#define ERRORTIMEOUT 500
 #define MOTORMIN 1000
 #define MOTORMAX 2000
+#define ERRORTIMEOUT 500
+#define PITIMEOUT 5000
+#define TOBIPORT 51000
+#define TIBOPORT 50000
+#define TAHOERXPORT 52000
+#define TAHOETXPORT 53000
+#define PIRXPORT 5060
+
+/*
+ *  END OF SETTINGS AREA
+ */
 
 QROVController::QROVController(QObject *parent) :
     QObject(parent)
 {
     QMutex mutex;
     mutex.lock();
+
     numberOfAxes = 0;
     rov = new QROV(numberOfMotors, numberOfRelays, numberOfServos, this);
     joy = new QJoystick();
+
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
-    rxSocket = new QUdpSocket(this);
+
     txSocket = new QUdpSocket(this);
-    tahoeSocket = new QUdpSocket(this);
-    piSocket = new QUdpSocket(this);
-    timerTIBO = new QTimer(this);
-    timerTOBI = new QTimer(this);
-    timerTahoe = new QTimer(this);
-    timerPi = new QTimer(this);
-    comTIBO = false;
-    comTOBI = false;
-    comTahoe = false;
-    comPi = false;
-    monitorTIBO = new QBoolMonitor(this);
-    monitorTIBO->setComparisonState(comTIBO);
-    monitorTOBI = new QBoolMonitor(this);
-    monitorTOBI->setComparisonState(comTOBI);
-    monitorTahoe = new QBoolMonitor(this);
-    monitorTahoe->setComparisonState(comTahoe);
-    monitorRPi = new QBoolMonitor(this);
-    monitorRPi->setComparisonState(comPi);
+
+    captureRx = new UdpCapture(TIBOPORT, ERRORTIMEOUT, this);
+    captureTahoe = new UdpCapture(TAHOERXPORT, ERRORTIMEOUT, this);
+    capturePi = new UdpCapture(PIRXPORT, PITIMEOUT, this);
+
     motorLayout = vectorDrive;
+
     monitorJoystick = new QBoolMonitor(this);
     monitorJoystick->setComparisonState(joyAttached);
     joyID = 0;
+
     myVectorDrive = new QVectorDrive2(this);
     myVectorDrive->initVector(MOTORMIN, MOTORMAX, 0, 0, 0);
 
@@ -86,23 +93,14 @@ QROVController::QROVController(QObject *parent) :
 
     loadSettings();
 
-    timerTIBO->start(ERRORTIMEOUT);
-    timerTOBI->start(ERRORTIMEOUT);
-    timerTahoe->start(ERRORTIMEOUT);
-    timerPi->start(5000);
+    connect(captureRx, SIGNAL(packetProcessed(QString)), this, SLOT(processPacket(QString)));
+    connect(captureTahoe, SIGNAL(packetProcessed(QString)), this, SLOT(processTahoe(QString)));
+    connect(capturePi, SIGNAL(packetProcessed(QString)), this, SLOT(processPi(QString)));
 
-    tiboPort = 50000;
-    tobiPort = 51000;
-    tahoeSocket->bind(52000, QUdpSocket::ShareAddress);
-    piSocket->bind(5060, QUdpSocket::ShareAddress);
-    rxSocket->bind(tiboPort, QUdpSocket::ShareAddress);
-    connect(rxSocket, SIGNAL(readyRead()), this, SLOT(processPacket()));
-    connect(tahoeSocket, SIGNAL(readyRead()), this, SLOT(processTahoe()));
-    connect(piSocket, SIGNAL(readyRead()), this, SLOT(processPi()));
-    connect(timerTOBI, SIGNAL(timeout()), this, SLOT(setErrorTOBI()));
-    connect(timerTIBO, SIGNAL(timeout()),this, SLOT(setErrorTIBO()));
-    connect(timerTahoe, SIGNAL(timeout()), this, SLOT(setErrorTahoe()));
-    connect(timerPi, SIGNAL(timeout()), this, SLOT(setErrorPi()));
+    connect(captureRx, SIGNAL(comChanged(bool)), this, SIGNAL(comTiboChanged(bool)));
+    connect(captureTahoe, SIGNAL(comChanged(bool)), this, SIGNAL(comTahoeChanged(bool)));
+    connect(capturePi, SIGNAL(comChanged(bool)), this, SIGNAL(comPiChanged(bool)));
+
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
     connect(joy, SIGNAL(toggleStateChanged(int)), this, SLOT(joystickButtonClicked(int)));
     connect(joy, SIGNAL(hatStateChanged(int)), this, SLOT(joystickHatClicked(int)));
@@ -202,7 +200,7 @@ QList<int> QROVController::getJoystickCurrentButtonValue()
     return returnValues;
 }
 
-void QROVController::processPacket()
+void QROVController::processPacket(QString packet)
 {
     QMutex mutex;
     mutex.lock();
@@ -213,19 +211,7 @@ void QROVController::processPacket()
     double sens0;
     double sens1;
 
-    QByteArray rxDatagram;
-    QString rxPacket;
-
-    do
-    {
-        rxDatagram.resize(rxSocket->pendingDatagramSize());
-        rxSocket->readDatagram(rxDatagram.data(), rxDatagram.size());
-    }
-    while(rxSocket->hasPendingDatagrams());
-    rxPacket = (tr("\"%1\"").arg(rxDatagram.data()));   //turn datagram into a string
-    rxPacket.remove(QChar('"'), Qt::CaseInsensitive);   //remove quotation marks
-
-    QTextStream rxProcessing(&rxPacket);
+    QTextStream rxProcessing(&packet);
 
     rxProcessing >> version >> depth >> heading >> voltage >> sens0 >> sens1;
 
@@ -249,11 +235,7 @@ void QROVController::processPacket()
         diveTimer->start();
     }
 
-    emit receivedPacket(rxPacket);
-    emit noErrorTIBO();
-    comTIBO = true;
-    monitorTIBO->compareState(comTIBO);
-    timerTIBO->start(ERRORTIMEOUT);
+    emit receivedPacket(packet);
     mutex.unlock();
 }
 
@@ -303,12 +285,8 @@ void QROVController::sendPacket()
 
     txDatagram = txPacket.toUtf8();
 
-    txSocket->writeDatagram(txDatagram.data(), txDatagram.size(), QHostAddress::Broadcast, tobiPort);
+    txSocket->writeDatagram(txDatagram.data(), txDatagram.size(), QHostAddress::Broadcast, TOBIPORT);
     emit sentPacket(txPacket);
-    emit noErrorTOBI();
-    comTOBI = true;
-    monitorTOBI->compareState(comTOBI);
-    timerTOBI->start(ERRORTIMEOUT);
     mutex.unlock();
 }
 
@@ -317,21 +295,10 @@ void QROVController::sendDebug()
     //code to send debug packet?
 }
 
-void QROVController::processTahoe()
+void QROVController::processTahoe(QString packet)
 {
     QMutex mutex;
     mutex.lock();
-    QByteArray datagram;
-    QString packet;
-
-    do
-    {
-        datagram.resize(tahoeSocket->pendingDatagramSize());
-        tahoeSocket->readDatagram(datagram.data(), datagram.size());
-    }
-    while(tahoeSocket->hasPendingDatagrams());
-    packet = (tr("\"%1\"").arg(datagram.data()));   //turn datagram into a string
-    packet.remove(QChar('"'), Qt::CaseInsensitive);   //remove quotation marks
 
     int relay0;
     int relay1;
@@ -357,9 +324,6 @@ void QROVController::processTahoe()
         rov->listRelays[2]->setState(false);
     rov->listServos[0]->setValue(servo0);
     rov->listServos[1]->setValue(servo1);
-    comTahoe = true;
-    monitorTahoe->compareState(comTahoe);
-    timerTahoe->start(ERRORTIMEOUT);
     mutex.unlock();
     emit onTahoeProcessed();    //tell the GUI to update itself
 }
@@ -369,12 +333,12 @@ void QROVController::sendTahoe()
     QMutex mutex;
     mutex.lock();
     QString packet;
-    packet.append(QString::number((int)comTOBI));
+    packet.append("1"); //placeholder for comTobi until Tahoe's packet structure is changed
     packet.append(" ");
-    packet.append(QString::number((int)comTIBO));
+    packet.append(QString::number((int)captureRx->comStatus()));
     packet.append(" ");
     int isError;
-    if(!comTOBI || !comTIBO || !joyAttached)
+    if(!captureRx->comStatus() || !joyAttached)
         isError = 1;
     else
         isError = 0;
@@ -438,26 +402,16 @@ void QROVController::sendTahoe()
     packet.append(" ");
 
     QByteArray datagram = packet.toUtf8();
-    txSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress::Broadcast, 53000);
+    txSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress::Broadcast, TAHOETXPORT);
 
     mutex.unlock();
 }
 
-void QROVController::processPi()
+void QROVController::processPi(QString packet)
 {
     QMutex mutex;
     mutex.lock();
-    QByteArray datagram;
-    QString packet;
-    QHostAddress* piAddress = new QHostAddress;
-
-    do
-    {
-        datagram.resize(piSocket->pendingDatagramSize());
-        piSocket->readDatagram(datagram.data(), datagram.size(), piAddress);
-    }
-    while(piSocket->hasPendingDatagrams());
-    packet = (tr("%1").arg(datagram.data()));   //turn datagram into a string
+    QHostAddress piAddress = capturePi->senderHostAddress();
 
     double tempC;
     double uptime;
@@ -469,13 +423,10 @@ void QROVController::processPi()
 
     rov->piData->setTempC(tempC);
     rov->piData->setUptimeS((int)uptime);
-    rov->piData->setIpAddress(*piAddress);
+    rov->piData->setIpAddress(piAddress);
     rov->piData->setUsedMemory(usedMemoryPercentage);
     rov->piData->setUsedCpu(usedCpuPercentage);
 
-    comPi = true;
-    monitorRPi->compareState(comPi);
-    timerPi->start(5000);
     mutex.unlock();
 }
 
@@ -489,17 +440,17 @@ void QROVController::noJoystick()
 
 int QROVController::getPortTOBI()
 {
-    return tobiPort;
+    return TOBIPORT;
 }
 
 int QROVController::getPortTIBO()
 {
-    return tiboPort;
+    return captureRx->socket()->localPort();
 }
 
 int QROVController::getPortRpiTibo()
 {
-    return piSocket->localPort();
+    return capturePi->socket()->localPort();
 }
 
 void QROVController::loadSettings()
@@ -664,7 +615,6 @@ void QROVController::joystickHatClicked(int hatID)
 {
     QMutex mutex;
     mutex.lock();
-    qDebug() << "In joystickHatClicked(int hatID) function";
     foreach(QROVRelay * r, rov->listRelays) //used for relays
     {
         if(hatID == r->getHat())
@@ -705,6 +655,8 @@ int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outM
 
 //This is for the non-event based mappings.  To read the event based mappings, look to the
 //joystickButtonClicked and joystickHatClicked functions
+//Servo values are adjusted here so the user can just press and hold the button/hat and it'll
+//keep adjusting its value.  The relays, on the other hand, need to only be pressed momentarily
 void QROVController::readMappings()
 {
     QMutex mutex;
@@ -729,13 +681,11 @@ void QROVController::readMappings()
             if(joy->buttons[i] == true && rov->listServos[s]->getButtonUp() == i) //if the up button is pressed
             {
                 //increment
-                qDebug() << "Button ID: " << i << "Servo Increment";
                 emit changeServo(s, 1);
             }
             else if(joy->buttons[i] == true && rov->listServos[s]->getButtonDown() == i) //if the down button is pressed
             {
                 //decrement
-                qDebug() << "Button ID: " << i << "Servo Decrement";
                 emit changeServo(s, 0);
             }
             else
@@ -795,57 +745,26 @@ void QROVController::updateJoystickData()
     }
     else    //if tank drive
     {
+        //Pseudo code:
+        // Step 1: convert the joystick axis value from [-32768,32727] to [0,65355]
+        // Step 2: find the percentage of the stick deflection
+        // Step 3: find the value of that percentage of the motor range (add the minimum value to make it within the range)
+
+        const double motorRange = MOTORMAX - MOTORMIN;
+
         joy->axis[axisL] = joy->axis[axisL] + 32768;
-        double percentL = ((double)joy->axis[axisL] / 65355.0);   //find the percent of the joystick movement
-        rov->listMotors[0]->setValue((int)((percentL * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
+        double percentL = ((double)joy->axis[axisL] / 65355.0);
+        rov->listMotors[0]->setValue((int)((percentL * motorRange) + MOTORMIN));
 
         joy->axis[axisR] = joy->axis[axisR] + 32768;
-        double percentR = ((double)joy->axis[axisR] / 65355.0);   //find the percent of the joystick movement
-        rov->listMotors[1]->setValue((int)((percentR * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
+        double percentR = ((double)joy->axis[axisR] / 65355.0);
+        rov->listMotors[1]->setValue((int)((percentR * motorRange) + MOTORMIN));
 
         joy->axis[axisV] = joy->axis[axisV] + 32768;
-        double percentV = ((double)joy->axis[axisV] / 65355.0);   //find the percent of the joystick movement
-        rov->listMotors[2]->setValue((int)((percentV * 1000.0) + 1000.0));    //convert it to a value in the 1000->2000 range
+        double percentV = ((double)joy->axis[axisV] / 65355.0);
+        rov->listMotors[2]->setValue((int)((percentV * motorRange) + MOTORMIN));
 
     }
-    mutex.unlock();
-}
-
-void QROVController::setErrorTOBI()
-{
-    QMutex mutex;
-    mutex.lock();
-    comTOBI = false;
-    monitorTOBI->compareState(comTOBI);
-    mutex.unlock();
-    emit errorTOBI();
-}
-
-void QROVController::setErrorTIBO()
-{
-    QMutex mutex;
-    mutex.lock();
-    comTIBO = false;
-    monitorTIBO->compareState(comTIBO);
-    mutex.unlock();
-    emit errorTIBO();
-}
-
-void QROVController::setErrorTahoe()
-{
-    QMutex mutex;
-    mutex.lock();
-    comTahoe = false;
-    monitorTahoe->compareState(comTahoe);
-    mutex.unlock();
-}
-
-void QROVController::setErrorPi()
-{
-    QMutex mutex;
-    mutex.lock();
-    comPi = false;
-    monitorRPi->compareState(comPi);
     mutex.unlock();
 }
 

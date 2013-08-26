@@ -94,11 +94,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
     connect(ui->actionCheck_for_Updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
     connect(ui->actionFullscreen, SIGNAL(toggled(bool)), this, SLOT(showFullscreen(bool)));
-    connect(controller->monitorTIBO, SIGNAL(stateChanged()), this, SLOT(lostTIBO()));
-    connect(controller->monitorTOBI, SIGNAL(stateChanged()), this, SLOT(lostTOBI()));
+    connect(controller, SIGNAL(comTiboChanged(bool)), this, SLOT(onComTiboChanged(bool)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
-    connect(controller->monitorTahoe, SIGNAL(stateChanged()), this, SLOT(lostTahoe()));
-    connect(controller->monitorRPi, SIGNAL(stateChanged()), this, SLOT(lostRPi()));
+    connect(controller, SIGNAL(comTahoeChanged(bool)), this, SLOT(onComTahoeChanged(bool)));
+    connect(controller, SIGNAL(comPiChanged(bool)), this, SLOT(onComPiChange(bool)));
     connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
     connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
@@ -449,21 +448,9 @@ void MainWindow::zoomTheCameraFeed(int zoomAmount)
     }
 }
 
-void MainWindow::lostTOBI()
+void MainWindow::onComTiboChanged(bool status)
 {
-    if(controller->getStatusTOBI())
-    {
-        activityMonitor->display("Gained TOBI");
-    }
-    else
-    {
-        activityMonitor->display("Lost TOBI");
-    }
-}
-
-void MainWindow::lostTIBO()
-{
-    if(controller->getStatusTIBO())
+    if(status)
     {
         activityMonitor->display("Gained TIBO");
     }
@@ -473,9 +460,9 @@ void MainWindow::lostTIBO()
     }
 }
 
-void MainWindow::lostTahoe()
+void MainWindow::onComTahoeChanged(bool status)
 {
-    if(controller->getStatusTahoe())
+    if(status)
     {
         activityMonitor->display("Gained Tahoe COM");
     }
@@ -485,9 +472,9 @@ void MainWindow::lostTahoe()
     }
 }
 
-void MainWindow::lostRPi()
+void MainWindow::onComPiChange(bool status)
 {
-    if(controller->getStatusPi())
+    if(status)
     {
         activityMonitor->display("Gained Raspberry Pi COM");
     }

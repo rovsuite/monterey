@@ -72,10 +72,9 @@ private slots:
     void showMappings();    //!< show the joystick mapping dialog
     void showSettings();    //!< show the settings dialog
     void showDiveTimer();   //!< Display the dive timer
-    void lostTOBI();    //!< Add TOBI lost/gained to the activity monitor
-    void lostTIBO();    //!< Add TIBO lost/gained to the activity monitor
-    void lostTahoe();   //!< Add Tahoe COM lost/gained to the activity monitor
-    void lostRPi(); //!< Add RPi COM lost/gained to the activity monitor
+    void onComTiboChanged(bool status);    //!< Add TIBO lost/gained to the activity monitor
+    void onComTahoeChanged(bool status);   //!< Add Tahoe COM lost/gained to the activity monitor
+    void onComPiChange(bool status); //!< Add RPi COM lost/gained to the activity monitor
     void thresholdCheck();  //!< Check the input values to see if they reach thresholds and alert the user if they do
     void loadData();    //!< Load the data from the ROV controller and display it
     void displayTime(); //!< Display the current time

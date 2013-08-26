@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     extraclasses/PiData/pidata.cpp \
     extraclasses/Compass/compass.cpp \
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.cpp \
-    extraclasses/LedIndicator/ledindicator.cpp
+    extraclasses/LedIndicator/ledindicator.cpp \
+    extraclasses/UdpCapture/udpcapture.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -61,7 +62,8 @@ HEADERS  += mainwindow.h \
     extraclasses/PiData/pidata.h \
     extraclasses/Compass/compass.h \
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.h \
-    extraclasses/LedIndicator/ledindicator.h
+    extraclasses/LedIndicator/ledindicator.h \
+    extraclasses/UdpCapture/udpcapture.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \
