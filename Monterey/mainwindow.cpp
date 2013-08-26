@@ -37,6 +37,10 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowTitle(title);
     this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
+    //UI Settings
+    mySettings = new QSettings("windowSettings.ini", QSettings::IniFormat);
+    loadUiGeometry();
+
     //GUI refresh timer
     guiTimer = new QTimer;
     guiTimer->setInterval(50); //refresh the gui 20x a second
@@ -112,6 +116,15 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    mySettings->beginGroup("mainWindow");
+    mySettings->setValue("geometry", saveGeometry());
+    mySettings->setValue("splitterStateHorizontal", ui->splitterHorizontal->saveState());
+    mySettings->setValue("splitterStateVertical", ui->splitterVertical->saveState());
+    mySettings->endGroup();
 }
 
 void MainWindow::showAbout()
@@ -429,6 +442,30 @@ void MainWindow::setupCompass()
 {
     compass = new Compass;
     ui->gridLayoutHUD->addWidget(compass->container, 0,0,1,4);
+}
+
+void MainWindow::loadUiGeometry()
+{
+    QFile settingsFile(mySettings->fileName());
+    qDebug() << settingsFile.exists();
+    if(settingsFile.exists())
+    {
+        mySettings->beginGroup("mainWindow");
+        restoreGeometry(mySettings->value("geometry").toByteArray());
+        ui->splitterHorizontal->restoreState(mySettings->value("splitterStateHorizontal").toByteArray());
+        ui->splitterVertical->restoreState(mySettings->value("splitterStateVertical").toByteArray());
+        mySettings->endGroup();
+    }
+    else
+    {
+        //Default values
+        ui->splitterHorizontal->setStretchFactor(0,3);
+        ui->splitterHorizontal->setStretchFactor(1,6);
+        ui->splitterHorizontal->setStretchFactor(2,1);
+
+        ui->splitterVertical->setStretchFactor(0, 2);
+        ui->splitterVertical->setStretchFactor(1, 1);
+    }
 }
 
 void MainWindow::showFullscreen(bool fullscreen)

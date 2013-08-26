@@ -45,6 +45,9 @@ public:
 
     QROVController *controller;
 
+protected:
+    void closeEvent(QCloseEvent *event);
+
 public slots:
     void loadSettings();    //!< load the application's settings
 
@@ -57,39 +60,48 @@ public slots:
     void appendToActivityMonitor(QString message);
 
 private slots:
+    //Buttons
     void on_pbRelay0_clicked();
-
     void on_pbRelay1_clicked();
-
     void on_pbRelay2_clicked();
+    void on_buttonCopyLogToClipboard_clicked();
+    void on_buttonClearLog_clicked();
 
+    //Sliders
     void on_vsServo0_valueChanged(int value);
-
     void on_vsServo1_valueChanged(int value);
 
+    //Show dialogs
     void showAbout();   //!< show the about dialog
     void showDebug();   //!< show the debug dialog
     void showMappings();    //!< show the joystick mapping dialog
     void showSettings();    //!< show the settings dialog
+
+    //Show misc. values
+    void refreshGUI();  //!< Refresh the GUI on a timer
+    void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
     void showDiveTimer();   //!< Display the dive timer
     void onComTiboChanged(bool status);    //!< Add TIBO lost/gained to the activity monitor
     void onComTahoeChanged(bool status);   //!< Add Tahoe COM lost/gained to the activity monitor
     void onComPiChange(bool status); //!< Add RPi COM lost/gained to the activity monitor
-    void thresholdCheck();  //!< Check the input values to see if they reach thresholds and alert the user if they do
-    void loadData();    //!< Load the data from the ROV controller and display it
     void displayTime(); //!< Display the current time
-    void refreshGUI();  //!< Refresh the GUI on a timer
     void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
-    void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
-    void checkForUpdates(); //!< Check online for updates to Monterey
+
+    //Grab new data from the ROV controller
+    void loadData();    //!< Load the data from the ROV controller and display it
+
+    //Check sensor thresholds (MIGHT REMOVE)
+    void thresholdCheck();  //!< Check the input values to see if they reach thresholds and alert the user if they do
+
+    //Setup QML widgets
     void setupDepthTape();  //!< Configure the depth tape
     void setupCompass();    //!< Configure the compass
+    void loadUiGeometry();
+
+    //Misc functions
+    void checkForUpdates(); //!< Check online for updates to Monterey
     void showFullscreen(bool fullscreen);
     void zoomTheCameraFeed(int zoomAmount);
-
-    void on_buttonCopyLogToClipboard_clicked();
-
-    void on_buttonClearLog_clicked();
 
 private:
     QString *version;
