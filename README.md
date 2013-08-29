@@ -53,4 +53,4 @@ There are many ways you can help (even if you can't write code), and all of them
 
 -Finally, spread the word!
 
--You can also talk to developers on freenode.net at the #Monterey channel
+-You can find our wiki at monterey.wikia.com
