@@ -52,3 +52,5 @@ There are many ways you can help (even if you can't write code), and all of them
 -Join the project!  Anyone who wants to is allowed to join the ROV-Suite project.
 
 -Finally, spread the word!
+
+-You can also talk to developers on freenode.net at the #Monterey channel
