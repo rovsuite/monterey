@@ -51,6 +51,8 @@ There are many ways you can help (even if you can't write code), and all of them
 
 -Join the project!  Anyone who wants to is allowed to join the ROV-Suite project.
 
+-Provide feedback!  Do you like something we did?  Do you want to see a feature added?  Did we mess something up?  Let us know!  You can email Chris Konstad at chriskon149 [at] gmail [dot] com with your feedback.
+
 -Finally, spread the word!
 
 -You can find our wiki at monterey.wikia.com
