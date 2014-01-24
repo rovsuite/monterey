@@ -35,7 +35,7 @@ Dependencies required for development:
 Notes:
 -------
 
-Monterey can compile on OSX, Windows and Linux just fine, but keep in mind that Monterey is being developed in a Windows environment.  
+Monterey can compile on OSX, Windows and Linux just fine, but keep in mind that Monterey is being developed in a Windows environment (tested on MinGW 4.8 32bit).  
 
 How can I help make Monterey better?
 -------------------------------------
