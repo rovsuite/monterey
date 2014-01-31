@@ -21,7 +21,7 @@ Features:
 Requirements:
 -------------
 
--An Arduino with ethernet capabilities and a Raspberry Pi
+-An Arduino with ethernet capabilities and a Raspberry Pi (these can be replaced by anything you want if you want to write code to interface with Monterey over UDP)
 
 -A USB joystick or gamepad
 
@@ -32,6 +32,17 @@ Dependencies required for development:
 
 -SDL version 1.2.15 (sudo apt-get install libsdl-dev)
 
+Compiling Instructions:
+-----------------------
+
+All OSes: Install Qt version 5.1 or greater.  
+
+Linux: Install SDL version 1.2.15 (sudo apt-get install libsdl-dev).  Then open Monterey.pro in Qt Creator and select Desktop as your target.  Then click run and it should run just fine.
+
+OSX: Open Monterey.pro in Qt Creator, select Desktop as your target and click run.  It should build without any problems.
+
+Windows: Development work is done primarily with MinGW, so that is the recommended compiler although MSVC has been used as well.  You can install MinGW when you install Qt or through the Qt SDK maintenance tool.  Open Monterey.pro in Qt Creator, select Desktop as your target and click run.  It should build and run just fine!
+
 Notes:
 -------
 
@@ -39,6 +50,7 @@ Monterey can compile on OSX, Windows and Linux just fine, but keep in mind that 
 
 How can I help make Monterey better?
 -------------------------------------
+
 There are many ways you can help (even if you can't write code), and all of them are greatly appreciated!
 
 -Bug reports: These are incredibly useful and help make Monterey better for everyone.  If bugs aren't reported to the developers, how can they fix them?
