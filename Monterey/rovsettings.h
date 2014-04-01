@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <QLineEdit>
 #include "extraclasses/IpVideoFeed/ipvideofeed.h"
 
 namespace Ui {
@@ -22,15 +23,14 @@ signals:
 
 private slots:
     void on_pbCancel_clicked();
-
     void on_pbSave_clicked();
-
     void onAutoGenerateVideoFeedUrlClicked(bool enabled);
 
 private:
     Ui::ROVSettings *ui;
     QSettings *mySettings;
     QList<IpVideoFeed*> videoFeeds;
+    QList<QLineEdit*> relayNames;
 };
 
 #endif // ROVSETTINGS_H

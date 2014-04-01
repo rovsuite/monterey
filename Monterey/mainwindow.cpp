@@ -23,6 +23,8 @@
 #include <QPalette>
 #include <QMessageBox>
 #include <QtDebug>
+#include <QPushButton>
+#include <QSpacerItem>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -57,9 +59,30 @@ MainWindow::MainWindow(QWidget *parent) :
     controller->moveToThread(engineThread); //move the QROVController engine to the second thread
     engineThread->start();
 
-    controller->rov->listRelays[0]->setQPushButton(ui->pbRelay0);
-    controller->rov->listRelays[1]->setQPushButton(ui->pbRelay1);
-    controller->rov->listRelays[2]->setQPushButton(ui->pbRelay2);
+    //Add the right amount of relay buttons
+    for(int i=0; i<controller->relayMappings.count(); i++)
+    {
+        //Add a pushbutton
+        QPushButton *pb = new QPushButton(this);
+        pb->setText("Relay" + QString::number(i));
+        pb->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+
+        //Set a keyboard shortcut if it is in the range 1-9
+        if(i < 9)
+        {
+            pb->setShortcut(Qt::Key_Control + Qt::Key_1);
+        }
+        pb->setCheckable(true);
+        ui->groupBoxRelayButtons->layout()->addWidget(pb);
+        relayButtons.append(pb);
+
+        //Add a spacer
+        QSpacerItem *spacer = new QSpacerItem(20, 13, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        ui->groupBoxRelayButtons->layout()->addItem(spacer);
+
+        //Link to the controller
+        controller->relayMappings[i].pushButton = pb;
+    }
 
     //Timer for updating the graph
     graphTime = new QTime;
@@ -75,6 +98,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayoutHUD->addWidget(webCamViewer,1,1,4,3);
 
     setupCustomWidgets();   //load the settings for the custom widgets
+
+    //Apply the event filter that captures key presses to all of the widgets
+    //This allows for window-wide keyboard shortcuts that can override system defaults
+    QList<QWidget*> widgets = this->findChildren<QWidget*>();
+    foreach(QWidget *w, widgets)
+    {
+        w->installEventFilter(this);
+    }
 
     loadSettings();
 
@@ -109,6 +140,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller, SIGNAL(appendToActivityMonitor(QString)), this, SLOT(appendToActivityMonitor(QString)));
     connect(ui->zoomSlider, SIGNAL(sliderMoved(int)), this, SLOT(zoomTheCameraFeed(int)));
 
+    //Connect the relay buttons to the relay handling function
+    for(int i=0; i<relayButtons.count(); i++)
+    {
+        connect(relayButtons[i], SIGNAL(clicked()), this, SLOT(on_pbRelay_clicked()));
+    }
+
     guiTimer->start();
     connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
 }
@@ -125,6 +162,31 @@ void MainWindow::closeEvent(QCloseEvent *event)
     mySettings->setValue("splitterStateHorizontal", ui->splitterHorizontal->saveState());
     mySettings->setValue("splitterStateVertical", ui->splitterVertical->saveState());
     mySettings->endGroup();
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
+{
+    if(ev->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent *keyEv = static_cast<QKeyEvent*>(ev);
+        if(keyEv->key() >= Qt::Key_1 &&
+                keyEv->key() < (Qt::Key_1 + controller->relayMappings.count()) &&
+                keyEv->key() <= Qt::Key_9)
+        {
+            //Get the number of the key that was pressed
+            int index = keyEv->key() - Qt::Key_1;
+            controller->relayMappings.at(index).pushButton->click();
+            return true;
+        }
+        else
+        {
+            return QMainWindow::eventFilter(obj, ev);
+        }
+    }
+    else
+    {
+        return QMainWindow::eventFilter(obj, ev);
+    }
 }
 
 void MainWindow::showAbout()
@@ -167,9 +229,10 @@ void MainWindow::loadSettings()
     controller->loadSettings();
 
     //Load the relay names
-    ui->pbRelay0->setText(controller->rov->listRelays[0]->getName());
-    ui->pbRelay1->setText(controller->rov->listRelays[1]->getName());
-    ui->pbRelay2->setText(controller->rov->listRelays[2]->getName());
+    for(int i=0; i<controller->rov->listRelays.count(); i++)
+    {
+        relayButtons.at(i)->setText(controller->rov->listRelays[i]->getName());
+    }
 
     //Load the units
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
@@ -419,9 +482,10 @@ void MainWindow::lostJoystick()
 
 void MainWindow::displayTahoe()
 {
-    ui->pbRelay0->setChecked(controller->rov->listRelays[0]->getState());
-    ui->pbRelay1->setChecked(controller->rov->listRelays[1]->getState());
-    ui->pbRelay2->setChecked(controller->rov->listRelays[2]->getState());
+    for(int i=0; i<relayButtons.count(); i++)
+    {
+        relayButtons[i]->setChecked(controller->rov->listRelays.at(i)->getState());
+    }
 
     ui->vsServo0->setValue(controller->rov->listServos[0]->getValue());
     ui->vsServo1->setValue(controller->rov->listServos[1]->getValue());
@@ -603,19 +667,16 @@ void MainWindow::displayTime()
     ui->labCurrentTime->setText(timeString);
 }
 
-void MainWindow::on_pbRelay0_clicked()
+//Handle UI QPushButton clicks for relays
+void MainWindow::on_pbRelay_clicked()
 {
-    controller->rov->listRelays[0]->setState(ui->pbRelay0->isChecked());
-}
-
-void MainWindow::on_pbRelay1_clicked()
-{
-    controller->rov->listRelays[1]->setState(ui->pbRelay1->isChecked());
-}
-
-void MainWindow::on_pbRelay2_clicked()
-{
-    controller->rov->listRelays[2]->setState(ui->pbRelay2->isChecked());
+    for(int i=0; i<controller->relayMappings.count(); i++)
+    {
+        if(controller->relayMappings[i].pushButton == sender())
+        {
+            controller->rov->listRelays.at(i)->setState(relayButtons.at(i)->isChecked());
+        }
+    }
 }
 
 void MainWindow::on_vsServo0_valueChanged(int value)

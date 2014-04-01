@@ -33,6 +33,29 @@ public:
     QList<int> joystickAxesValues;
     QBoolMonitor *monitorJoystick;
 
+    //Struct to map user input (UI and JS) to relays
+    struct RelayMapping
+    {
+        int button;
+        int hat;
+        QPushButton *pushButton;
+
+        RelayMapping(int b, int h, QPushButton *pb)
+        {
+            button = b;
+            hat = h;
+            pushButton = pb;
+        }
+
+        RelayMapping()
+        {
+            button = -1;
+            hat = -1;
+            pushButton = nullptr;
+        }
+    };
+    QList<RelayMapping> relayMappings;
+
 signals:
     void onMotherFunctionCompleted();
 
@@ -152,7 +175,8 @@ private:
     //Motor math
     QVectorDrive2 *myVectorDrive;   //vector drive object
 
-    struct JoystickSettings {
+    struct JoystickSettings
+    {
         //Deadzones
         int deadX;
         int deadY;

@@ -47,6 +47,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    bool eventFilter(QObject *obj, QEvent *ev);
 
 public slots:
     void loadSettings();    //!< load the application's settings
@@ -61,9 +62,7 @@ public slots:
 
 private slots:
     //Buttons
-    void on_pbRelay0_clicked();
-    void on_pbRelay1_clicked();
-    void on_pbRelay2_clicked();
+    void on_pbRelay_clicked();
     void on_buttonCopyLogToClipboard_clicked();
     void on_buttonClearLog_clicked();
 
@@ -113,6 +112,8 @@ private:
     ROVMappings *dialogMappings;
     ROVSettings *dialogSettings;
     QSettings *mySettings;
+
+    QList<QPushButton*> relayButtons;
 
     QVector<double> depthPoints;
     QVector<double> voltagePoints;

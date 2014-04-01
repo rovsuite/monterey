@@ -3,6 +3,9 @@
 
 #include <QDialog>
 #include <QTimer>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QList>
 
 namespace Ui {
     class ROVMappings;
@@ -18,15 +21,17 @@ public:
 
 private slots:
     void on_pbSave_clicked();
-
     void on_pbCancel_clicked();
-
     void updateDisplay();
 
 private:
     Ui::ROVMappings *ui;
     QTimer *updateTimer;
     int numAxes;
+
+    //Keep track of relay settings
+    QList<QComboBox*> relayButtons;
+    QList<QLineEdit*> relayHats;
 };
 
 #endif // ROVMAPPINGS_H

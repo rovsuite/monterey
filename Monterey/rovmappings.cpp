@@ -19,6 +19,10 @@
 #include "ui_rovmappings.h"
 #include "mainwindow.h"
 
+#include <QLayout>
+#include <QtDebug>
+#include <QMessageBox>
+
 ROVMappings::ROVMappings(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ROVMappings)
@@ -39,9 +43,6 @@ ROVMappings::ROVMappings(QWidget *parent) :
 
         //Load maximum buttons
         QList<QComboBox*> comboButtons;
-        comboButtons.append(ui->cbR0But);
-        comboButtons.append(ui->cbR1But);
-        comboButtons.append(ui->cbR2But);
         comboButtons.append(ui->cbS0DBut);
         comboButtons.append(ui->cbS0IBut);
         comboButtons.append(ui->cbS1DBut);
@@ -54,6 +55,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
             }
             cb->addItem("Disable"); //add option to disable
         }
+
         //Load axes
         ui->sbVX->setValue(p->controller->getAxisX());
         ui->sbVY->setValue(p->controller->getAxisY());
@@ -62,23 +64,65 @@ ROVMappings::ROVMappings(QWidget *parent) :
         ui->sbTL->setValue(p->controller->getAxisL());
         ui->sbTR->setValue(p->controller->getAxisR());
 
-        //Load buttons
-        ui->cbR0But->setCurrentIndex(p->controller->rov->listRelays[0]->getButton());
-        ui->cbR1But->setCurrentIndex(p->controller->rov->listRelays[1]->getButton());
-        ui->cbR2But->setCurrentIndex(p->controller->rov->listRelays[2]->getButton());
+        //Load relay settings
+        QVBoxLayout *buttonLayout = ui->verticalLayoutButtons;
+        QVBoxLayout *hatLayout = ui->verticalLayoutHats;
+        for(int i=0; i<p->controller->relayMappings.count(); i++)
+        {
+            //Load buttons
+            QHBoxLayout *newLayout = new QHBoxLayout(this);
+            QLabel *le = new QLabel(this);
+            QComboBox *cb = new QComboBox(this);
+            relayButtons.append(cb);
+
+            for(int b=0; b < p->controller->getJoystickNumberButtons(); b++)    //add each button
+            {
+                cb->addItem(QString::number(b));
+            }
+            cb->addItem("Disable"); //add option to disable
+
+            le->setText(p->controller->rov->listRelays.at(i)->getName());
+            cb->setCurrentIndex(p->controller->relayMappings[i].button);
+
+            newLayout->addWidget(le);
+            newLayout->addWidget(cb);
+            buttonLayout->addLayout(newLayout);
+
+            //Load hats
+            QHBoxLayout *newHat = new QHBoxLayout(this);
+            QLabel *label = new QLabel(this);
+            QLineEdit *lineEdit = new QLineEdit(this);
+            relayHats.append(lineEdit);
+
+            label->setText(p->controller->rov->listRelays.at(i)->getName());
+            label->setAlignment(Qt::AlignLeft);
+            label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            lineEdit->setFixedWidth(100);
+            lineEdit->setAlignment(Qt::AlignHCenter);
+            lineEdit->setText(QString::number(p->controller->relayMappings[i].hat));
+            newHat->addWidget(label);
+            newHat->addWidget(lineEdit);
+            hatLayout->addLayout(newHat);
+        }
+
+        //TODO: Handle like relays when the rest of the code is ready
+        //Load servo settings
         ui->cbS0DBut->setCurrentIndex(p->controller->rov->listServos[0]->getButtonDown());
         ui->cbS0IBut->setCurrentIndex(p->controller->rov->listServos[0]->getButtonUp());
         ui->cbS1DBut->setCurrentIndex(p->controller->rov->listServos[1]->getButtonDown());
         ui->cbS1IBut->setCurrentIndex(p->controller->rov->listServos[1]->getButtonUp());
 
-        //Load hats
-        ui->leR0Hat->setText(QString::number(p->controller->rov->listRelays[0]->getHat()));
-        ui->leR1Hat->setText(QString::number(p->controller->rov->listRelays[1]->getHat()));
-        ui->leR2Hat->setText(QString::number(p->controller->rov->listRelays[2]->getHat()));
         ui->leS0DHat->setText(QString::number(p->controller->rov->listServos[0]->getHatDown()));
         ui->leS0IHat->setText(QString::number(p->controller->rov->listServos[0]->getHatUp()));
         ui->leS1DHat->setText(QString::number(p->controller->rov->listServos[1]->getHatDown()));
         ui->leS1IHat->setText(QString::number(p->controller->rov->listServos[1]->getHatUp()));
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Mappings dialog is not fully functional.");
+        msgBox.setInformativeText("Please attach a joystick for full functionality.");
+        msgBox.exec();
     }
 
     updateTimer = new QTimer(this);
@@ -97,33 +141,37 @@ ROVMappings::~ROVMappings()
 void ROVMappings::on_pbSave_clicked()
 {
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
-    //Set the axes
-    p->controller->setAxisL(ui->sbTL->value());
-    p->controller->setAxisR(ui->sbTR->value());
-    p->controller->setAxisV(ui->sbV->value());
-    p->controller->setAxisX(ui->sbVX->value());
-    p->controller->setAxisY(ui->sbVY->value());
-    p->controller->setAxisZ(ui->sbVZ->value());
+    if(p->controller->isJoyAttached())
+    {
+        //Set the axes
+        p->controller->setAxisL(ui->sbTL->value());
+        p->controller->setAxisR(ui->sbTR->value());
+        p->controller->setAxisV(ui->sbV->value());
+        p->controller->setAxisX(ui->sbVX->value());
+        p->controller->setAxisY(ui->sbVY->value());
+        p->controller->setAxisZ(ui->sbVZ->value());
 
-    //Set the buttons
-    p->controller->rov->listRelays[0]->setButton(ui->cbR0But->currentIndex());
-    p->controller->rov->listRelays[1]->setButton(ui->cbR1But->currentIndex());
-    p->controller->rov->listRelays[2]->setButton(ui->cbR2But->currentIndex());
-    p->controller->rov->listServos[0]->setButtonDown(ui->cbS0DBut->currentIndex());
-    p->controller->rov->listServos[0]->setButtonUp(ui->cbS0IBut->currentIndex());
-    p->controller->rov->listServos[1]->setButtonDown(ui->cbS1DBut->currentIndex());
-    p->controller->rov->listServos[1]->setButtonUp(ui->cbS1IBut->currentIndex());
+        //Set the relays
+        for(int i=0; i<p->controller->relayMappings.count(); i++)
+        {
+            p->controller->relayMappings[i].button = relayButtons.at(i)->currentIndex();
+            p->controller->relayMappings[i].hat = relayHats.at(i)->text().toInt();
+        }
 
-    //Set the hats
-    p->controller->rov->listRelays[0]->setHat(ui->leR0Hat->text().toInt());
-    p->controller->rov->listRelays[1]->setHat(ui->leR1Hat->text().toInt());
-    p->controller->rov->listRelays[2]->setHat(ui->leR2Hat->text().toInt());
-    p->controller->rov->listServos[0]->setHatDown(ui->leS0DHat->text().toInt());
-    p->controller->rov->listServos[0]->setHatUp(ui->leS0IHat->text().toInt());
-    p->controller->rov->listServos[1]->setHatDown(ui->leS1DHat->text().toInt());
-    p->controller->rov->listServos[1]->setHatUp(ui->leS1IHat->text().toInt());
+        //Set the servos (buttons)
+        p->controller->rov->listServos[0]->setButtonDown(ui->cbS0DBut->currentIndex());
+        p->controller->rov->listServos[0]->setButtonUp(ui->cbS0IBut->currentIndex());
+        p->controller->rov->listServos[1]->setButtonDown(ui->cbS1DBut->currentIndex());
+        p->controller->rov->listServos[1]->setButtonUp(ui->cbS1IBut->currentIndex());
 
-    p->controller->saveSettings();  //save the settings
+        //Set the servos (hats)
+        p->controller->rov->listServos[0]->setHatDown(ui->leS0DHat->text().toInt());
+        p->controller->rov->listServos[0]->setHatUp(ui->leS0IHat->text().toInt());
+        p->controller->rov->listServos[1]->setHatDown(ui->leS1DHat->text().toInt());
+        p->controller->rov->listServos[1]->setHatUp(ui->leS1IHat->text().toInt());
+
+        p->controller->saveSettings();  //save the settings
+    }
 
     delete updateTimer;
     this->close();

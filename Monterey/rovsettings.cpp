@@ -20,16 +20,33 @@
 #include "mainwindow.h"
 #include "extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h"
 
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+
 ROVSettings::ROVSettings(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ROVSettings)
 {
     ui->setupUi(this);
-
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
-    ui->leNameRelay0->setText(p->controller->rov->listRelays[0]->getName());
-    ui->leNameRelay1->setText(p->controller->rov->listRelays[1]->getName());
-    ui->leNameRelay2->setText(p->controller->rov->listRelays[2]->getName());
+
+    //Load the relay names
+    QVBoxLayout *vLayout = new QVBoxLayout(this);
+    for(int i=0; i<p->controller->relayMappings.count(); i++)
+    {
+        QHBoxLayout *hLayout = new QHBoxLayout(this);
+        QLabel *label = new QLabel(this);
+        QLineEdit *lineEdit = new QLineEdit(this);
+        relayNames.append(lineEdit);
+        label->setText("Relay" + QString::number(i+1) + ":");
+        label->setAlignment(Qt::AlignLeft);
+        lineEdit->setText(p->controller->rov->listRelays.at(i)->getName());
+        hLayout->addWidget(label);
+        hLayout->addWidget(lineEdit);
+        vLayout->addLayout(hLayout);
+    }
+    ui->groupBoxRelayNames->setLayout(vLayout);
 
     ui->leUnitsDepth->setText(p->controller->rov->sensorDepth->getUnits());
     ui->leUnitsSensor0->setText(p->controller->rov->sensorOther0->getUnits());
@@ -72,9 +89,10 @@ void ROVSettings::on_pbSave_clicked()
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
 
     //Adjust the settings
-    p->controller->rov->listRelays[0]->setName(ui->leNameRelay0->text());
-    p->controller->rov->listRelays[1]->setName(ui->leNameRelay1->text());
-    p->controller->rov->listRelays[2]->setName(ui->leNameRelay2->text());
+    for(int i=0; i<relayNames.count(); i++)
+    {
+        p->controller->rov->listRelays.at(i)->setName(relayNames[i]->text());
+    }
     p->controller->rov->sensorDepth->setUnits(ui->leUnitsDepth->text());
     p->controller->rov->sensorOther0->setUnits(ui->leUnitsSensor0->text());
     p->controller->rov->sensorOther1->setUnits(ui->leUnitsSensor1->text());

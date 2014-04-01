@@ -83,6 +83,11 @@ QROVController::QROVController(QObject *parent) :
         m->setMinimum(MOTORMIN);
     }
 
+    foreach(QROVRelay* r, rov->listRelays)
+    {
+        relayMappings.append(RelayMapping());
+    }
+
     joySettings.bilinearEnabled = true;
     joySettings.vectorEnabled = true;
 
@@ -303,6 +308,7 @@ void QROVController::processTahoe(QString packet)
     int servo0;
     int servo1;
 
+    //TODO: Make it safe for differening amounts of relays
     QTextStream stream(&packet);
     stream >> relay0 >> relay1 >> relay2 >> servo0 >> servo1;
     if(relay0 == 1)
@@ -457,9 +463,10 @@ void QROVController::loadSettings()
     //TODO: Finish adding settings code and remove it from mainwindow.cpp
 
     //Load relay names
-    rov->listRelays[0]->setName(mySettings->value("names/relay0", "relay0").toString());
-    rov->listRelays[1]->setName(mySettings->value("names/relay1", "relay1").toString());
-    rov->listRelays[2]->setName(mySettings->value("names/relay2", "relay2").toString());
+    for(int i=0; i<rov->listRelays.count(); i++)
+    {
+        rov->listRelays[i]->setName(mySettings->value("names/relay" + QString::number(i), "relay" + QString::number(i)).toString());
+    }
 
     //Load the units
     rov->sensorDepth->setUnits(mySettings->value("units/depth", "m").toString());
@@ -493,12 +500,13 @@ void QROVController::loadSettings()
     joySettings.deadY = mySettings->value("joystick/deadY", "0").toInt();
     joySettings.deadZ = mySettings->value("joystick/deadZ", "0").toInt();
     joyID = mySettings->value("joystick/id", "0").toInt();
-    rov->listRelays[0]->setButton(mySettings->value("joystick/but/r0").toInt());
-    rov->listRelays[1]->setButton(mySettings->value("joystick/but/r1").toInt());
-    rov->listRelays[2]->setButton(mySettings->value("joystick/but/r2").toInt());
-    rov->listRelays[0]->setHat(mySettings->value("joystick/hat/r0").toInt());
-    rov->listRelays[1]->setHat(mySettings->value("joystick/hat/r1").toInt());
-    rov->listRelays[2]->setHat(mySettings->value("joystick/hat/r2").toInt());
+
+    for(int i=0; i<relayMappings.count(); i++)
+    {
+        relayMappings[i].button = mySettings->value("joystick/but/r" + QString::number(i)).toInt();
+        relayMappings[i].hat = mySettings->value("joystick/hat/r" + QString::number(i)).toInt();
+    }
+
     rov->listServos[0]->setHatDown(mySettings->value("joystick/hat/s0/down").toInt());
     rov->listServos[0]->setHatUp(mySettings->value("joystick/hat/s0/up").toInt());
     rov->listServos[1]->setHatDown(mySettings->value("joystick/hat/s1/down").toInt());
@@ -528,9 +536,10 @@ void QROVController::saveSettings()
     QMutex mutex;
     mutex.lock();
     //Relay Names
-    mySettings->setValue("names/relay0", rov->listRelays[0]->getName());
-    mySettings->setValue("names/relay1", rov->listRelays[1]->getName());
-    mySettings->setValue("names/relay2", rov->listRelays[2]->getName());
+    for(int i=0; i<rov->listRelays.count(); i++)
+    {
+        mySettings->setValue("names/relay" + QString::number(i), rov->listRelays[i]->getName());
+    }
 
     //Units
     mySettings->setValue("units/depth", rov->sensorDepth->getUnits());
@@ -563,12 +572,13 @@ void QROVController::saveSettings()
     mySettings->setValue("joystick/deadY", joySettings.deadY);
     mySettings->setValue("joystick/deadZ", joySettings.deadZ);
     mySettings->setValue("joystick/id", joyID);
-    mySettings->setValue("joystick/but/r0", rov->listRelays[0]->getButton());
-    mySettings->setValue("joystick/but/r1", rov->listRelays[1]->getButton());
-    mySettings->setValue("joystick/but/r2", rov->listRelays[2]->getButton());
-    mySettings->setValue("joystick/hat/r0", rov->listRelays[0]->getHat());
-    mySettings->setValue("joystick/hat/r1", rov->listRelays[1]->getHat());
-    mySettings->setValue("joystick/hat/r2", rov->listRelays[2]->getHat());
+
+    for(int i=0; i<relayMappings.count(); i++)
+    {
+        mySettings->setValue("joystick/but/r" + QString::number(i), relayMappings[i].button);
+        mySettings->setValue("joystick/hat/r" + QString::number(i), relayMappings[i].hat);
+    }
+
     mySettings->setValue("joystick/hat/s0/up", rov->listServos[0]->getHatUp());
     mySettings->setValue("joystick/hat/s0/down", rov->listServos[0]->getHatDown());
     mySettings->setValue("joystick/hat/s1/up", rov->listServos[1]->getHatUp());
@@ -596,11 +606,11 @@ void QROVController::joystickButtonClicked(int buttonID)
     //if so, then click the QPushButton corresponding to each relay
     QMutex mutex;
     mutex.lock();
-    foreach(QROVRelay * r, rov->listRelays)
+    foreach(RelayMapping r, relayMappings)
     {
-        if(buttonID == r->getButton())
+        if(buttonID == r.button)
         {
-            emit clickRelayButton(r->getQPushButton());
+            emit clickRelayButton(r.pushButton);
             qDebug() << "Relay button clicked";
         }
     }
@@ -611,14 +621,14 @@ void QROVController::joystickHatClicked(int hatID)
 {
     QMutex mutex;
     mutex.lock();
-    foreach(QROVRelay * r, rov->listRelays) //used for relays
+    foreach(RelayMapping r, relayMappings) //used for relays
     {
-        if(hatID == r->getHat())
+        if(hatID == r.hat)
         {
-            emit clickRelayButton(r->getQPushButton());
+            emit clickRelayButton(r.pushButton);
             qDebug() << "Relay hat clicked";
         }
-        qDebug() << hatID << r->getHat();
+        qDebug() << hatID << r.hat;
     }
     mutex.unlock();
 }
