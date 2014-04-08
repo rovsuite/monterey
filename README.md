@@ -28,14 +28,14 @@ Requirements:
 Dependencies required for development:
 ---------------------------------------
 
--Qt 5.1
+-Qt 5.1 or Qt 5.1.1
 
 -SDL version 1.2.15 (sudo apt-get install libsdl-dev)
 
 Compiling Instructions:
 -----------------------
 
-All OSes: Install Qt version 5.1 or greater.  
+All OSes: Install Qt version 5.1 or 5.1.1.  As of right now, later versions of Qt do not work (this will be fixed ASAP).
 
 Linux: Install SDL version 1.2.15 (sudo apt-get install libsdl-dev).  Then open Monterey.pro in Qt Creator and select Desktop as your target.  Then click run and it should run just fine.
 
