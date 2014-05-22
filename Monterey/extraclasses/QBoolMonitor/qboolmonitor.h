@@ -1,10 +1,6 @@
 //This class can be used to check when a bool value is changed from one state to another
 //Written by Chris Konstad (02/24/2012)
 
-//There is no warranty provided with this simple library
-//Feel free to distribute, modify, use, etc this library, just make sure
-//to give credit to the original author
-
 #ifndef QBOOLMONITOR_H
 #define QBOOLMONITOR_H
 

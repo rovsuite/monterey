@@ -1,9 +1,6 @@
 //This class is used to hold ROV motor values
 //Written by Chris Konstad (02/24/2012)
 
-//There is no warranty provided with this simple library
-//Feel free to distribute, modify, use, etc this library, just make sure
-//to give credit to the original author
 #ifndef QROVMOTOR_H
 #define QROVMOTOR_H
 
