@@ -1,29 +1,6 @@
 #include "qrovcontroller.h"
 #include <QDebug>
 
-/* Settings area where the user can tweak monterey for their own personal
- * use.  Please change these numbers as you see fit.  The timeout values
- * are measured in milliseconds.  Please note that any change in motors,
- * relays or servos will need to be manually propagated to the UI.
- */
-
-#define numberOfMotors 6
-#define numberOfRelays 3
-#define numberOfServos 2
-#define MOTORMIN 1000
-#define MOTORMAX 2000
-#define ERRORTIMEOUT 500
-#define PITIMEOUT 5000
-#define TOBIPORT 51000
-#define TIBOPORT 50000
-#define TAHOERXPORT 52000
-#define TAHOETXPORT 53000
-#define PIRXPORT 5060
-
-/*
- *  END OF SETTINGS AREA
- */
-
 QROVController::QROVController(QObject *parent) :
     QObject(parent)
 {
@@ -69,6 +46,11 @@ QROVController::QROVController(QObject *parent) :
     foreach(QROVRelay* r, rov->listRelays)
     {
         relayMappings.append(RelayMapping());
+    }
+
+    foreach(QROVServo *s, rov->listServos)
+    {
+        servoMappings.append(ServoMapping());
     }
 
     joySettings.bilinearEnabled = true;
@@ -291,7 +273,7 @@ void QROVController::processTahoe(QString packet)
     int servo0;
     int servo1;
 
-    //TODO: Make it safe for differening amounts of relays
+    //TODO: Make it safe for differening amounts of relays and servos
     QTextStream stream(&packet);
     stream >> relay0 >> relay1 >> relay2 >> servo0 >> servo1;
     if(relay0 == 1)
@@ -490,14 +472,14 @@ void QROVController::loadSettings()
         relayMappings[i].hat = mySettings->value("joystick/hat/r" + QString::number(i)).toInt();
     }
 
-    rov->listServos[0]->setHatDown(mySettings->value("joystick/hat/s0/down").toInt());
-    rov->listServos[0]->setHatUp(mySettings->value("joystick/hat/s0/up").toInt());
-    rov->listServos[1]->setHatDown(mySettings->value("joystick/hat/s1/down").toInt());
-    rov->listServos[1]->setHatUp(mySettings->value("joystick/hat/s1/up").toInt());
-    rov->listServos[0]->setButtonDown(mySettings->value("joystick/but/s0/down").toInt());
-    rov->listServos[0]->setButtonUp(mySettings->value("joystick/but/s0/up").toInt());
-    rov->listServos[1]->setButtonDown(mySettings->value("joystick/but/s1/down").toInt());
-    rov->listServos[1]->setButtonUp(mySettings->value("joystick/but/s1/up").toInt());
+    for(int i=0; i<servoMappings.count(); i++)
+    {
+        servoMappings[i].hatDown = mySettings->value("joystick/hat/s" + QString::number(i) + "/down").toInt();
+        servoMappings[i].hatUp = mySettings->value("joystick/hat/s" + QString::number(i) + "/up").toInt();
+        servoMappings[i].buttonDown = mySettings->value("joystick/but/s" + QString::number(i) + "/down").toInt();
+        servoMappings[i].buttonUp = mySettings->value("joystick/but/s" + QString::number(i) + "/up").toInt();
+
+    }
 
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,joySettings.deadX,joySettings.deadY,joySettings.deadZ);
 
@@ -562,14 +544,13 @@ void QROVController::saveSettings()
         mySettings->setValue("joystick/hat/r" + QString::number(i), relayMappings[i].hat);
     }
 
-    mySettings->setValue("joystick/hat/s0/up", rov->listServos[0]->getHatUp());
-    mySettings->setValue("joystick/hat/s0/down", rov->listServos[0]->getHatDown());
-    mySettings->setValue("joystick/hat/s1/up", rov->listServos[1]->getHatUp());
-    mySettings->setValue("joystick/hat/s1/down", rov->listServos[1]->getHatDown());
-    mySettings->setValue("joystick/but/s0/up", rov->listServos[0]->getButtonUp());
-    mySettings->setValue("joystick/but/s0/down", rov->listServos[0]->getButtonDown());
-    mySettings->setValue("joystick/but/s1/up", rov->listServos[1]->getButtonUp());
-    mySettings->setValue("joystick/but/s1/down", rov->listServos[1]->getButtonDown());
+    for(int i=0; i<servoMappings.count(); i++)
+    {
+        mySettings->setValue("joystick/hat/s" + QString::number(i) + "/up", servoMappings[i].hatUp);
+        mySettings->setValue("joystick/hat/s" + QString::number(i) + "/down", servoMappings[i].hatDown);
+        mySettings->setValue("joystick/but/s" + QString::number(i) + "/up", servoMappings[i].buttonUp);
+        mySettings->setValue("joystick/but/s" + QString::number(i) + "/down", servoMappings[i].buttonDown);        
+    }
 
     //Video
     for(int i = 0;i<rov->getVideoFeeds().count();i++)
@@ -650,36 +631,30 @@ void QROVController::readMappings()
 {
     QMutex mutex;
     mutex.lock();
-    for(int h=0; h< joy->hats.count(); h++) //support for multiple hats
+    for(int h=0; h < joy->hats.count(); h++) //support for multiple hats
     {
         if(joy->hats[h] != 0)   //if hat is not neutral
         {
-            for(int i=0;i<rov->listServos.count();i++)  //for each servo
+            for(int i=0;i<servoMappings.count();i++)  //for each servo
             {
-                if(joy->hats[h] == rov->listServos[i]->getHatUp()) //if increment
+                if(joy->hats[h] == servoMappings[i].hatUp) //if increment
                     emit changeServo(i, 1);
-                else if(joy->hats[h] == rov->listServos[i]->getHatDown())  //if decrement
+                else if(joy->hats[h] == servoMappings[i].hatDown)  //if decrement
                     emit changeServo(i, 0);
             }
         }
     }
-    for(int s=0; s<rov->listServos.count(); s++) //for each servo
+    for(int s=0; s < servoMappings.count(); s++) //for each servo
     {
-        for(int i=0;i<joy->buttons.count();i++) //for each button
+        for(int i=0; i < joy->buttons.count();i++) //for each button
         {
-            if(joy->buttons[i] == true && rov->listServos[s]->getButtonUp() == i) //if the up button is pressed
+            if(joy->buttons[i] && servoMappings[s].buttonUp == i) //if the up button is pressed
             {
-                //increment
-                emit changeServo(s, 1);
+                emit changeServo(s, 1);   //increment
             }
-            else if(joy->buttons[i] == true && rov->listServos[s]->getButtonDown() == i) //if the down button is pressed
+            else if(joy->buttons[i] && servoMappings[s].buttonDown == i) //if the down button is pressed
             {
-                //decrement
-                emit changeServo(s, 0);
-            }
-            else
-            {
-                //do nothing
+                emit changeServo(s, 0); //decrement
             }
         }
     }

@@ -67,8 +67,7 @@ private slots:
     void on_buttonClearLog_clicked();
 
     //Sliders
-    void on_vsServo0_valueChanged(int value);
-    void on_vsServo1_valueChanged(int value);
+    void on_vsServo_valueChanged(int value);
 
     //Show dialogs
     void showAbout();   //!< show the about dialog
@@ -114,6 +113,7 @@ private:
     QSettings *mySettings;
 
     QList<QPushButton*> relayButtons;
+    QList<QSlider*> servoSliders;
 
     QVector<double> depthPoints;
     QVector<double> voltagePoints;

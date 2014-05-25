@@ -32,6 +32,12 @@ private:
     //Keep track of relay settings
     QList<QComboBox*> relayButtons;
     QList<QLineEdit*> relayHats;
+
+    //Keep track of servo settings
+    QList<QComboBox*> servoButtonsUp;
+    QList<QLineEdit*> servoHatsUp;
+    QList<QComboBox*> servoButtonsDown;
+    QList<QLineEdit*> servoHatsDown;
 };
 
 #endif // ROVMAPPINGS_H

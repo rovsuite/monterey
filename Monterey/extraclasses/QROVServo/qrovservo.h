@@ -30,14 +30,6 @@ public slots:
     int getMax();
     void setMax(int m);
     double getPercentRotation();
-    void setHatUp(int up);
-    void setHatDown(int down);
-    int getHatUp();
-    int getHatDown();
-    void setButtonUp(int up);
-    void setButtonDown(int down);
-    int getButtonUp();
-    int getButtonDown();
 
 private:
     QString name;
@@ -45,10 +37,6 @@ private:
     int min;
     int max;
     int lastValue;
-    int hatUp;
-    int hatDown;
-    int buttonUp;
-    int buttonDown;
 };
 
 #endif // QROVSERVO_H

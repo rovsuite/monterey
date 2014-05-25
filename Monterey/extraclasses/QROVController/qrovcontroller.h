@@ -15,6 +15,7 @@
 #include <QTime>
 #include <QMutex>
 #include <QPushButton>
+#include <QSlider>
 #include "qrov.h"
 #include "qjoystick.h"
 #include "../../extraclasses/QVectorDrive2/qvectordrive2.h"
@@ -22,6 +23,34 @@
 #include "../../extraclasses/DiveTimer/divetimer.h"
 #include "../../extraclasses/PiData/pidata.h"
 #include "../../extraclasses/UdpCapture/udpcapture.h"
+
+/* Settings area where the user can tweak monterey for their own personal
+ * use.  Please change these numbers as you see fit.  The timeout values
+ * are measured in milliseconds.  Please note that any change in motors,
+ * relays or servos will need to be manually propagated to the UI.
+ */
+
+#define numberOfMotors 6
+#define numberOfRelays 3
+#define numberOfServos 3
+
+#define MOTORMIN 1000
+#define MOTORMAX 2000
+
+#define SERVOMIN 0
+#define SERVOMAX 179
+
+#define ERRORTIMEOUT 500
+#define PITIMEOUT 5000
+#define TOBIPORT 51000
+#define TIBOPORT 50000
+#define TAHOERXPORT 52000
+#define TAHOETXPORT 53000
+#define PIRXPORT 5060
+
+/*
+ *  END OF SETTINGS AREA
+ */
 
 class QROVController : public QObject
 {
@@ -55,6 +84,36 @@ public:
         }
     };
     QList<RelayMapping> relayMappings;
+
+    //Struct to map user input (UI and JS) to relays
+    struct ServoMapping
+    {
+        int buttonUp;
+        int buttonDown;
+        int hatUp;
+        int hatDown;
+        QSlider *slider;
+
+        ServoMapping(int bUp, int bDown,
+                     int hUp, int hDown, QSlider *s)
+        {
+            buttonUp = bUp;
+            buttonDown = bDown;
+            hatUp = hUp;
+            hatDown = hDown;
+            slider = s;
+        }
+
+        ServoMapping()
+        {
+            buttonUp = -1;
+            buttonDown = -1;
+            hatUp = -1;
+            hatDown = -1;
+            slider = nullptr;
+        }
+    };
+    QList<ServoMapping> servoMappings;
 
 signals:
     void onMotherFunctionCompleted();

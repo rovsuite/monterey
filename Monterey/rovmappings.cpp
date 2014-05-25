@@ -24,21 +24,6 @@ ROVMappings::ROVMappings(QWidget *parent) :
             sb->setMaximum(p->controller->getJoystickNumberAxes() - 1);
         }
 
-        //Load maximum buttons
-        QList<QComboBox*> comboButtons;
-        comboButtons.append(ui->cbS0DBut);
-        comboButtons.append(ui->cbS0IBut);
-        comboButtons.append(ui->cbS1DBut);
-        comboButtons.append(ui->cbS1IBut);
-        foreach(QComboBox* cb, comboButtons)    //for each combo box
-        {
-            for(int b=0; b < p->controller->getJoystickNumberButtons(); b++)    //add each button
-            {
-                cb->addItem(QString::number(b));
-            }
-            cb->addItem("Disable"); //add option to disable
-        }
-
         //Load axes
         ui->sbVX->setValue(p->controller->getAxisX());
         ui->sbVY->setValue(p->controller->getAxisY());
@@ -88,17 +73,73 @@ ROVMappings::ROVMappings(QWidget *parent) :
             hatLayout->addLayout(newHat);
         }
 
-        //TODO: Handle like relays when the rest of the code is ready
         //Load servo settings
-        ui->cbS0DBut->setCurrentIndex(p->controller->rov->listServos[0]->getButtonDown());
-        ui->cbS0IBut->setCurrentIndex(p->controller->rov->listServos[0]->getButtonUp());
-        ui->cbS1DBut->setCurrentIndex(p->controller->rov->listServos[1]->getButtonDown());
-        ui->cbS1IBut->setCurrentIndex(p->controller->rov->listServos[1]->getButtonUp());
+        for(int i=0; i < p->controller->servoMappings.count(); i++)
+        {
+            //Load buttons
+            QHBoxLayout *newLayoutUp = new QHBoxLayout(this);
+            QLabel *leUp = new QLabel(this);
+            QComboBox *cbUp = new QComboBox(this);
+            servoButtonsUp.append(cbUp);
 
-        ui->leS0DHat->setText(QString::number(p->controller->rov->listServos[0]->getHatDown()));
-        ui->leS0IHat->setText(QString::number(p->controller->rov->listServos[0]->getHatUp()));
-        ui->leS1DHat->setText(QString::number(p->controller->rov->listServos[1]->getHatDown()));
-        ui->leS1IHat->setText(QString::number(p->controller->rov->listServos[1]->getHatUp()));
+            QHBoxLayout *newLayoutDown = new QHBoxLayout(this);
+            QLabel *leDown = new QLabel(this);
+            QComboBox *cbDown = new QComboBox(this);
+            servoButtonsDown.append(cbDown);
+
+            for(int b=0; b < p->controller->getJoystickNumberButtons(); b++)
+            {
+                cbUp->addItem(QString::number(b));
+                cbDown->addItem(QString::number(b));
+            }
+            cbUp->addItem("Disable");
+            cbDown->addItem("Disable");
+
+            leUp->setText(p->controller->rov->listServos.at(i)->getName() + " (Up)");
+            cbUp->setCurrentIndex(p->controller->servoMappings[i].buttonUp);
+
+            leDown->setText(p->controller->rov->listServos.at(i)->getName() + " (Down)");
+            cbDown->setCurrentIndex(p->controller->servoMappings[i].buttonDown);
+
+            newLayoutUp->addWidget(leUp);
+            newLayoutUp->addWidget(cbUp);
+            buttonLayout->addLayout(newLayoutUp);
+
+            newLayoutDown->addWidget(leDown);
+            newLayoutDown->addWidget(cbDown);
+            buttonLayout->addLayout(newLayoutDown);
+
+            //Load hats
+            QHBoxLayout *newHatUp = new QHBoxLayout(this);
+            QLabel *labelUp = new QLabel(this);
+            QLineEdit *lineEditUp = new QLineEdit(this);
+            servoHatsUp.append(lineEditUp);
+
+            QHBoxLayout *newHatDown = new QHBoxLayout(this);
+            QLabel *labelDown = new QLabel(this);
+            QLineEdit *lineEditDown = new QLineEdit(this);
+            servoHatsDown.append(lineEditDown);
+
+            labelUp->setText(p->controller->rov->listRelays.at(i)->getName() + " (Up)");
+            labelUp->setAlignment(Qt::AlignLeft);
+            labelUp->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            lineEditUp->setFixedWidth(100);
+            lineEditUp->setAlignment(Qt::AlignHCenter);
+            lineEditUp->setText(QString::number(p->controller->servoMappings[i].hatUp));
+            newHatUp->addWidget(labelUp);
+            newHatUp->addWidget(lineEditUp);
+            hatLayout->addLayout(newHatUp);
+
+            labelDown->setText(p->controller->rov->listRelays.at(i)->getName() + " (Down)");
+            labelDown->setAlignment(Qt::AlignLeft);
+            labelDown->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            lineEditDown->setFixedWidth(100);
+            lineEditDown->setAlignment(Qt::AlignHCenter);
+            lineEditDown->setText(QString::number(p->controller->servoMappings[i].hatDown));
+            newHatDown->addWidget(labelDown);
+            newHatDown->addWidget(lineEditDown);
+            hatLayout->addLayout(newHatDown);
+        }
     }
     else
     {
@@ -141,17 +182,15 @@ void ROVMappings::on_pbSave_clicked()
             p->controller->relayMappings[i].hat = relayHats.at(i)->text().toInt();
         }
 
-        //Set the servos (buttons)
-        p->controller->rov->listServos[0]->setButtonDown(ui->cbS0DBut->currentIndex());
-        p->controller->rov->listServos[0]->setButtonUp(ui->cbS0IBut->currentIndex());
-        p->controller->rov->listServos[1]->setButtonDown(ui->cbS1DBut->currentIndex());
-        p->controller->rov->listServos[1]->setButtonUp(ui->cbS1IBut->currentIndex());
+        //Set the servos
+        for(int i=0; i < p->controller->servoMappings.count(); i++)
+        {
+            p->controller->servoMappings[i].buttonUp = servoButtonsUp.at(i)->currentIndex();
+            p->controller->servoMappings[i].buttonDown = servoButtonsDown.at(i)->currentIndex();
 
-        //Set the servos (hats)
-        p->controller->rov->listServos[0]->setHatDown(ui->leS0DHat->text().toInt());
-        p->controller->rov->listServos[0]->setHatUp(ui->leS0IHat->text().toInt());
-        p->controller->rov->listServos[1]->setHatDown(ui->leS1DHat->text().toInt());
-        p->controller->rov->listServos[1]->setHatUp(ui->leS1IHat->text().toInt());
+            p->controller->servoMappings[i].hatUp = servoHatsUp.at(i)->text().toInt();
+            p->controller->servoMappings[i].hatDown = servoHatsDown.at(i)->text().toInt();
+        }
 
         p->controller->saveSettings();  //save the settings
     }

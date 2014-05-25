@@ -8,6 +8,7 @@
 #include <QtDebug>
 #include <QPushButton>
 #include <QSpacerItem>
+#include <QSlider>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -65,6 +66,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
         //Link to the controller
         controller->relayMappings[i].pushButton = pb;
+    }
+
+    //Add the right amount of servo sliders
+    for(int i=0; i < controller->servoMappings.count(); i++)
+    {
+        //Add a slider
+        QSlider *slider = new QSlider(Qt::Vertical, this);
+        slider->setMaximum(SERVOMAX);
+        slider->setMinimum(SERVOMIN);
+        ui->groupBoxServoSliders->layout()->addWidget(slider);
+        servoSliders.append(slider);
+
+        //Link to the controller
+        controller->servoMappings[i].slider = slider;
     }
 
     //Timer for updating the graph
@@ -127,6 +142,12 @@ MainWindow::MainWindow(QWidget *parent) :
     for(int i=0; i<relayButtons.count(); i++)
     {
         connect(relayButtons[i], SIGNAL(clicked()), this, SLOT(on_pbRelay_clicked()));
+    }
+
+    //Connect the servo sliders to the servo handling function
+    for(int i=0; i < servoSliders.count(); i++)
+    {
+        connect(servoSliders[i], SIGNAL(valueChanged(int)), this, SLOT(on_vsServo_valueChanged(int)));
     }
 
     guiTimer->start();
@@ -409,19 +430,12 @@ void MainWindow::onCalledClickRelayButton(QPushButton *button)
 
 void MainWindow::onCalledServoChange(int id, int direction)
 {
-    if(id == 0)
+    if(id >= 0 && id < servoSliders.count())
     {
         if(direction == 1)
-            ui->vsServo0->setValue(ui->vsServo0->value() + 5);
+            controller->servoMappings[id].slider->setValue(controller->servoMappings[id].slider->value() + 5);
         else
-            ui->vsServo0->setValue(ui->vsServo0->value() - 5);
-    }
-    else if(id == 1)
-    {
-        if(direction == 1)
-            ui->vsServo1->setValue(ui->vsServo1->value() + 5);
-        else
-            ui->vsServo1->setValue(ui->vsServo1->value() - 5);
+            controller->servoMappings[id].slider->setValue(controller->servoMappings[id].slider->value() - 5);
     }
     else
     {
@@ -470,8 +484,10 @@ void MainWindow::displayTahoe()
         relayButtons[i]->setChecked(controller->rov->listRelays.at(i)->getState());
     }
 
-    ui->vsServo0->setValue(controller->rov->listServos[0]->getValue());
-    ui->vsServo1->setValue(controller->rov->listServos[1]->getValue());
+    for(int i=0; i < servoSliders.count(); i++)
+    {
+        servoSliders[i]->setValue(controller->rov->listServos.at(i)->getValue());
+    }
 }
 
 void MainWindow::checkForUpdates()
@@ -662,14 +678,16 @@ void MainWindow::on_pbRelay_clicked()
     }
 }
 
-void MainWindow::on_vsServo0_valueChanged(int value)
+//Handle UI QSlider change events for servos
+void MainWindow::on_vsServo_valueChanged(int value)
 {
-    controller->rov->listServos[0]->setValue(value);
-}
-
-void MainWindow::on_vsServo1_valueChanged(int value)
-{
-    controller->rov->listServos[1]->setValue(value);
+    for(int i=0; i < controller->servoMappings.count(); i++)
+    {
+        if(controller->servoMappings[i].slider == sender())
+        {
+            controller->rov->listServos.at(i)->setValue(value);
+        }
+    }
 }
 
 // Copies log to system clipboard for easy sharing

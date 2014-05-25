@@ -1,5 +1,4 @@
 #include "qrovrelay.h"
-#include <QtDebug>
 
 QROVRelay::QROVRelay(QObject *parent) :
     QObject(parent)
