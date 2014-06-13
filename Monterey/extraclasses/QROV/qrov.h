@@ -24,6 +24,7 @@ public:
     QList<QROVMotor*> listMotors;
     QList<QROVRelay*> listRelays;
     QList<QROVServo*> listServos;
+    //TODO implement sensors as list
     QROVSensor *sensorDepth;
     QROVSensor *sensorCompass;
     QROVSensor *sensorVoltage;
