@@ -29,6 +29,10 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
             statusMessage = "Could not load defaults, QUITTING.";
             enteredGoodState = false;
         }
+        else
+        {
+            statusMessage = "Loaded default ROV configuration.";
+        }
     }
     else
     {
