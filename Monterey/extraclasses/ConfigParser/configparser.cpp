@@ -4,6 +4,7 @@
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QFile>
+#include <QtDebug>
 #include "qrov.h"
 
 ConfigParser::ConfigParser(const QString& file, QObject *parent) :
@@ -24,16 +25,15 @@ bool ConfigParser::parseRov(QROV& rov) const
     QJsonArray jsonSensors = baseObj["sensors"].toArray();
     QJsonArray jsonRelays = baseObj["relays"].toArray();
     QJsonArray jsonServos = baseObj["servos"].toArray();
+    QJsonValue jsonMotorLayout = baseObj["motorLayout"];
 
     if(jsonSensors.size() == 0 ||
             jsonRelays.size() == 0 ||
-            jsonServos.size() == 0)
+            jsonServos.size() == 0 ||
+            jsonMotorLayout.isUndefined())
         return false;
 
-    //TOOD: HANDLE VERSION?
-    //TODO: READ MOTORLAYOUT
     //TODO: READ IP VIDEO FEEDS?
-    //TODO: HANDLE MOTORS?
 
     rov.relays.clear();
     rov.servos.clear();
@@ -57,6 +57,28 @@ bool ConfigParser::parseRov(QROV& rov) const
 
         rov.sensors.append(QROVSensor(jsonSensors[i].toObject()["name"].toString(),
                            jsonSensors[i].toObject()["units"].toString(), 0));
+    }
+
+    if(jsonMotorLayout.toString() == "vector")
+    {
+        rov.motorLayout = vectorDrive;
+        for(int i=0; i<6; i++)
+        {
+            rov.motors.append(QROVMotor(1500));
+        }
+    }
+    else if(jsonMotorLayout.toString() == "tank")
+    {
+        rov.motorLayout = tankDrive;
+        for(int i=0; i<3; i++)
+        {
+            rov.motors.append(QROVMotor(1500));
+        }
+    }
+    else
+    {
+        qWarning() << "Motor layout: " << jsonMotorLayout.toString() << " not defined!";
+        return false;
     }
 
     return true;
