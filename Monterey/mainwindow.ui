@@ -429,7 +429,7 @@
           <item>
            <widget class="QTextEdit" name="teLog">
             <property name="lineWrapMode">
-             <enum>QTextEdit::NoWrap</enum>
+             <enum>QTextEdit::WidgetWidth</enum>
             </property>
             <property name="readOnly">
              <bool>true</bool>

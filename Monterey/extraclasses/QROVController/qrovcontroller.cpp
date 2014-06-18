@@ -1,14 +1,40 @@
 #include "qrovcontroller.h"
+#include "extraclasses/IpVideoFeed/ipvideofeed.h"
+#include "extraclasses/ConfigParser/configparser.h"
 #include <QDebug>
 
-QROVController::QROVController(QObject *parent) :
+QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent) :
     QObject(parent)
 {
     QMutex mutex;
     mutex.lock();
 
+    enteredGoodState = true;    //default to success
+
     numberOfAxes = 0;
-    rov = new QROV(numberOfMotors, numberOfRelays, numberOfServos, this);
+    mRov = new QROV(0, new IpVideoFeed("main", QUrl(""), true, this), new PiData(this), 0, 0, 0, 5); //put the ROV into a decent state
+
+    //Parse the ROV configuration file
+    ConfigParser rovConfigParser("rovconfig.json", this);
+    if(!rovConfigParser.parseRov(*mRov))    //try to read the user-specified config
+    {
+        qWarning() << "Could not parse ROV configuration file.  Loading defaults.";
+        //If loading the user specified ROV file failed, then try loading a default file
+        rovConfigParser.setFile(":/default/rov.json");
+        statusMessage = "Could not load ROV config. Loading defaults.";
+        if(!rovConfigParser.parseRov(*mRov))
+        {
+
+            qCritical() << "Could not parse ROV configuration file, QUITTING";
+            statusMessage = "Could not load defaults, QUITTING.";
+            enteredGoodState = false;
+        }
+    }
+    else
+    {
+        statusMessage = "Loaded ROV configuration.";
+    }
+
     joy = new QJoystick();
 
     mySettings = new QSettings("settings.ini", QSettings::IniFormat);
@@ -32,23 +58,12 @@ QROVController::QROVController(QObject *parent) :
 
     initJoysticks();
 
-    rov->setNumMotors(numberOfMotors);
-    rov->setNumRelays(numberOfRelays);
-    rov->setNumServos(numberOfServos);
-    rov->sensorVoltage->setUnits("volts");
-    rov->sensorCompass->setUnits("degrees");
-    foreach(QROVMotor* m, rov->listMotors)
-    {
-        m->setMaximum(MOTORMAX);
-        m->setMinimum(MOTORMIN);
-    }
-
-    foreach(QROVRelay* r, rov->listRelays)
+    foreach(QROVRelay r, rov()->relays)
     {
         relayMappings.append(RelayMapping());
     }
 
-    foreach(QROVServo *s, rov->listServos)
+    foreach(QROVServo s, rov()->servos)
     {
         servoMappings.append(ServoMapping());
     }
@@ -72,6 +87,7 @@ QROVController::QROVController(QObject *parent) :
     connect(joy, SIGNAL(toggleStateChanged(int)), this, SLOT(joystickButtonClicked(int)));
     connect(joy, SIGNAL(hatStateChanged(int)), this, SLOT(joystickHatClicked(int)));
 
+    setValidity(enteredGoodState);
     packetTimer->start();
     mutex.unlock();
     qDebug() << "Controller finished setup!";
@@ -182,22 +198,24 @@ void QROVController::processPacket(QString packet)
 
     rxProcessing >> version >> depth >> heading >> voltage >> sens0 >> sens1;
 
-    rov->setVersion(version);
-    rov->sensorDepth->setValue(depth);
-    rov->sensorCompass->setValue(heading);
-    rov->sensorVoltage->setValue(voltage);
-    rov->sensorOther0->setValue(sens0);
-    rov->sensorOther1->setValue(sens1);
+    rov()->version = version;
+    /* TODO: ADD SENSOR READING
+    rov()->sensorDepth->setValue(depth);
+    rov()->sensorCompass->setValue(heading);
+    rov()->sensorVoltage->setValue(voltage);
+    rov()->sensorOther0->setValue(sens0);
+    rov()->sensorOther1->setValue(sens1);
+    */
 
-    if(diveTimer->hasStarted() && rov->sensorDepth->getValue() <= 0)    //if the ROV is at the surface, pause the dive timer
+    if(diveTimer->hasStarted() && depth <= 0)    //if the ROV is at the surface, pause the dive timer
     {
         diveTimer->pause();
     }
-    else if(diveTimer->hasStarted() && rov->sensorDepth->getValue() > 0)    //if the ROV is underwater and the dive timer has started BUT MAY BE PAUSED
+    else if(diveTimer->hasStarted() && depth > 0)    //if the ROV is underwater and the dive timer has started BUT MAY BE PAUSED
     {
         diveTimer->resume();
     }
-    else if(!diveTimer->hasStarted() && rov->sensorDepth->getValue() > 0)   //if the ROV is underwater and the dive timer hasn't started
+    else if(!diveTimer->hasStarted() && depth > 0)   //if the ROV is underwater and the dive timer hasn't started
     {
         diveTimer->start();
     }
@@ -213,26 +231,15 @@ void QROVController::sendPacket()
     QByteArray txDatagram;
     QString txPacket;
 
-    if(rov->motorLayout == QROV::vectorDrive)  //if vector drive
+    for(int i=0; i<rov()->motors.count(); i++)
     {
-        foreach(QROVMotor *m, rov->listMotors)
-        {
-            txPacket.append(QString::number(m->getValue()));
-            txPacket.append(" ");
-        }
-    }
-    else    //if tank drive
-    {
-        for(int i=0;i<3;i++)
-        {
-            txPacket.append(QString::number(rov->listMotors[i]->getValue()));
-            txPacket.append(" ");
-        }
+        txPacket.append(QString::number(rov()->motors[i].value));
+        txPacket.append(" ");
     }
 
-    foreach(QROVRelay *r, rov->listRelays)
+    foreach(QROVRelay r, rov()->relays)
     {
-        if(r->getState() == true)
+        if(r.enabled == true)
         {
             txPacket.append(QString::number(1));
         }
@@ -244,9 +251,9 @@ void QROVController::sendPacket()
         txPacket.append(" ");
     }
 
-    foreach(QROVServo *s, rov->listServos)
+    foreach(QROVServo s, rov()->servos)
     {
-        txPacket.append(QString::number(s->getValue()));
+        txPacket.append(QString::number(s.value));
         txPacket.append(" ");
     }
 
@@ -264,6 +271,7 @@ void QROVController::sendDebug()
 
 void QROVController::processTahoe(QString packet)
 {
+    /*
     QMutex mutex;
     mutex.lock();
 
@@ -277,27 +285,29 @@ void QROVController::processTahoe(QString packet)
     QTextStream stream(&packet);
     stream >> relay0 >> relay1 >> relay2 >> servo0 >> servo1;
     if(relay0 == 1)
-        rov->listRelays[0]->setState(true);
+        rov()->listRelays[0]->setState(true);
     else
-        rov->listRelays[0]->setState(false);
+        rov()->listRelays[0]->setState(false);
 
     if(relay1 == 1)
-        rov->listRelays[1]->setState(true);
+        rov()->listRelays[1]->setState(true);
     else
-        rov->listRelays[1]->setState(false);
+        rov()->listRelays[1]->setState(false);
 
     if(relay2 == 1)
-        rov->listRelays[2]->setState(true);
+        rov()->listRelays[2]->setState(true);
     else
-        rov->listRelays[2]->setState(false);
-    rov->listServos[0]->setValue(servo0);
-    rov->listServos[1]->setValue(servo1);
+        rov()->listRelays[2]->setState(false);
+    rov()->listServos[0]->setValue(servo0);
+    rov()->listServos[1]->setValue(servo1);
     mutex.unlock();
     emit onTahoeProcessed();    //tell the GUI to update itself
+    */
 }
 
 void QROVController::sendTahoe()
 {
+    /*
     QMutex mutex;
     mutex.lock();
     QString packet;
@@ -314,57 +324,58 @@ void QROVController::sendTahoe()
     packet.append(" ");
     packet.append(diveTimeString().remove(QChar(' '), Qt::CaseInsensitive));
     packet.append(" ");
-    foreach( QROVServo* s, rov->listServos)
+
+    foreach(QROVServo s, rov()->servos)
     {
-        packet.append(QString::number(s->getValue()));
+        packet.append(QString::number(s.value));
         packet.append(" ");
     }
-    foreach(QROVRelay* r, rov->listRelays)
+    foreach(QROVRelay r, rov()->relays)
     {
-        if(r->getState() == true)
+        if(r.enabled == true)
             packet.append(QString::number(1));
         else
             packet.append(QString::number(0));
         packet.append(" ");
     }
-    foreach(QROVRelay* r, rov->listRelays)
+    foreach(QROVRelay r, rov()->relays)
     {
-        QString specialName = r->getName();
+        QString specialName = r.name;
         specialName.remove(QChar(' '), Qt::CaseInsensitive);    //remove spaces
         packet.append(specialName);
         packet.append(" ");
     }
-    packet.append(QString::number(rov->sensorDepth->getValue()));
+    packet.append(QString::number(rov()->sensorDepth->getValue()));
     packet.append(" ");
-    packet.append(QString::number(rov->sensorDepth->getMax()));
+    packet.append(QString::number(rov()->sensorDepth->getMax()));
     packet.append(" ");
-    QString depthUnits = rov->sensorDepth->getUnits();
+    QString depthUnits = rov()->sensorDepth->getUnits();
     depthUnits.remove(QChar(' '), Qt::CaseInsensitive); //remove spaces
     packet.append(depthUnits);
     packet.append(" ");
-    packet.append(QString::number(rov->sensorCompass->getValue()));
+    packet.append(QString::number(rov()->sensorCompass->getValue()));
     packet.append(" ");
-    packet.append(QString::number(rov->sensorVoltage->getValue()));
+    packet.append(QString::number(rov()->sensorVoltage->getValue()));
     packet.append(" ");
-    packet.append(QString::number(rov->sensorOther0->getValue()));
+    packet.append(QString::number(rov()->sensorOther0->getValue()));
     packet.append(" ");
-    packet.append(QString::number(rov->sensorOther1->getValue()));
+    packet.append(QString::number(rov()->sensorOther1->getValue()));
     packet.append(" ");
     QString newName;
-    newName = rov->sensorOther0->getName();
+    newName = rov()->sensorOther0->getName();
     newName.remove(QChar(' '), Qt::CaseInsensitive);
     packet.append(newName);
     packet.append(" ");
-    newName = rov->sensorOther1->getName();
+    newName = rov()->sensorOther1->getName();
     newName.remove(QChar(' '), Qt::CaseInsensitive);
     packet.append(newName);
     packet.append(" ");
     QString newUnits;
-    newUnits = rov->sensorOther0->getUnits();
+    newUnits = rov()->sensorOther0->getUnits();
     newUnits.remove(QChar(' '), Qt::CaseInsensitive);
     packet.append(newUnits);
     packet.append(" ");
-    newUnits = rov->sensorOther1->getUnits();
+    newUnits = rov()->sensorOther1->getUnits();
     newUnits.remove(QChar(' '), Qt::CaseInsensitive);
     packet.append(newUnits);
     packet.append(" ");
@@ -373,6 +384,7 @@ void QROVController::sendTahoe()
     txSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress::Broadcast, TAHOETXPORT);
 
     mutex.unlock();
+    */
 }
 
 void QROVController::processPi(QString packet)
@@ -389,20 +401,20 @@ void QROVController::processPi(QString packet)
     QTextStream stream(&packet);
     stream >> tempC >> uptime >> usedMemoryPercentage >> usedCpuPercentage;
 
-    rov->piData->setTempC(tempC);
-    rov->piData->setUptimeS((int)uptime);
-    rov->piData->setIpAddress(piAddress);
-    rov->piData->setUsedMemory(usedMemoryPercentage);
-    rov->piData->setUsedCpu(usedCpuPercentage);
+    rov()->piData->setTempC(tempC);
+    rov()->piData->setUptimeS((int)uptime);
+    rov()->piData->setIpAddress(piAddress);
+    rov()->piData->setUsedMemory(usedMemoryPercentage);
+    rov()->piData->setUsedCpu(usedCpuPercentage);
 
     mutex.unlock();
 }
 
 void QROVController::noJoystick()
 {
-    for(int i=0;i<rov->listMotors.count();i++)
+    for(int i=0;i<rov()->motors.count();i++)
     {
-        rov->listMotors[i]->setValue(1500); //set everything neutral
+        rov()->motors[i].value = 1500; //set everything neutral
     }
 }
 
@@ -428,27 +440,30 @@ void QROVController::loadSettings()
     //TODO: Finish adding settings code and remove it from mainwindow.cpp
 
     //Load relay names
-    for(int i=0; i<rov->listRelays.count(); i++)
+    /*
+    for(int i=0; i<rov()->relays.count(); i++)
     {
-        rov->listRelays[i]->setName(mySettings->value("names/relay" + QString::number(i), "relay" + QString::number(i)).toString());
+        //TODO: REMOVE CODE WHEN THE JSON PARSING IS IMPLEMENTED
+        rov()->relays[i].name = mySettings->value("names/relay" + QString::number(i), "relay" + QString::number(i)).toString();
     }
 
     //Load the units
-    rov->sensorDepth->setUnits(mySettings->value("units/depth", "m").toString());
-    rov->sensorOther0->setUnits(mySettings->value("units/sensor0", "units").toString());
-    rov->sensorOther1->setUnits(mySettings->value("units/sensor1", "units").toString());
+    rov()->sensorDepth->setUnits(mySettings->value("units/depth", "m").toString());
+    rov()->sensorOther0->setUnits(mySettings->value("units/sensor0", "units").toString());
+    rov()->sensorOther1->setUnits(mySettings->value("units/sensor1", "units").toString());
 
     //Load the names
-    rov->sensorOther0->setName(mySettings->value("names/sensor0", "Sensor0").toString());
-    rov->sensorOther1->setName(mySettings->value("names/sensor1", "Sensor1").toString());
+    rov()->sensorOther0->setName(mySettings->value("names/sensor0", "Sensor0").toString());
+    rov()->sensorOther1->setName(mySettings->value("names/sensor1", "Sensor1").toString());
 
     //Load thresholds
-    rov->sensorDepth->setMax(mySettings->value("thresholds/depth", "10.0").toDouble());
-    rov->sensorDepth->setThreshold(rov->sensorDepth->getMax());
-    rov->sensorVoltage->setThreshold(mySettings->value("thresholds/voltage", "9").toDouble());
+    rov()->sensorDepth->setMax(mySettings->value("thresholds/depth", "10.0").toDouble());
+    rov()->sensorDepth->setThreshold(rov()->sensorDepth->getMax());
+    rov()->sensorVoltage->setThreshold(mySettings->value("thresholds/voltage", "9").toDouble());
 
     //Load motor settings
-    rov->motorLayout = QROV::MotorLayout(mySettings->value("motors/layout", "1").toInt());
+    rov()->motorLayout = MotorLayout(mySettings->value("motors/layout", "1").toInt());
+    */
 
     //Bilinear
     joySettings.bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
@@ -484,14 +499,14 @@ void QROVController::loadSettings()
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,joySettings.deadX,joySettings.deadY,joySettings.deadZ);
 
     //Video
-    QList<IpVideoFeed*> videoFeeds = rov->getVideoFeeds();
+    QList<IpVideoFeed*> videoFeeds = rov()->videoFeeds;
     for(int i = 0;i<videoFeeds.count();i++)
     {
         videoFeeds[i]->setname(mySettings->value("videoFeeds/" + QString::number(i) + "/name", "Main").toString());
         videoFeeds[i]->seturl(mySettings->value("videoFeeds/" + QString::number(i) + "/url", "http://127.0.0.1:8080/javascript_simple.html").toUrl());
         videoFeeds[i]->setAutoGenerate(mySettings->value("videoFeeds/" + QString::number(i) + "/autoGenerate", true).toBool());
     }
-    rov->setVideoFeeds(videoFeeds);
+    rov()->videoFeeds = videoFeeds;
 
     mutex.unlock();
 }
@@ -501,26 +516,28 @@ void QROVController::saveSettings()
     QMutex mutex;
     mutex.lock();
     //Relay Names
-    for(int i=0; i<rov->listRelays.count(); i++)
+    for(int i=0; i<rov()->relays.count(); i++)
     {
-        mySettings->setValue("names/relay" + QString::number(i), rov->listRelays[i]->getName());
+        mySettings->setValue("names/relay" + QString::number(i), rov()->relays[i].name);
     }
 
+    /*
     //Units
-    mySettings->setValue("units/depth", rov->sensorDepth->getUnits());
-    mySettings->setValue("units/sensor0", rov->sensorOther0->getUnits());
-    mySettings->setValue("units/sensor1", rov->sensorOther1->getUnits());
+    mySettings->setValue("units/depth", rov()->sensorDepth->getUnits());
+    mySettings->setValue("units/sensor0", rov()->sensorOther0->getUnits());
+    mySettings->setValue("units/sensor1", rov()->sensorOther1->getUnits());
 
     //Names
-    mySettings->setValue("names/sensor0", rov->sensorOther0->getName());
-    mySettings->setValue("names/sensor1", rov->sensorOther1->getName());
+    mySettings->setValue("names/sensor0", rov()->sensorOther0->getName());
+    mySettings->setValue("names/sensor1", rov()->sensorOther1->getName());
 
     //Thresholds
-    mySettings->setValue("thresholds/depth", rov->sensorDepth->getThreshold());
-    mySettings->setValue("thresholds/voltage", rov->sensorVoltage->getThreshold());
+    mySettings->setValue("thresholds/depth", rov()->sensorDepth->getThreshold());
+    mySettings->setValue("thresholds/voltage", rov()->sensorVoltage->getThreshold());
 
     //Motors
-    mySettings->setValue("motors/layout", rov->motorLayout);
+    mySettings->setValue("motors/layout", rov()->motorLayout);
+    */
 
     //Bilinear
     mySettings->setValue("bilinear/enabled", joySettings.bilinearEnabled);
@@ -553,11 +570,11 @@ void QROVController::saveSettings()
     }
 
     //Video
-    for(int i = 0;i<rov->getVideoFeeds().count();i++)
+    for(int i = 0;i<rov()->videoFeeds.count();i++)
     {
-        mySettings->setValue("videoFeeds/" + QString::number(i) + "/name", rov->getVideoFeeds().at(i)->name());
-        mySettings->setValue("videoFeeds/" + QString::number(i) + "/url", rov->getVideoFeeds().at(i)->url());
-        mySettings->setValue("videoFeeds/" + QString::number(i) + "/autoGenerate", rov->getVideoFeeds().at(i)->autoGenerate());
+        mySettings->setValue("videoFeeds/" + QString::number(i) + "/name", rov()->videoFeeds.at(i)->name());
+        mySettings->setValue("videoFeeds/" + QString::number(i) + "/url", rov()->videoFeeds.at(i)->url());
+        mySettings->setValue("videoFeeds/" + QString::number(i) + "/autoGenerate", rov()->videoFeeds.at(i)->autoGenerate());
     }
 
     mutex.unlock();
@@ -601,20 +618,25 @@ void QROVController::motherFunction()
 {
     QMutex mutex;
     mutex.lock();
-    if(joysAvail !=0 )
+
+    //If not in a valid state, don't do anything
+    if(getValidity())
     {
-        updateJoystickData();
-        readMappings();
-    }
-    else
-    {
-        noJoystick();
+        if(joysAvail !=0 )
+        {
+            updateJoystickData();
+            readMappings();
+        }
+        else
+        {
+            noJoystick();
+        }
+        sendPacket();
+        sendDebug();
+        sendTahoe();
+        emit onMotherFunctionCompleted();
     }
     mutex.unlock();
-    sendPacket();
-    sendDebug();
-    sendTahoe();
-    emit onMotherFunctionCompleted();
 }
 
 int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outMax)
@@ -693,15 +715,15 @@ void QROVController::updateJoystickData()
     }
 
     //Execute vector math
-    if(rov->motorLayout == QROV::vectorDrive)
+    if(rov()->motorLayout == vectorDrive)
     {
         myVectorDrive->vectorMath(joy->axis[joySettings.axisX],joy->axis[joySettings.axisY],joy->axis[joySettings.axisZ],joy->axis[joySettings.axisV],false);
 
-        if(rov->getNumMotors() == 6)
+        if(rov()->motors.count() == 6)
         {
-            for(int i=0;i<rov->getNumMotors();i++)    //retrieve vector values
+            for(int i=0;i<rov()->motors.count();i++)    //retrieve vector values
             {
-                rov->listMotors[i]->setValue(myVectorDrive->getVectorValue(i));
+                rov()->motors[i].value = myVectorDrive->getVectorValue(i);
             }
         }
 
@@ -717,15 +739,15 @@ void QROVController::updateJoystickData()
 
         joy->axis[joySettings.axisL] = joy->axis[joySettings.axisL] + 32768;
         double percentL = ((double)joy->axis[joySettings.axisL] / 65355.0);
-        rov->listMotors[0]->setValue((int)((percentL * motorRange) + MOTORMIN));
+        rov()->motors[0].value = (int)((percentL * motorRange) + MOTORMIN);
 
         joy->axis[joySettings.axisR] = joy->axis[joySettings.axisR] + 32768;
         double percentR = ((double)joy->axis[joySettings.axisR] / 65355.0);
-        rov->listMotors[1]->setValue((int)((percentR * motorRange) + MOTORMIN));
+        rov()->motors[1].value = (int)((percentR * motorRange) + MOTORMIN);
 
         joy->axis[joySettings.axisV] = joy->axis[joySettings.axisV] + 32768;
         double percentV = ((double)joy->axis[joySettings.axisV] / 65355.0);
-        rov->listMotors[2]->setValue((int)((percentV * motorRange) + MOTORMIN));
+        rov()->motors[2].value = (int)((percentV * motorRange) + MOTORMIN);
 
     }
     mutex.unlock();
@@ -740,4 +762,14 @@ void QROVController::diveTimeReset()
 QString QROVController::diveTimeString()
 {
     return diveTimer->diveTimeString();
+}
+
+void QROVController::setValidity(bool state)
+{
+   mValidity = state;
+}
+
+bool QROVController::getValidity() const
+{
+   return mValidity;
 }

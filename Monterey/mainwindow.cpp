@@ -38,10 +38,27 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLights.tahoe = 0;
 
     //ROV control engine
-    controller = new QROVController();
-    engineThread = new QThread(this); //create a second thread
-    controller->moveToThread(engineThread); //move the QROVController engine to the second thread
-    engineThread->start();
+    bool rovControllerReady = false;
+    QString statusMessage = "";
+    controller = new QROVController(rovControllerReady, statusMessage);
+    //TODO: Re-enable multithreading, but make it so that mainwindow's constructor stops here until the QROVController is ready
+    //engineThread = new QThread(this); //create a second thread
+    //controller->moveToThread(engineThread); //move the QROVController engine to the second thread
+    //engineThread->start();
+
+    //Setup the activity monitor
+    activityMonitor = new QActivityMonitor(ui->teLog);
+    activityMonitor->display("Monterey started...");
+    QString versionDisp("Version: ");
+    versionDisp.append(version);
+    activityMonitor->display(versionDisp);
+    activityMonitor->display(statusMessage);
+
+   if(!rovControllerReady)
+   {
+       qCritical() << "ROVController unable to start, QUITTING";
+        exit(-2);
+   }
 
     //Add the right amount of relay buttons
     for(int i=0; i<controller->relayMappings.count(); i++)
@@ -233,12 +250,13 @@ void MainWindow::loadSettings()
     controller->loadSettings();
 
     //Load the relay names
-    for(int i=0; i<controller->rov->listRelays.count(); i++)
+    for(int i=0; i<controller->rov()->relays.count(); i++)
     {
-        relayButtons.at(i)->setText(controller->rov->listRelays[i]->getName());
+        relayButtons.at(i)->setText(controller->rov()->relays[i].name);
     }
 
     //Load the units
+    /*
     ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
     ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
     ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
@@ -260,19 +278,20 @@ void MainWindow::loadSettings()
     }
     else
         qWarning() << "No QCPPlotTitle on " << ui->plotSensor0;
+    */
 
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
 
     //Refresh the depth tape
-    depthTape->setMaxDepth((int)controller->rov->sensorDepth->getMax());
+    //depthTape->setMaxDepth((int)controller->rov->sensorDepth->getMax());  //TODO: Convert to sensor list...
 
-    qDebug() << "IP Video URL: " << controller->rov->getVideoFeeds().first()->url();
+    qDebug() << "IP Video URL: " << controller->rov()->videoFeeds.first()->url();
     //Load the proper video channel
-    if(webCamViewer && controller->rov->getVideoFeeds().first()->url().isValid())
+    if(webCamViewer && controller->rov()->videoFeeds.first()->url().isValid())
     {
-        webCamViewer->load(controller->rov->getVideoFeeds().first()->url());
+        webCamViewer->load(controller->rov()->videoFeeds.first()->url());
         webCamViewer->show();
     }
     else
@@ -289,13 +308,6 @@ void MainWindow::loadSettings()
 void MainWindow::setupCustomWidgets()
 {
     controller->loadSettings();
-
-    //Setup the activity monitor
-    activityMonitor = new QActivityMonitor(ui->teLog);
-    activityMonitor->display("Monterey started...");
-    QString versionDisp("Version: ");
-    versionDisp.append(version);
-    activityMonitor->display(versionDisp);
 
     //Setup status lights
     QGridLayout * statusGrid = qobject_cast<QGridLayout*>(ui->groupBoxStatus->layout());
@@ -399,7 +411,7 @@ void MainWindow::setupCustomWidgets()
     setStyleOnPlot(ui->plotRPiCpuTempC, rPiTitle);
 
     //Sensor0 graph
-    setStyleOnPlot(ui->plotSensor0, controller->rov->sensorOther0->getName());
+    //setStyleOnPlot(ui->plotSensor0, controller->rov()->sensorOther0->getName());  //TODO FIX
 
     QVector<QString> depthLabels;
     QVector<double> depthTicks;
@@ -412,11 +424,13 @@ void MainWindow::setupCustomWidgets()
     //ui->plotDepth->xAxis->setGrid(true);
 
     //Setup array of QLCDNumbers for sensor readouts
-    ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
-    ui->labUnitsHeading->setText(controller->rov->sensorCompass->getUnits());
-    ui->labUnitsVoltage->setText(controller->rov->sensorVoltage->getUnits());
-    ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
-    ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
+    /*
+    ui->labUnitsDepth->setText(controller->rov()->sensorDepth->getUnits());
+    ui->labUnitsHeading->setText(controller->rov()->sensorCompass->getUnits());
+    ui->labUnitsVoltage->setText(controller->rov()->sensorVoltage->getUnits());
+    ui->labUnits0->setText(controller->rov()->sensorOther0->getUnits());
+    ui->labUnits1->setText(controller->rov()->sensorOther1->getUnits());
+    */
 
     setupDepthTape();
     setupCompass();
@@ -460,7 +474,6 @@ void MainWindow::refreshGUI()
     loadData(); //load data from the controller object
     displayTime();  //display the current time
     showDiveTimer();  //show the time according to the dive timer
-    thresholdCheck();   //check for values exceeding thresholds
 }
 
 void MainWindow::lostJoystick()
@@ -481,12 +494,12 @@ void MainWindow::displayTahoe()
 {
     for(int i=0; i<relayButtons.count(); i++)
     {
-        relayButtons[i]->setChecked(controller->rov->listRelays.at(i)->getState());
+        relayButtons[i]->setChecked(controller->rov()->relays.at(i).enabled);
     }
 
     for(int i=0; i < servoSliders.count(); i++)
     {
-        servoSliders[i]->setValue(controller->rov->listServos.at(i)->getValue());
+        servoSliders[i]->setValue(controller->rov()->servos.at(i).value);
     }
 }
 
@@ -495,10 +508,10 @@ void MainWindow::checkForUpdates()
     FvUpdater::sharedUpdater()->CheckForUpdatesNotSilent();
 }
 
-void MainWindow::setupDepthTape()
+void MainWindow::setupDepthTape()   //TODO FIX
 {
-    depthTape = new DepthTape((int)controller->rov->sensorDepth->getMax());
-    ui->gridLayoutHUD->addWidget(depthTape->container, 1,0,4,1);
+    //depthTape = new DepthTape((int)controller->rov()->sensorDepth->getMax());     //TODO FIX
+    //ui->gridLayoutHUD->addWidget(depthTape->container, 1,0,4,1);
 }
 
 void MainWindow::setupCompass()
@@ -583,33 +596,24 @@ void MainWindow::onComPiChange(bool status)
     }
 }
 
-void MainWindow::thresholdCheck()   //TODO: REMOVE
-{
-    //if the ROV is too deep
-    if(controller->rov->sensorDepth->getValue() > controller->rov->sensorDepth->getThreshold())
-    {
-        ui->lcdDepth->setStyleSheet("QLCDNumber { color : red }");
-    }
-    else    //if ROV's depth is OK
-    {
-        ui->lcdDepth->setStyleSheet("QLCDNumber { color : none }");
-    }
-}
-
 void MainWindow::loadData()
 {
     //Display data in the numerical readouts
-    ui->lcdDepth->display(controller->rov->sensorDepth->getValue());
-    ui->lcdSensor0->display(controller->rov->sensorOther0->getValue());
-    ui->lcdSensor1->display(controller->rov->sensorOther1->getValue());
-    ui->lcdVoltage->display(controller->rov->sensorVoltage->getValue());
-    ui->lcdHeading->display(controller->rov->sensorCompass->getValue());
+    /*
+    ui->lcdDepth->display(controller->rov()->sensorDepth->getValue());
+    ui->lcdSensor0->display(controller->rov()->sensorOther0->getValue());
+    ui->lcdSensor1->display(controller->rov()->sensorOther1->getValue());
+    ui->lcdVoltage->display(controller->rov()->sensorVoltage->getValue());
+    ui->lcdHeading->display(controller->rov()->sensorCompass->getValue());
+    */
 
     //Display the data graphically
-    depthPoints.append(-100*(controller->rov->sensorDepth->getValue()/controller->rov->sensorDepth->getMax()));
-    voltagePoints.append(controller->rov->sensorVoltage->getValue());
-    rPiCpuTempCPoints.append(controller->rov->piData->tempC());
-    sensor0Points.append(controller->rov->sensorOther0->getValue());
+    /*
+    depthPoints.append(-100*(controller->rov()->sensorDepth->getValue()/controller->rov()->sensorDepth->getMax()));
+    voltagePoints.append(controller->rov()->sensorVoltage->getValue());
+    rPiCpuTempCPoints.append(controller->rov()->piData->tempC());
+    sensor0Points.append(controller->rov()->sensorOther0->getValue());
+    */
 
     int timeElapsed = graphTime->elapsed();
 
@@ -639,13 +643,15 @@ void MainWindow::loadData()
         plot->replot();
     };
 
-    loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
-    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
-    loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
-    loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
-
-    depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
-    compass->onHeadingChange(controller->rov->sensorCompass->getValue());
+    //TODO FIX
+    //loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
+    //loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
+    //loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
+    //loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
+    /*
+    depthTape->onDepthChange(controller->rov()->sensorDepth->getValue(), controller->rov()->sensorDepth->getUnits());
+    compass->onHeadingChange(controller->rov()->sensorCompass->getValue());
+    */
 
     //Light up the indicators
     if(controller->getStatusTIBO() != statusLights.com->status())
@@ -673,7 +679,7 @@ void MainWindow::on_pbRelay_clicked()
     {
         if(controller->relayMappings[i].pushButton == sender())
         {
-            controller->rov->listRelays.at(i)->setState(relayButtons.at(i)->isChecked());
+            controller->rov()->relays[i].enabled = relayButtons.at(i)->isChecked();
         }
     }
 }
@@ -685,7 +691,7 @@ void MainWindow::on_vsServo_valueChanged(int value)
     {
         if(controller->servoMappings[i].slider == sender())
         {
-            controller->rov->listServos.at(i)->setValue(value);
+            controller->rov()->servos[i].value = value;
         }
     }
 }

@@ -30,9 +30,9 @@
  * relays or servos will need to be manually propagated to the UI.
  */
 
-#define numberOfMotors 6
-#define numberOfRelays 3
-#define numberOfServos 3
+//#define numberOfMotors 6
+//#define numberOfRelays 3
+//#define numberOfServos 3
 
 #define MOTORMIN 1000
 #define MOTORMAX 2000
@@ -56,9 +56,8 @@ class QROVController : public QObject
 {
     Q_OBJECT
 public:
-    explicit QROVController(QObject *parent = 0);
+    explicit QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent = 0);
 
-    QROV *rov;
     QList<int> joystickAxesValues;
     QBoolMonitor *monitorJoystick;
 
@@ -135,6 +134,9 @@ signals:
     void savedSettings(QString message);
 
 public slots:
+
+    QROV* rov() { return mRov; }
+
     //Joystick
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
@@ -192,6 +194,9 @@ public slots:
 private slots:
     void motherFunction();  //!< Used to loop the application
 
+    void setValidity(bool state);
+    bool getValidity() const;
+
     //Joystick
     void initJoysticks();   //!< Initialize joystick systems
     void updateJoystickData();  //!< Read joystick data
@@ -213,6 +218,10 @@ private slots:
 
 private:
     QSettings *mySettings;
+
+    QROV *mRov;
+
+    bool mValidity; //is the controller in a valid state
 
     //Networking
     UdpCapture *captureRx;

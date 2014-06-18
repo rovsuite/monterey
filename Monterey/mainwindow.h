@@ -88,9 +88,6 @@ private slots:
     //Grab new data from the ROV controller
     void loadData();    //!< Load the data from the ROV controller and display it
 
-    //Check sensor thresholds (MIGHT REMOVE)
-    void thresholdCheck();  //!< Check the input values to see if they reach thresholds and alert the user if they do
-
     //Setup QML widgets
     void setupDepthTape();  //!< Configure the depth tape
     void setupCompass();    //!< Configure the compass

@@ -1,0 +1,29 @@
+{
+    "relays": [
+    "Relay0",
+    "Relay1",
+    "Relay2"
+    ],
+    "servos": [
+    "Servo0",
+    "Servo1"
+    ],
+    "sensors": [
+	{
+        "units": "meters",
+        "name": "depth"
+	},
+	{
+	    "units": "voltage",
+	    "name": "main bus voltage"
+	},
+	{
+	    "units": "amps",
+	    "name": "main bus current"
+	},
+	{
+	    "units": "degrees",
+	    "name": "heading"
+	}
+    ]
+}

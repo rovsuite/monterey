@@ -49,7 +49,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
             }
             cb->addItem("Disable"); //add option to disable
 
-            le->setText(p->controller->rov->listRelays.at(i)->getName());
+            le->setText(p->controller->rov()->relays.at(i).name);
             cb->setCurrentIndex(p->controller->relayMappings[i].button);
 
             newLayout->addWidget(le);
@@ -62,7 +62,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
             QLineEdit *lineEdit = new QLineEdit(this);
             relayHats.append(lineEdit);
 
-            label->setText(p->controller->rov->listRelays.at(i)->getName());
+            label->setText(p->controller->rov()->relays.at(i).name);
             label->setAlignment(Qt::AlignLeft);
             label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             lineEdit->setFixedWidth(100);
@@ -95,10 +95,10 @@ ROVMappings::ROVMappings(QWidget *parent) :
             cbUp->addItem("Disable");
             cbDown->addItem("Disable");
 
-            leUp->setText(p->controller->rov->listServos.at(i)->getName() + " (Up)");
+            leUp->setText(p->controller->rov()->servos.at(i).name + " (Up)");
             cbUp->setCurrentIndex(p->controller->servoMappings[i].buttonUp);
 
-            leDown->setText(p->controller->rov->listServos.at(i)->getName() + " (Down)");
+            leDown->setText(p->controller->rov()->servos.at(i).name + " (Down)");
             cbDown->setCurrentIndex(p->controller->servoMappings[i].buttonDown);
 
             newLayoutUp->addWidget(leUp);
@@ -120,7 +120,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
             QLineEdit *lineEditDown = new QLineEdit(this);
             servoHatsDown.append(lineEditDown);
 
-            labelUp->setText(p->controller->rov->listRelays.at(i)->getName() + " (Up)");
+            labelUp->setText(p->controller->rov()->servos.at(i).name + " (Up)");
             labelUp->setAlignment(Qt::AlignLeft);
             labelUp->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             lineEditUp->setFixedWidth(100);
@@ -130,7 +130,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
             newHatUp->addWidget(lineEditUp);
             hatLayout->addLayout(newHatUp);
 
-            labelDown->setText(p->controller->rov->listRelays.at(i)->getName() + " (Down)");
+            labelDown->setText(p->controller->rov()->servos.at(i).name + " (Down)");
             labelDown->setAlignment(Qt::AlignLeft);
             labelDown->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             lineEditDown->setFixedWidth(100);
