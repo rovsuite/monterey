@@ -37,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLights.com = 0;
     statusLights.joystick = 0;
     statusLights.rPi = 0;
-    statusLights.tahoe = 0;
 
     //ROV control engine
     bool rovControllerReady = false;
@@ -171,10 +170,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionFullscreen, SIGNAL(toggled(bool)), this, SLOT(showFullscreen(bool)));
     connect(controller, SIGNAL(comTiboChanged(bool)), this, SLOT(onComTiboChanged(bool)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
-    connect(controller, SIGNAL(comTahoeChanged(bool)), this, SLOT(onComTahoeChanged(bool)));
     connect(controller, SIGNAL(comPiChanged(bool)), this, SLOT(onComPiChange(bool)));
     connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
-    connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
     connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
     connect(controller, SIGNAL(appendToActivityMonitor(QString)), this, SLOT(appendToActivityMonitor(QString)));
@@ -354,14 +351,6 @@ void MainWindow::setupCustomWidgets()
     statusLights.joystick->setIndicatorTitle("Joystick");
     statusGrid->addWidget(statusLights.joystick->container, 1, 0, 1, 1);
 
-    if(statusLights.tahoe != 0)
-    {
-        delete statusLights.tahoe;
-    }
-    statusLights.tahoe = new LedIndicator;
-    statusLights.tahoe->setIndicatorTitle("Tahoe");
-    statusGrid->addWidget(statusLights.tahoe->container, 1, 1, 1, 1);
-
     //Setup the plots
     auto setStyleOnPlot = [this]( QCustomPlot *plot, QString titleString )
     {
@@ -500,19 +489,6 @@ void MainWindow::lostJoystick()
     }
 }
 
-void MainWindow::displayTahoe()
-{
-    for(int i=0; i<relayButtons.count(); i++)
-    {
-        relayButtons[i]->setChecked(controller->rov()->relays.at(i).enabled);
-    }
-
-    for(int i=0; i < servoSliders.count(); i++)
-    {
-        servoSliders[i]->setValue(controller->rov()->servos.at(i).value);
-    }
-}
-
 void MainWindow::checkForUpdates()
 {
     FvUpdater::sharedUpdater()->CheckForUpdatesNotSilent();
@@ -579,18 +555,6 @@ void MainWindow::onComTiboChanged(bool status)
     else
     {
         activityMonitor->display("Lost TIBO");
-    }
-}
-
-void MainWindow::onComTahoeChanged(bool status)
-{
-    if(status)
-    {
-        activityMonitor->display("Gained Tahoe COM");
-    }
-    else
-    {
-        activityMonitor->display("Lost Tahoe COM");
     }
 }
 
@@ -663,9 +627,6 @@ void MainWindow::loadData()
 
     if(controller->getStatusPi() != statusLights.rPi->status())
         statusLights.rPi->setStatus(controller->getStatusPi());
-
-    if(controller->getStatusTahoe() != statusLights.tahoe->status())
-        statusLights.tahoe->setStatus(controller->getStatusTahoe());
 }
 
 void MainWindow::displayTime()

@@ -46,7 +46,6 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     txSocket = new QUdpSocket(this);
 
     captureRx = new UdpCapture(TIBOPORT, ERRORTIMEOUT, this);
-    captureTahoe = new UdpCapture(TAHOERXPORT, ERRORTIMEOUT, this);
     capturePi = new UdpCapture(PIRXPORT, PITIMEOUT, this);
 
     monitorJoystick = new QBoolMonitor(this);
@@ -80,11 +79,9 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     loadSettings();
 
     connect(captureRx, SIGNAL(packetProcessed(QString)), this, SLOT(processPacket(QString)));
-    connect(captureTahoe, SIGNAL(packetProcessed(QString)), this, SLOT(processTahoe(QString)));
     connect(capturePi, SIGNAL(packetProcessed(QString)), this, SLOT(processPi(QString)));
 
     connect(captureRx, SIGNAL(comChanged(bool)), this, SIGNAL(comTiboChanged(bool)));
-    connect(captureTahoe, SIGNAL(comChanged(bool)), this, SIGNAL(comTahoeChanged(bool)));
     connect(capturePi, SIGNAL(comChanged(bool)), this, SIGNAL(comPiChanged(bool)));
 
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
@@ -191,26 +188,24 @@ void QROVController::processPacket(QString packet)
 {
     QMutex mutex;
     mutex.lock();
-    double version;
-    double depth;
-    double heading;
-    double voltage;
-    double sens0;
-    double sens1;
 
+    //Parse the packet
     QTextStream rxProcessing(&packet);
+    double depth = 0;
 
-    rxProcessing >> version >> depth >> heading >> voltage >> sens0 >> sens1;
+    rxProcessing >> mRov->version;
+    foreach(QROVSensor sensor, rov()->sensors)
+    {
+        rxProcessing >> sensor.value;
 
-    rov()->version = version;
-    /* TODO: ADD SENSOR READING
-    rov()->sensorDepth->setValue(depth);
-    rov()->sensorCompass->setValue(heading);
-    rov()->sensorVoltage->setValue(voltage);
-    rov()->sensorOther0->setValue(sens0);
-    rov()->sensorOther1->setValue(sens1);
-    */
+        //Temporarily store the depth value if possible
+        if(sensor.name.toLower() == "depth")
+        {
+            depth = sensor.value;
+        }
+    }
 
+    //Automatically control the dive timer based on the cached depth value
     if(diveTimer->hasStarted() && depth <= 0)    //if the ROV is at the surface, pause the dive timer
     {
         diveTimer->pause();
@@ -264,131 +259,9 @@ void QROVController::sendPacket()
     txDatagram = txPacket.toUtf8();
 
     txSocket->writeDatagram(txDatagram.data(), txDatagram.size(), QHostAddress::Broadcast, TOBIPORT);
+
     emit sentPacket(txPacket);
     mutex.unlock();
-}
-
-void QROVController::sendDebug()
-{
-    //code to send debug packet?
-}
-
-void QROVController::processTahoe(QString packet)
-{
-    /*
-    QMutex mutex;
-    mutex.lock();
-
-    int relay0;
-    int relay1;
-    int relay2;
-    int servo0;
-    int servo1;
-
-    //TODO: Make it safe for differening amounts of relays and servos
-    QTextStream stream(&packet);
-    stream >> relay0 >> relay1 >> relay2 >> servo0 >> servo1;
-    if(relay0 == 1)
-        rov()->listRelays[0]->setState(true);
-    else
-        rov()->listRelays[0]->setState(false);
-
-    if(relay1 == 1)
-        rov()->listRelays[1]->setState(true);
-    else
-        rov()->listRelays[1]->setState(false);
-
-    if(relay2 == 1)
-        rov()->listRelays[2]->setState(true);
-    else
-        rov()->listRelays[2]->setState(false);
-    rov()->listServos[0]->setValue(servo0);
-    rov()->listServos[1]->setValue(servo1);
-    mutex.unlock();
-    emit onTahoeProcessed();    //tell the GUI to update itself
-    */
-}
-
-void QROVController::sendTahoe()
-{
-    /*
-    QMutex mutex;
-    mutex.lock();
-    QString packet;
-    packet.append("1"); //placeholder for comTobi until Tahoe's packet structure is changed
-    packet.append(" ");
-    packet.append(QString::number((int)captureRx->comStatus()));
-    packet.append(" ");
-    int isError;
-    if(!captureRx->comStatus() || !joyAttached)
-        isError = 1;
-    else
-        isError = 0;
-    packet.append(QString::number(isError));
-    packet.append(" ");
-    packet.append(diveTimeString().remove(QChar(' '), Qt::CaseInsensitive));
-    packet.append(" ");
-
-    foreach(QROVServo s, rov()->servos)
-    {
-        packet.append(QString::number(s.value));
-        packet.append(" ");
-    }
-    foreach(QROVRelay r, rov()->relays)
-    {
-        if(r.enabled == true)
-            packet.append(QString::number(1));
-        else
-            packet.append(QString::number(0));
-        packet.append(" ");
-    }
-    foreach(QROVRelay r, rov()->relays)
-    {
-        QString specialName = r.name;
-        specialName.remove(QChar(' '), Qt::CaseInsensitive);    //remove spaces
-        packet.append(specialName);
-        packet.append(" ");
-    }
-    packet.append(QString::number(rov()->sensorDepth->getValue()));
-    packet.append(" ");
-    packet.append(QString::number(rov()->sensorDepth->getMax()));
-    packet.append(" ");
-    QString depthUnits = rov()->sensorDepth->getUnits();
-    depthUnits.remove(QChar(' '), Qt::CaseInsensitive); //remove spaces
-    packet.append(depthUnits);
-    packet.append(" ");
-    packet.append(QString::number(rov()->sensorCompass->getValue()));
-    packet.append(" ");
-    packet.append(QString::number(rov()->sensorVoltage->getValue()));
-    packet.append(" ");
-    packet.append(QString::number(rov()->sensorOther0->getValue()));
-    packet.append(" ");
-    packet.append(QString::number(rov()->sensorOther1->getValue()));
-    packet.append(" ");
-    QString newName;
-    newName = rov()->sensorOther0->getName();
-    newName.remove(QChar(' '), Qt::CaseInsensitive);
-    packet.append(newName);
-    packet.append(" ");
-    newName = rov()->sensorOther1->getName();
-    newName.remove(QChar(' '), Qt::CaseInsensitive);
-    packet.append(newName);
-    packet.append(" ");
-    QString newUnits;
-    newUnits = rov()->sensorOther0->getUnits();
-    newUnits.remove(QChar(' '), Qt::CaseInsensitive);
-    packet.append(newUnits);
-    packet.append(" ");
-    newUnits = rov()->sensorOther1->getUnits();
-    newUnits.remove(QChar(' '), Qt::CaseInsensitive);
-    packet.append(newUnits);
-    packet.append(" ");
-
-    QByteArray datagram = packet.toUtf8();
-    txSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress::Broadcast, TAHOETXPORT);
-
-    mutex.unlock();
-    */
 }
 
 void QROVController::processPi(QString packet)
@@ -636,8 +509,6 @@ void QROVController::motherFunction()
             noJoystick();
         }
         sendPacket();
-        sendDebug();
-        sendTahoe();
         emit onMotherFunctionCompleted();
     }
     mutex.unlock();

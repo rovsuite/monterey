@@ -44,8 +44,6 @@
 #define PITIMEOUT 5000
 #define TOBIPORT 51000
 #define TIBOPORT 50000
-#define TAHOERXPORT 52000
-#define TAHOETXPORT 53000
 #define PIRXPORT 5060
 
 /*
@@ -120,9 +118,7 @@ signals:
     //Networking
     void sentPacket(QString packet);
     void receivedPacket(QString packet);
-    void onTahoeProcessed();
     void comTiboChanged(bool status);
-    void comTahoeChanged(bool status);
     void comPiChanged(bool status);
 
     //Misc UI Interactions
@@ -179,7 +175,6 @@ public slots:
     int getPortTIBO();  //!< Get the TIBO port
     int getPortRpiTibo(); //!< Get the port that the Raspberry Pi sends to
     bool getStatusTIBO() { return captureRx->comStatus(); }    //!< Return the status of TIBO
-    bool getStatusTahoe() { return captureTahoe->comStatus(); }  //!< Return the status of Tahoe's COM
     bool getStatusPi() { return capturePi->comStatus(); }
 
     //Settings
@@ -208,9 +203,6 @@ private slots:
     //Networking
     void processPacket(QString packet);   //!< Process the packet received from the ROV
     void sendPacket();  //!< Send a packet to the ROV
-    void sendDebug();   //!< Send a debug packet out to any listeners
-    void processTahoe(QString packet);    //!< Process the packet from Tahoe
-    void sendTahoe();   //!< Send the packet to Tahoe
     void processPi(QString packet);
 
     //Misc
@@ -225,7 +217,6 @@ private:
 
     //Networking
     UdpCapture *captureRx;
-    UdpCapture *captureTahoe;
     UdpCapture *capturePi;
     QUdpSocket *txSocket;
 

@@ -77,10 +77,8 @@ private slots:
 
     //Show misc. values
     void refreshGUI();  //!< Refresh the GUI on a timer
-    void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
     void showDiveTimer();   //!< Display the dive timer
     void onComTiboChanged(bool status);    //!< Add TIBO lost/gained to the activity monitor
-    void onComTahoeChanged(bool status);   //!< Add Tahoe COM lost/gained to the activity monitor
     void onComPiChange(bool status); //!< Add RPi COM lost/gained to the activity monitor
     void displayTime(); //!< Display the current time
     void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
@@ -130,7 +128,6 @@ private:
     LedIndicator *com;
     LedIndicator *joystick;
     LedIndicator *rPi;
-    LedIndicator *tahoe;
     }statusLights;
 };
 
