@@ -26,5 +26,6 @@
 	    "name": "heading"
 	}
     ],
-    "motorLayout" : "tank"
+    "motorLayout" : "tank",
+    "maxDepth" : 100
 }

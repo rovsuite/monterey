@@ -59,6 +59,7 @@ class PiData;
 struct QROV
 {
     double version;
+    double maxDepth;
     MotorLayout motorLayout;
     QList<IpVideoFeed*> videoFeeds;
     PiData *piData;
@@ -69,7 +70,7 @@ struct QROV
 
     QROV(double v, IpVideoFeed *feed, PiData *pi,
             int numMotors, int numRelays,
-            int numServos, int numSensors)
+            int numServos, int numSensors, double maxDepth)
     {
         version = v;
 
@@ -92,40 +93,42 @@ struct QROV
 
         sensors.clear();
         for(int i=0; i<numSensors; i++)
-            sensors.append(QROVSensor("Sensor" + QString::number(i), "N/A", 0)); 
+            sensors.append(QROVSensor("Sensor" + QString::number(i), "N/A", 0));
+
+        this->maxDepth = maxDepth;
     }
 
     QROV()
     {
-        QROV(0, NULL, NULL, 0, 0, 0, 0);
+        QROV(0, NULL, NULL, 0, 0, 0, 0, 100);
     }
 };
 
-inline double getDepth(const QROV& rov)
+inline QROVSensor getDepthSensor(const QROV& rov)
 {
     foreach(QROVSensor sensor, rov.sensors)
     {
         if(sensor.name.toLower() == "depth")
         {
-            return sensor.value;
+            return sensor;
         }
     }
 
-    return 0;
+    return QROVSensor("depth", "m", 0);
 }
 
-inline double getHeading(const QROV& rov)
+inline QROVSensor getHeadingSensor(const QROV& rov)
 {
     foreach(QROVSensor sensor, rov.sensors)
     {
         if(sensor.name.toLower() == "heading" ||
                 sensor.name.toLower() == "compass")
         {
-            return sensor.value;
+            return sensor;
         }
     }
 
-    return 0;
+    return QROVSensor("heading", "degrees", 0);
 }
 
 #endif // QROV_H

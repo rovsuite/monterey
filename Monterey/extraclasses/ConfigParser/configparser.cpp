@@ -26,11 +26,13 @@ bool ConfigParser::parseRov(QROV& rov) const
     QJsonArray jsonRelays = baseObj["relays"].toArray();
     QJsonArray jsonServos = baseObj["servos"].toArray();
     QJsonValue jsonMotorLayout = baseObj["motorLayout"];
+    QJsonValue jsonMaxDepth = baseObj["maxDepth"];
 
     if(jsonSensors.size() == 0 ||
             jsonRelays.size() == 0 ||
             jsonServos.size() == 0 ||
-            jsonMotorLayout.isUndefined())
+            jsonMotorLayout.isUndefined() ||
+            jsonMaxDepth.isUndefined())
         return false;
 
     //TODO: READ IP VIDEO FEEDS?
@@ -80,6 +82,8 @@ bool ConfigParser::parseRov(QROV& rov) const
         qWarning() << "Motor layout: " << jsonMotorLayout.toString() << " not defined!";
         return false;
     }
+
+    rov.maxDepth = jsonMaxDepth.toDouble(100);
 
     return true;
 }

@@ -303,9 +303,10 @@ void MainWindow::loadSettings()
     activityMonitor->display("Settings loaded");
 
     //Refresh the depth tape
-    //depthTape->setMaxDepth((int)controller->rov->sensorDepth->getMax());  //TODO: Convert to sensor list...
+    depthTape->setMaxDepth((int)controller->rov()->maxDepth);
 
     qDebug() << "IP Video URL: " << controller->rov()->videoFeeds.first()->url();
+
     //Load the proper video channel
     if(webCamViewer && controller->rov()->videoFeeds.first()->url().isValid())
     {
@@ -517,10 +518,10 @@ void MainWindow::checkForUpdates()
     FvUpdater::sharedUpdater()->CheckForUpdatesNotSilent();
 }
 
-void MainWindow::setupDepthTape()   //TODO FIX
+void MainWindow::setupDepthTape()
 {
-    //depthTape = new DepthTape((int)controller->rov()->sensorDepth->getMax());     //TODO FIX
-    //ui->gridLayoutHUD->addWidget(depthTape->container, 1,0,4,1);
+    depthTape = new DepthTape((int)controller->rov()->maxDepth);
+    ui->gridLayoutHUD->addWidget(depthTape->container, 1,0,4,1);
 }
 
 void MainWindow::setupCompass()
@@ -614,7 +615,7 @@ void MainWindow::loadData()
     }
 
     //Display the data graphically
-    //depthPoints.append(-100*(controller->rov()->sensorDepth->getValue()/controller->rov()->sensorDepth->getMax()));
+    depthPoints.append(-100*(getDepthSensor(*controller->rov()).value / controller->rov()->maxDepth));
     //voltagePoints.append(controller->rov()->sensorVoltage->getValue());
     rPiCpuTempCPoints.append(controller->rov()->piData->tempC());
     //sensor0Points.append(controller->rov()->sensorOther0->getValue());
@@ -648,14 +649,13 @@ void MainWindow::loadData()
     };
 
     //TODO FIX
-    //loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
+    loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
     loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
     //loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
     //loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
-    /*
-    depthTape->onDepthChange(controller->rov()->sensorDepth->getValue(), controller->rov()->sensorDepth->getUnits());
-    compass->onHeadingChange(controller->rov()->sensorCompass->getValue());
-    */
+
+    depthTape->onDepthChange(getDepthSensor(*controller->rov()).value, getDepthSensor(*controller->rov()).units);   //TODO: test
+    //compass->onHeadingChange(controller->rov()->sensorCompass->getValue());
 
     //Light up the indicators
     if(controller->getStatusTIBO() != statusLights.com->status())

@@ -12,7 +12,7 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     enteredGoodState = true;    //default to success
 
     numberOfAxes = 0;
-    mRov = new QROV(0, new IpVideoFeed("main", QUrl(""), true, this), new PiData(this), 0, 0, 0, 5); //put the ROV into a decent state
+    mRov = new QROV(0, new IpVideoFeed("main", QUrl(""), true, this), new PiData(this), 0, 0, 0, 5, 100); //put the ROV into a decent state
 
     //Parse the ROV configuration file
     ConfigParser rovConfigParser("rovconfig.json", this);
