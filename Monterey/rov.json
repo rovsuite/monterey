@@ -14,12 +14,12 @@
         "name": "depth"
 	},
 	{
-	    "units": "voltage",
-	    "name": "main bus voltage"
+        "units": "volts",
+        "name": "voltage"
 	},
 	{
 	    "units": "amps",
-	    "name": "main bus current"
+        "name": "current"
 	},
 	{
 	    "units": "degrees",

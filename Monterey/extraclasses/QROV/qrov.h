@@ -101,4 +101,31 @@ struct QROV
     }
 };
 
+inline double getDepth(const QROV& rov)
+{
+    foreach(QROVSensor sensor, rov.sensors)
+    {
+        if(sensor.name.toLower() == "depth")
+        {
+            return sensor.value;
+        }
+    }
+
+    return 0;
+}
+
+inline double getHeading(const QROV& rov)
+{
+    foreach(QROVSensor sensor, rov.sensors)
+    {
+        if(sensor.name.toLower() == "heading" ||
+                sensor.name.toLower() == "compass")
+        {
+            return sensor.value;
+        }
+    }
+
+    return 0;
+}
+
 #endif // QROV_H

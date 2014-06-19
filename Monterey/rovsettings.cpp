@@ -14,33 +14,8 @@ ROVSettings::ROVSettings(QWidget *parent) :
     ui->setupUi(this);
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
 
-    //Load the relay names
-    QVBoxLayout *vLayout = new QVBoxLayout(this);
-    for(int i=0; i<p->controller->relayMappings.count(); i++)
-    {
-        QHBoxLayout *hLayout = new QHBoxLayout(this);
-        QLabel *label = new QLabel(this);
-        QLineEdit *lineEdit = new QLineEdit(this);
-        relayNames.append(lineEdit);
-        label->setText("Relay" + QString::number(i+1) + ":");
-        label->setAlignment(Qt::AlignLeft);
-        lineEdit->setText(p->controller->rov()->relays.at(i).name);
-        hLayout->addWidget(label);
-        hLayout->addWidget(lineEdit);
-        vLayout->addLayout(hLayout);
-    }
-    ui->groupBoxRelayNames->setLayout(vLayout);
-/*
-    ui->leUnitsDepth->setText(p->controller->rov()->sensorDepth->getUnits());
-    ui->leUnitsSensor0->setText(p->controller->rov()->sensorOther0->getUnits());
-    ui->leUnitsSensor1->setText(p->controller->rov()->sensorOther1->getUnits());
+    //ui->sbDepth->setValue(p->controller->rov()->sensorDepth->getThreshold());     //TODO fix
 
-    ui->leNamesSensor0->setText(p->controller->rov()->sensorOther0->getName());
-    ui->leNamesSensor1->setText(p->controller->rov()->sensorOther1->getName());
-
-    ui->sbDepth->setValue(p->controller->rov()->sensorDepth->getThreshold());
-*/
-    ui->comboMotorLayout->setCurrentIndex((int)p->controller->rov()->motorLayout);
     ui->cbBilinearEnabled->setChecked(p->controller->getBilinearEnabled());
     ui->sbBilinearRatio->setValue(p->controller->getBilinearRatio());
 
@@ -54,7 +29,6 @@ ROVSettings::ROVSettings(QWidget *parent) :
    videoFeeds = p->controller->rov()->videoFeeds;
    ui->ipVideoFeedSettings0->setIpVideoFeed(videoFeeds.at(0));
    connect(ui->ipVideoFeedSettings0, SIGNAL(autoGenerateClicked(bool)), this, SLOT(onAutoGenerateVideoFeedUrlClicked(bool)));
-
 }
 
 ROVSettings::~ROVSettings()
@@ -72,19 +46,8 @@ void ROVSettings::on_pbSave_clicked()
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
 
     //Adjust the settings
-    for(int i=0; i<relayNames.count(); i++)
-    {
-        p->controller->rov()->relays[i].name = relayNames[i]->text();
-    }
-    /*
-    p->controller->rov()->sensorDepth->setUnits(ui->leUnitsDepth->text());
-    p->controller->rov()->sensorOther0->setUnits(ui->leUnitsSensor0->text());
-    p->controller->rov()->sensorOther1->setUnits(ui->leUnitsSensor1->text());
-    p->controller->rov()->sensorOther0->setName(ui->leNamesSensor0->text());
-    p->controller->rov()->sensorOther1->setName(ui->leNamesSensor1->text());
-    p->controller->rov()->sensorDepth->setThreshold(ui->sbDepth->value());
-    p->controller->rov()->motorLayout = QROV::MotorLayout(ui->comboMotorLayout->currentIndex());
-    */
+    //p->controller->rov()->sensorDepth->setThreshold(ui->sbDepth->value());    //TODO fix
+
     p->controller->setBilinearRatio(ui->sbBilinearRatio->value());
     p->controller->setBilinearEnabled(ui->cbBilinearEnabled->isChecked());
 

@@ -9,6 +9,8 @@
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QSlider>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -41,10 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
     bool rovControllerReady = false;
     QString statusMessage = "";
     controller = new QROVController(rovControllerReady, statusMessage);
-    //TODO: Re-enable multithreading, but make it so that mainwindow's constructor stops here until the QROVController is ready
-    //engineThread = new QThread(this); //create a second thread
-    //controller->moveToThread(engineThread); //move the QROVController engine to the second thread
-    //engineThread->start();
+    engineThread = new QThread(this); //create a second thread
+    controller->moveToThread(engineThread); //move the QROVController engine to the second thread
+    engineThread->start();
 
     //Setup the activity monitor
     activityMonitor = new QActivityMonitor(ui->teLog);
@@ -98,6 +99,30 @@ MainWindow::MainWindow(QWidget *parent) :
         //Link to the controller
         controller->servoMappings[i].slider = slider;
     }
+
+    //Add the right amount of sensors
+    QVBoxLayout *verticalLayout = new QVBoxLayout(ui->groupBoxSensorReadouts);
+    foreach(QROVSensor sensor, controller->rov()->sensors)
+    {
+        //TODO IMPLEMENT
+        //Add sensor value display
+        QHBoxLayout *hLayout = new QHBoxLayout(this);
+        QLabel *labelName = new QLabel(this);
+        labelName->setText(sensor.name);
+        labelName->setAlignment(Qt::AlignLeft);
+        QLCDNumber *lcd = new QLCDNumber(this);
+        lcd->display(sensor.value);
+        lcd->setSegmentStyle(QLCDNumber::Flat);
+        QLabel *labelUnits = new QLabel(this);
+        labelUnits->setText(sensor.units);
+        labelUnits->setAlignment(Qt::AlignRight);
+        hLayout->addWidget(labelName);
+        hLayout->addWidget(lcd);
+        hLayout->addWidget(labelUnits);
+        hLayout->setAlignment(hLayout, Qt::AlignHCenter);
+        verticalLayout->addLayout(hLayout);
+    }
+    ui->groupBoxSensorReadouts->setLayout(verticalLayout);
 
     //Timer for updating the graph
     graphTime = new QTime;
@@ -257,13 +282,6 @@ void MainWindow::loadSettings()
 
     //Load the units
     /*
-    ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
-    ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
-    ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
-
-    //Load the sensor names
-    ui->labSensor0->setText(controller->rov->sensorOther0->getName() + ":");
-    ui->labSensor1->setText(controller->rov->sensorOther1->getName() + ":");
     QCPPlotTitle *title = 0;
     title = qobject_cast<QCPPlotTitle*>(ui->plotSensor0->plotLayout()->element(0,0));
     if(title != 0)
@@ -422,15 +440,6 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->yAxis->setTickVector(depthTicks);
     ui->plotDepth->yAxis->setTickVectorLabels(depthLabels);
     //ui->plotDepth->xAxis->setGrid(true);
-
-    //Setup array of QLCDNumbers for sensor readouts
-    /*
-    ui->labUnitsDepth->setText(controller->rov()->sensorDepth->getUnits());
-    ui->labUnitsHeading->setText(controller->rov()->sensorCompass->getUnits());
-    ui->labUnitsVoltage->setText(controller->rov()->sensorVoltage->getUnits());
-    ui->labUnits0->setText(controller->rov()->sensorOther0->getUnits());
-    ui->labUnits1->setText(controller->rov()->sensorOther1->getUnits());
-    */
 
     setupDepthTape();
     setupCompass();
@@ -598,22 +607,11 @@ void MainWindow::onComPiChange(bool status)
 
 void MainWindow::loadData()
 {
-    //Display data in the numerical readouts
-    /*
-    ui->lcdDepth->display(controller->rov()->sensorDepth->getValue());
-    ui->lcdSensor0->display(controller->rov()->sensorOther0->getValue());
-    ui->lcdSensor1->display(controller->rov()->sensorOther1->getValue());
-    ui->lcdVoltage->display(controller->rov()->sensorVoltage->getValue());
-    ui->lcdHeading->display(controller->rov()->sensorCompass->getValue());
-    */
-
     //Display the data graphically
-    /*
-    depthPoints.append(-100*(controller->rov()->sensorDepth->getValue()/controller->rov()->sensorDepth->getMax()));
-    voltagePoints.append(controller->rov()->sensorVoltage->getValue());
+    //depthPoints.append(-100*(controller->rov()->sensorDepth->getValue()/controller->rov()->sensorDepth->getMax()));
+    //voltagePoints.append(controller->rov()->sensorVoltage->getValue());
     rPiCpuTempCPoints.append(controller->rov()->piData->tempC());
-    sensor0Points.append(controller->rov()->sensorOther0->getValue());
-    */
+    //sensor0Points.append(controller->rov()->sensorOther0->getValue());
 
     int timeElapsed = graphTime->elapsed();
 
@@ -645,7 +643,7 @@ void MainWindow::loadData()
 
     //TODO FIX
     //loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
-    //loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
+    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
     //loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
     //loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
     /*
@@ -699,10 +697,6 @@ void MainWindow::on_vsServo_valueChanged(int value)
 // Copies log to system clipboard for easy sharing
 void MainWindow::on_buttonCopyLogToClipboard_clicked()
 {
-//    This is more of a hack-ish solution
-//    ui->teLog->selectAll();
-//    ui->teLog->copy();
-
     QClipboard *p_Clipboard = QApplication::clipboard();
     p_Clipboard->setText(ui->teLog->toPlainText());
 }
