@@ -108,14 +108,14 @@ MainWindow::MainWindow(QWidget *parent) :
         //Add sensor value display
         QHBoxLayout *hLayout = new QHBoxLayout(this);
         QLabel *labelName = new QLabel(this);
-        labelName->setText(sensor.name);
-        labelName->setAlignment(Qt::AlignLeft);
+        labelName->setText(sensor.name + ":");
+        labelName->setAlignment(Qt::AlignRight);
         QLCDNumber *lcd = new QLCDNumber(this);
         lcd->display(sensor.value);
         lcd->setSegmentStyle(QLCDNumber::Flat);
         QLabel *labelUnits = new QLabel(this);
         labelUnits->setText(sensor.units);
-        labelUnits->setAlignment(Qt::AlignRight);
+        labelUnits->setAlignment(Qt::AlignLeft);
         hLayout->addWidget(labelName);
         hLayout->addWidget(lcd);
         hLayout->addWidget(labelUnits);
