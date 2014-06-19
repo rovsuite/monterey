@@ -111,6 +111,7 @@ private:
 
     QList<QPushButton*> relayButtons;
     QList<QSlider*> servoSliders;
+    QList<QLCDNumber*> sensorDisplays;
 
     QVector<double> depthPoints;
     QVector<double> voltagePoints;

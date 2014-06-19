@@ -101,11 +101,10 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     //Add the right amount of sensors
+    sensorDisplays.clear();
     QVBoxLayout *verticalLayout = new QVBoxLayout(ui->groupBoxSensorReadouts);
     foreach(QROVSensor sensor, controller->rov()->sensors)
     {
-        //TODO IMPLEMENT
-        //Add sensor value display
         QHBoxLayout *hLayout = new QHBoxLayout(this);
         QLabel *labelName = new QLabel(this);
         labelName->setText(sensor.name + ":");
@@ -113,6 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
         QLCDNumber *lcd = new QLCDNumber(this);
         lcd->display(sensor.value);
         lcd->setSegmentStyle(QLCDNumber::Flat);
+        sensorDisplays.append(lcd);
         QLabel *labelUnits = new QLabel(this);
         labelUnits->setText(sensor.units);
         labelUnits->setAlignment(Qt::AlignLeft);
@@ -607,6 +607,12 @@ void MainWindow::onComPiChange(bool status)
 
 void MainWindow::loadData()
 {
+    //Display the sensor values
+    for(int i=0; i<controller->rov()->sensors.count(); i++)
+    {
+        sensorDisplays[i]->display(controller->rov()->sensors[i].value);
+    }
+
     //Display the data graphically
     //depthPoints.append(-100*(controller->rov()->sensorDepth->getValue()/controller->rov()->sensorDepth->getMax()));
     //voltagePoints.append(controller->rov()->sensorVoltage->getValue());
