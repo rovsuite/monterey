@@ -14,8 +14,6 @@ ROVSettings::ROVSettings(QWidget *parent) :
     ui->setupUi(this);
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
 
-    //ui->sbDepth->setValue(p->controller->rov()->sensorDepth->getThreshold());     //TODO fix
-
     ui->cbBilinearEnabled->setChecked(p->controller->getBilinearEnabled());
     ui->sbBilinearRatio->setValue(p->controller->getBilinearRatio());
 
@@ -46,8 +44,6 @@ void ROVSettings::on_pbSave_clicked()
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
 
     //Adjust the settings
-    //p->controller->rov()->sensorDepth->setThreshold(ui->sbDepth->value());    //TODO fix
-
     p->controller->setBilinearRatio(ui->sbBilinearRatio->value());
     p->controller->setBilinearEnabled(ui->cbBilinearEnabled->isChecked());
 

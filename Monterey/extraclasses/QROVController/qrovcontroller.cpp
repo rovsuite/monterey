@@ -316,33 +316,7 @@ void QROVController::loadSettings()
     mutex.lock();
     //TODO: Finish adding settings code and remove it from mainwindow.cpp
 
-    //Load relay names
-    /*
-    for(int i=0; i<rov()->relays.count(); i++)
-    {
-        //TODO: REMOVE CODE WHEN THE JSON PARSING IS IMPLEMENTED
-        rov()->relays[i].name = mySettings->value("names/relay" + QString::number(i), "relay" + QString::number(i)).toString();
-    }
-
-    //Load the units
-    rov()->sensorDepth->setUnits(mySettings->value("units/depth", "m").toString());
-    rov()->sensorOther0->setUnits(mySettings->value("units/sensor0", "units").toString());
-    rov()->sensorOther1->setUnits(mySettings->value("units/sensor1", "units").toString());
-
-    //Load the names
-    rov()->sensorOther0->setName(mySettings->value("names/sensor0", "Sensor0").toString());
-    rov()->sensorOther1->setName(mySettings->value("names/sensor1", "Sensor1").toString());
-
-    //Load thresholds
-    rov()->sensorDepth->setMax(mySettings->value("thresholds/depth", "10.0").toDouble());
-    rov()->sensorDepth->setThreshold(rov()->sensorDepth->getMax());
-    rov()->sensorVoltage->setThreshold(mySettings->value("thresholds/voltage", "9").toDouble());
-
-    //Load motor settings
-    rov()->motorLayout = MotorLayout(mySettings->value("motors/layout", "1").toInt());
-    */
-
-    //Bilinear
+   //Bilinear
     joySettings.bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
     joySettings.bilinearRatio = mySettings->value("bilinear/ratio", "1.5").toDouble();
 
@@ -397,24 +371,6 @@ void QROVController::saveSettings()
     {
         mySettings->setValue("names/relay" + QString::number(i), rov()->relays[i].name);
     }
-
-    /*
-    //Units
-    mySettings->setValue("units/depth", rov()->sensorDepth->getUnits());
-    mySettings->setValue("units/sensor0", rov()->sensorOther0->getUnits());
-    mySettings->setValue("units/sensor1", rov()->sensorOther1->getUnits());
-
-    //Names
-    mySettings->setValue("names/sensor0", rov()->sensorOther0->getName());
-    mySettings->setValue("names/sensor1", rov()->sensorOther1->getName());
-
-    //Thresholds
-    mySettings->setValue("thresholds/depth", rov()->sensorDepth->getThreshold());
-    mySettings->setValue("thresholds/voltage", rov()->sensorVoltage->getThreshold());
-
-    //Motors
-    mySettings->setValue("motors/layout", rov()->motorLayout);
-    */
 
     //Bilinear
     mySettings->setValue("bilinear/enabled", joySettings.bilinearEnabled);
