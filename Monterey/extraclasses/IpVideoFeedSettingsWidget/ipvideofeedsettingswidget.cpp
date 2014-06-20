@@ -14,21 +14,21 @@ IpVideoFeedSettingsWidget::~IpVideoFeedSettingsWidget()
     delete ui;
 }
 
-void IpVideoFeedSettingsWidget::setIpVideoFeed(IpVideoFeed *ipVideoFeed)
+void IpVideoFeedSettingsWidget::setIpVideoFeed(IpVideoFeed ipVideoFeed)
 {
     m_ipVideoFeed = ipVideoFeed;
-    ui->lineEdit->setText(m_ipVideoFeed->name());
-    ui->lineEdit_2->setText(m_ipVideoFeed->url().toString());
-    ui->checkBox->setChecked(m_ipVideoFeed->autoGenerate());
+    ui->lineEdit->setText(m_ipVideoFeed.name);
+    ui->lineEdit_2->setText(m_ipVideoFeed.url.toString());
+    ui->checkBox->setChecked(m_ipVideoFeed.autoGenerate);
     if(ui->checkBox->isChecked())
         ui->lineEdit_2->setDisabled(true);
 }
 
-IpVideoFeed *IpVideoFeedSettingsWidget::getIpVideoFeed()
+IpVideoFeed IpVideoFeedSettingsWidget::getIpVideoFeed()
 {
-    m_ipVideoFeed->setname(ui->lineEdit->text());
-    m_ipVideoFeed->seturl(QUrl(ui->lineEdit_2->text()));
-    m_ipVideoFeed->setAutoGenerate(ui->checkBox->isChecked());
+    m_ipVideoFeed.name = ui->lineEdit->text();
+    m_ipVideoFeed.url = QUrl(ui->lineEdit_2->text());
+    m_ipVideoFeed.autoGenerate = ui->checkBox->isChecked();
 
     return m_ipVideoFeed;
 }

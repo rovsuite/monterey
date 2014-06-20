@@ -30,9 +30,7 @@ SOURCES += main.cpp\
     extraclasses/QCustomPlot/qcustomplot.cpp \
     extraclasses/DepthTape/depthtape.cpp \
     extraclasses/DiveTimer/divetimer.cpp \
-    extraclasses/IpVideoFeed/ipvideofeed.cpp \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.cpp \
-    extraclasses/PiData/pidata.cpp \
     extraclasses/Compass/compass.cpp \
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.cpp \
     extraclasses/LedIndicator/ledindicator.cpp \
@@ -57,9 +55,7 @@ HEADERS  += mainwindow.h \
     extraclasses/QCustomPlot/qcustomplot.h \
     extraclasses/DepthTape/depthtape.h \
     extraclasses/DiveTimer/divetimer.h \
-    extraclasses/IpVideoFeed/ipvideofeed.h \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h \
-    extraclasses/PiData/pidata.h \
     extraclasses/Compass/compass.h \
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.h \
     extraclasses/LedIndicator/ledindicator.h \

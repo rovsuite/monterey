@@ -1,7 +1,7 @@
 #include "qrovcontroller.h"
-#include "extraclasses/IpVideoFeed/ipvideofeed.h"
 #include "extraclasses/ConfigParser/configparser.h"
 #include <QDebug>
+#include "extraclasses/QROV/qrov.h"
 
 QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent) :
     QObject(parent)
@@ -12,7 +12,7 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     enteredGoodState = true;    //default to success
 
     numberOfAxes = 0;
-    mRov = new QROV(0, new IpVideoFeed("main", QUrl(""), true, this), new PiData(this), 0, 0, 0, 5, 100); //put the ROV into a decent state
+    mRov = new QROV();
 
     //Parse the ROV configuration file
     ConfigParser rovConfigParser("rovconfig.json", this);
@@ -278,11 +278,11 @@ void QROVController::processPi(QString packet)
     QTextStream stream(&packet);
     stream >> tempC >> uptime >> usedMemoryPercentage >> usedCpuPercentage;
 
-    rov()->piData->setTempC(tempC);
-    rov()->piData->setUptimeS((int)uptime);
-    rov()->piData->setIpAddress(piAddress);
-    rov()->piData->setUsedMemory(usedMemoryPercentage);
-    rov()->piData->setUsedCpu(usedCpuPercentage);
+    rov()->piData.tempC = tempC;
+    rov()->piData.uptimeS = (int)(uptime);
+    rov()->piData.ipAddress = piAddress;
+    rov()->piData.usedMemory = usedMemoryPercentage;
+    rov()->piData.usedCpu = usedCpuPercentage;
 
     mutex.unlock();
 }
@@ -350,14 +350,12 @@ void QROVController::loadSettings()
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,joySettings.deadX,joySettings.deadY,joySettings.deadZ);
 
     //Video
-    QList<IpVideoFeed*> videoFeeds = rov()->videoFeeds;
-    for(int i = 0;i<videoFeeds.count();i++)
-    {
-        videoFeeds[i]->setname(mySettings->value("videoFeeds/" + QString::number(i) + "/name", "Main").toString());
-        videoFeeds[i]->seturl(mySettings->value("videoFeeds/" + QString::number(i) + "/url", "http://127.0.0.1:8080/javascript_simple.html").toUrl());
-        videoFeeds[i]->setAutoGenerate(mySettings->value("videoFeeds/" + QString::number(i) + "/autoGenerate", true).toBool());
-    }
-    rov()->videoFeeds = videoFeeds;
+    IpVideoFeed videoFeed = rov()->videoFeed;
+    videoFeed.name = mySettings->value("videoFeeds/name", "Main").toString();
+    videoFeed.url = mySettings->value("videoFeeds/url", "http://127.0.0.1:8080/javascript_simple.html").toUrl();
+    videoFeed.autoGenerate = mySettings->value("videoFeeds/autoGenerate", true).toBool();
+
+    rov()->videoFeed = videoFeed;
 
     mutex.unlock();
 }
@@ -403,12 +401,9 @@ void QROVController::saveSettings()
     }
 
     //Video
-    for(int i = 0;i<rov()->videoFeeds.count();i++)
-    {
-        mySettings->setValue("videoFeeds/" + QString::number(i) + "/name", rov()->videoFeeds.at(i)->name());
-        mySettings->setValue("videoFeeds/" + QString::number(i) + "/url", rov()->videoFeeds.at(i)->url());
-        mySettings->setValue("videoFeeds/" + QString::number(i) + "/autoGenerate", rov()->videoFeeds.at(i)->autoGenerate());
-    }
+    mySettings->setValue("videoFeeds/name", rov()->videoFeed.name);
+    mySettings->setValue("videoFeeds/url", rov()->videoFeed.url);
+    mySettings->setValue("videoFeeds/autoGenerate", rov()->videoFeed.autoGenerate);
 
     mutex.unlock();
     emit savedSettings("Settings saved");

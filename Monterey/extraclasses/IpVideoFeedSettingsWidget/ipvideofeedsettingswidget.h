@@ -2,7 +2,7 @@
 #define IPVIDEOFEEDSETTINGSWIDGET_H
 
 #include <QWidget>
-#include "../../extraclasses/IpVideoFeed/ipvideofeed.h"
+#include "extraclasses/QROV/qrov.h"
 
 namespace Ui {
 class IpVideoFeedSettingsWidget;
@@ -16,8 +16,8 @@ public:
     explicit IpVideoFeedSettingsWidget(QWidget *parent = 0);
     ~IpVideoFeedSettingsWidget();
 
-    void setIpVideoFeed(IpVideoFeed* ipVideoFeed);
-    IpVideoFeed* getIpVideoFeed();
+    void setIpVideoFeed(IpVideoFeed ipVideoFeed);
+    IpVideoFeed getIpVideoFeed();
 
 public slots:
     void setUrl(QString url);
@@ -32,7 +32,7 @@ private slots:
     
 private:
     Ui::IpVideoFeedSettingsWidget *ui;
-    IpVideoFeed *m_ipVideoFeed;
+    IpVideoFeed m_ipVideoFeed;
 };
 
 #endif // IPVIDEOFEEDSETTINGSWIDGET_H

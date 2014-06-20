@@ -29,12 +29,12 @@ void ROVDebug::updateGUI()
 {
     //Any debug stuff to add here on a timer
     MainWindow *p = dynamic_cast<MainWindow *>(this->parentWidget());
-    QHostAddress address = p->controller->rov()->piData->ipAddress();
+    QHostAddress address = p->controller->rov()->piData.ipAddress;
     int port = p->controller->getPortRpiTibo();
-    double tempC = p->controller->rov()->piData->tempC();
-    int uptime = p->controller->rov()->piData->uptimeS();
-    double usedMem = p->controller->rov()->piData->usedMemory();
-    double usedCpu = p->controller->rov()->piData->usedCpu();
+    double tempC = p->controller->rov()->piData.tempC;
+    int uptime = p->controller->rov()->piData.uptimeS;
+    double usedMem = p->controller->rov()->piData.usedMemory;
+    double usedCpu = p->controller->rov()->piData.usedCpu;
 
     ui->rPiDataWidget->setIp(address);
     ui->rPiDataWidget->setTibo(port);

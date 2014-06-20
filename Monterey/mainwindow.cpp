@@ -302,12 +302,10 @@ void MainWindow::loadSettings()
     //Refresh the depth tape
     depthTape->setMaxDepth((int)controller->rov()->maxDepth);
 
-    qDebug() << "IP Video URL: " << controller->rov()->videoFeeds.first()->url();
-
     //Load the proper video channel
-    if(webCamViewer && controller->rov()->videoFeeds.first()->url().isValid())
+    if(webCamViewer && controller->rov()->videoFeed.url.isValid())
     {
-        webCamViewer->load(controller->rov()->videoFeeds.first()->url());
+        webCamViewer->load(controller->rov()->videoFeed.url);
         webCamViewer->show();
     }
     else
@@ -581,7 +579,7 @@ void MainWindow::loadData()
     //Display the data graphically
     depthPoints.append(-100*(getDepthSensor(*controller->rov()).value / controller->rov()->maxDepth));
     //voltagePoints.append(controller->rov()->sensorVoltage->getValue());
-    rPiCpuTempCPoints.append(controller->rov()->piData->tempC());
+    rPiCpuTempCPoints.append(controller->rov()->piData.tempC);
     //sensor0Points.append(controller->rov()->sensorOther0->getValue());
 
     int timeElapsed = graphTime->elapsed();

@@ -40,6 +40,7 @@ bool ConfigParser::parseRov(QROV& rov) const
     rov.relays.clear();
     rov.servos.clear();
     rov.sensors.clear();
+    rov.motors.clear();
 
     for(int i=0; i<jsonRelays.count(); i++)
     {

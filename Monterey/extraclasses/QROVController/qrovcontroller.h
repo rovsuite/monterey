@@ -21,7 +21,6 @@
 #include "../../extraclasses/QVectorDrive2/qvectordrive2.h"
 #include "../../extraclasses/QBoolMonitor/qboolmonitor.h"
 #include "../../extraclasses/DiveTimer/divetimer.h"
-#include "../../extraclasses/PiData/pidata.h"
 #include "../../extraclasses/UdpCapture/udpcapture.h"
 
 /* Settings area where the user can tweak monterey for their own personal

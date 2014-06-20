@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QSettings>
 #include <QLineEdit>
-#include "extraclasses/IpVideoFeed/ipvideofeed.h"
+#include "extraclasses/QROV/qrov.h"
 
 namespace Ui {
     class ROVSettings;
@@ -29,7 +29,7 @@ private slots:
 private:
     Ui::ROVSettings *ui;
     QSettings *mySettings;
-    QList<IpVideoFeed*> videoFeeds;
+    IpVideoFeed videoFeed;
     QList<QLineEdit*> relayNames;
 };
 

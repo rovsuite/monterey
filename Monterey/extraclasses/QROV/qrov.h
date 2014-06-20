@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QList>
+#include <QHostAddress>
+#include <QUrl>
 
 enum MotorLayout { vectorDrive, tankDrive };
 
@@ -53,30 +55,66 @@ struct QROVSensor
     }
 };
 
-class IpVideoFeed;
-class PiData;
+struct PiData
+{
+    double tempC;
+    int uptimeS;
+    QHostAddress ipAddress;
+    double usedMemory;
+    double usedCpu;
+
+    PiData(double tempC, int uptimeS, QHostAddress ip, double usedMem, double usedCpu)
+    {
+        this->tempC = tempC;
+        this->uptimeS = uptimeS;
+        this->ipAddress = ip;
+        this->usedMemory = usedMem;
+        this->usedCpu = usedCpu;
+    }
+
+    PiData()
+    {
+        PiData(0, 0, QHostAddress::LocalHost, 0, 0);
+    }
+};
+
+struct IpVideoFeed
+{
+    QString name;
+    QUrl url;
+    bool autoGenerate;
+
+    IpVideoFeed(QString name, QUrl url, bool autoGenerate)
+    {
+        this->name = name;
+        this->url = url;
+        this->autoGenerate = autoGenerate;
+    }
+
+    IpVideoFeed()
+    {
+        IpVideoFeed("", QUrl(""), false);
+    }
+};
 
 struct QROV
 {
     double version;
     double maxDepth;
     MotorLayout motorLayout;
-    QList<IpVideoFeed*> videoFeeds;
-    PiData *piData;
+    IpVideoFeed videoFeed;
+    PiData piData;
     QList<QROVMotor> motors;
     QList<QROVRelay> relays;
     QList<QROVServo> servos;
     QList<QROVSensor> sensors;
 
-    QROV(double v, IpVideoFeed *feed, PiData *pi,
+    QROV(double v, IpVideoFeed feed, PiData pi,
             int numMotors, int numRelays,
             int numServos, int numSensors, double maxDepth)
     {
         version = v;
-
-        videoFeeds.clear();
-        videoFeeds.append(feed);
-
+        videoFeed = feed;
         piData = pi;
 
         motors.clear();
@@ -100,7 +138,7 @@ struct QROV
 
     QROV()
     {
-        QROV(0, NULL, NULL, 0, 0, 0, 0, 100);
+        QROV(0, IpVideoFeed("main", QUrl("http://127.0.0.1"), false), PiData(), 0, 0, 0, 0, 100);
     }
 };
 
