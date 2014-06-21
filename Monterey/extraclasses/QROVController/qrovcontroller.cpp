@@ -15,7 +15,7 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     numberOfAxes = 0;
 
     //Parse the ROV configuration file
-    ConfigParser rovConfigParser("rovconfig.json", this);
+    ConfigParser rovConfigParser("rov.json", this);
     if(!rovConfigParser.parseRov(mRov))    //try to read the user-specified config
     {
         qWarning() << "Could not parse ROV configuration file.  Loading defaults.";

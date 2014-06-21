@@ -44,12 +44,18 @@ bool ConfigParser::parseRov(QROV& rov) const
 
     for(int i=0; i<jsonRelays.count(); i++)
     {
-        rov.relays.append(QROVRelay(jsonRelays[i].toString(), false));
+        if(!jsonRelays[i].toObject().contains("name"))
+            return false;
+
+        rov.relays.append(QROVRelay(jsonRelays[i].toObject()["name"].toString(), false));
     }
 
     for(int i=0; i<jsonServos.count(); i++)
     {
-        rov.servos.append(QROVServo(jsonServos[i].toString(), 0));
+        if(!jsonRelays[i].toObject().contains("name"))
+            return false;
+
+        rov.servos.append(QROVServo(jsonServos[i].toObject()["name"].toString(), 0));
     }
 
     for(int i=0; i<jsonSensors.count(); i++)
