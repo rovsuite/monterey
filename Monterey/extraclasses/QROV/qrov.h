@@ -169,4 +169,17 @@ inline QROVSensor getHeadingSensor(const QROV& rov)
     return QROVSensor("heading", "degrees", 0);
 }
 
+inline QROVSensor getVoltageSensor(const QROV& rov)
+{
+    foreach(QROVSensor sensor, rov.sensors)
+    {
+        if(sensor.name.toLower() == "voltage")
+        {
+            return sensor;
+        }
+    }
+
+    return QROVSensor("voltage", "volts", 0);
+}
+
 #endif // QROV_H

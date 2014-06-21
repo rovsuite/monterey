@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //Add the right amount of sensors
     sensorDisplays.clear();
     QVBoxLayout *verticalLayout = new QVBoxLayout(ui->groupBoxSensorReadouts);
-    foreach(QROVSensor sensor, controller->rov()->sensors)
+    foreach(QROVSensor sensor, controller->rov().sensors)
     {
         QHBoxLayout *hLayout = new QHBoxLayout(this);
         QLabel *labelName = new QLabel(this);
@@ -128,7 +128,6 @@ MainWindow::MainWindow(QWidget *parent) :
     graphTime->start();
     ui->plotDepth->addGraph();
     ui->plotRPiCpuTempC->addGraph();
-    ui->plotSensor0->addGraph();
     ui->plotVoltage->addGraph();
 
     //Setup the video feed display
@@ -272,9 +271,9 @@ void MainWindow::loadSettings()
     controller->loadSettings();
 
     //Load the relay names
-    for(int i=0; i<controller->rov()->relays.count(); i++)
+    for(int i=0; i<controller->rov().relays.count(); i++)
     {
-        relayButtons.at(i)->setText(controller->rov()->relays[i].name);
+        relayButtons.at(i)->setText(controller->rov().relays[i].name);
     }
 
     //Load the units
@@ -300,12 +299,12 @@ void MainWindow::loadSettings()
     activityMonitor->display("Settings loaded");
 
     //Refresh the depth tape
-    depthTape->setMaxDepth((int)controller->rov()->maxDepth);
+    depthTape->setMaxDepth((int)controller->rov().maxDepth);
 
     //Load the proper video channel
-    if(webCamViewer && controller->rov()->videoFeed.url.isValid())
+    if(webCamViewer && controller->rov().videoFeed.url.isValid())
     {
-        webCamViewer->load(controller->rov()->videoFeed.url);
+        webCamViewer->load(controller->rov().videoFeed.url);
         webCamViewer->show();
     }
     else
@@ -416,9 +415,6 @@ void MainWindow::setupCustomWidgets()
     rPiTitle.append("C");
     setStyleOnPlot(ui->plotRPiCpuTempC, rPiTitle);
 
-    //Sensor0 graph
-    //setStyleOnPlot(ui->plotSensor0, controller->rov()->sensorOther0->getName());  //TODO FIX
-
     QVector<QString> depthLabels;
     QVector<double> depthTicks;
     depthLabels << "0%" << "25%" << "50%" << "75%" << "max";
@@ -494,7 +490,7 @@ void MainWindow::checkForUpdates()
 
 void MainWindow::setupDepthTape()
 {
-    depthTape = new DepthTape((int)controller->rov()->maxDepth);
+    depthTape = new DepthTape((int)controller->rov().maxDepth);
     ui->gridLayoutHUD->addWidget(depthTape->container, 1,0,4,1);
 }
 
@@ -571,17 +567,12 @@ void MainWindow::onComPiChange(bool status)
 void MainWindow::loadData()
 {
     //Display the sensor values
-    for(int i=0; i<controller->rov()->sensors.count(); i++)
+    for(int i=0; i<controller->rov().sensors.count(); i++)
     {
-        sensorDisplays[i]->display(controller->rov()->sensors[i].value);
+        sensorDisplays[i]->display(controller->rov().sensors[i].value);
     }
 
     //Display the data graphically
-    depthPoints.append(-100*(getDepthSensor(*controller->rov()).value / controller->rov()->maxDepth));
-    //voltagePoints.append(controller->rov()->sensorVoltage->getValue());
-    rPiCpuTempCPoints.append(controller->rov()->piData.tempC);
-    //sensor0Points.append(controller->rov()->sensorOther0->getValue());
-
     int timeElapsed = graphTime->elapsed();
 
     auto loadGraphData = [this, timeElapsed]( QCustomPlot *plot, double dataPoint, bool autoAdjustYAxis, bool canBeNegative)
@@ -610,14 +601,12 @@ void MainWindow::loadData()
         plot->replot();
     };
 
-    //TODO FIX
-    loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
-    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
-    //loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
-    //loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
+    loadGraphData(ui->plotDepth, -100*(getDepthSensor(controller->rov()).value / controller->rov().maxDepth), false, true);
+    loadGraphData(ui->plotRPiCpuTempC, controller->rov().piData.tempC, true, false);
+    loadGraphData(ui->plotVoltage, getVoltageSensor(controller->rov()).value, true, false);
 
-    depthTape->onDepthChange(getDepthSensor(*controller->rov()).value, getDepthSensor(*controller->rov()).units);   //TODO: test
-    //compass->onHeadingChange(controller->rov()->sensorCompass->getValue());
+    depthTape->onDepthChange(getDepthSensor(controller->rov()).value, getDepthSensor(controller->rov()).units);   //TODO: test
+    compass->onHeadingChange(getHeadingSensor(controller->rov()).value);
 
     //Light up the indicators
     if(controller->getStatusTIBO() != statusLights.com->status())
@@ -642,7 +631,7 @@ void MainWindow::on_pbRelay_clicked()
     {
         if(controller->relayMappings[i].pushButton == sender())
         {
-            controller->rov()->relays[i].enabled = relayButtons.at(i)->isChecked();
+            controller->editRov().relays[i].enabled = relayButtons.at(i)->isChecked();
         }
     }
 }
@@ -654,7 +643,7 @@ void MainWindow::on_vsServo_valueChanged(int value)
     {
         if(controller->servoMappings[i].slider == sender())
         {
-            controller->rov()->servos[i].value = value;
+            controller->editRov().servos[i].value = value;
         }
     }
 }

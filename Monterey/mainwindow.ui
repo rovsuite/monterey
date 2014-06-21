@@ -163,16 +163,6 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QCustomPlot" name="plotSensor0" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="layoutWidget">

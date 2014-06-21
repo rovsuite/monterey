@@ -111,10 +111,6 @@ private:
     QList<QSlider*> servoSliders;
     QList<QLCDNumber*> sensorDisplays;
 
-    QVector<double> depthPoints;
-    QVector<double> voltagePoints;
-    QVector<double> rPiCpuTempCPoints;
-    QVector<double> sensor0Points;
     QTime *graphTime;
     DepthTape *depthTape;
     Compass *compass;

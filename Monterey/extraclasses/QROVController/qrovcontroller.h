@@ -130,7 +130,8 @@ signals:
 
 public slots:
 
-    QROV* rov() { return mRov; }
+    const QROV& rov() { return mRov; }
+    QROV& editRov() { return mRov; }
 
     //Joystick
     void rescanJoysticks(); //!< Reenumerate joysticks
@@ -210,7 +211,7 @@ private slots:
 private:
     QSettings *mySettings;
 
-    QROV *mRov;
+    QROV mRov;
 
     bool mValidity; //is the controller in a valid state
 

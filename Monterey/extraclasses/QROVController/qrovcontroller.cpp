@@ -12,17 +12,16 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     enteredGoodState = true;    //default to success
 
     numberOfAxes = 0;
-    mRov = new QROV();
 
     //Parse the ROV configuration file
     ConfigParser rovConfigParser("rovconfig.json", this);
-    if(!rovConfigParser.parseRov(*mRov))    //try to read the user-specified config
+    if(!rovConfigParser.parseRov(mRov))    //try to read the user-specified config
     {
         qWarning() << "Could not parse ROV configuration file.  Loading defaults.";
         //If loading the user specified ROV file failed, then try loading a default file
         rovConfigParser.setFile(":/default/rov.json");
         statusMessage = "Could not load ROV config. Loading defaults.";
-        if(!rovConfigParser.parseRov(*mRov))
+        if(!rovConfigParser.parseRov(mRov))
         {
 
             qCritical() << "Could not parse ROV configuration file, QUITTING";
@@ -61,12 +60,12 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
 
     initJoysticks();
 
-    foreach(QROVRelay r, rov()->relays)
+    foreach(QROVRelay r, mRov.relays)
     {
         relayMappings.append(RelayMapping());
     }
 
-    foreach(QROVServo s, rov()->servos)
+    foreach(QROVServo s, mRov.servos)
     {
         servoMappings.append(ServoMapping());
     }
@@ -193,8 +192,8 @@ void QROVController::processPacket(QString packet)
     QTextStream rxProcessing(&packet);
     double depth = 0;
 
-    rxProcessing >> mRov->version;
-    foreach(QROVSensor sensor, rov()->sensors)
+    rxProcessing >> mRov.version;
+    foreach(QROVSensor sensor, mRov.sensors)
     {
         rxProcessing >> sensor.value;
 
@@ -230,13 +229,13 @@ void QROVController::sendPacket()
     QByteArray txDatagram;
     QString txPacket;
 
-    for(int i=0; i<rov()->motors.count(); i++)
+    for(int i=0; i<mRov.motors.count(); i++)
     {
-        txPacket.append(QString::number(rov()->motors[i].value));
+        txPacket.append(QString::number(mRov.motors[i].value));
         txPacket.append(" ");
     }
 
-    foreach(QROVRelay r, rov()->relays)
+    foreach(QROVRelay r, mRov.relays)
     {
         if(r.enabled == true)
         {
@@ -250,7 +249,7 @@ void QROVController::sendPacket()
         txPacket.append(" ");
     }
 
-    foreach(QROVServo s, rov()->servos)
+    foreach(QROVServo s, mRov.servos)
     {
         txPacket.append(QString::number(s.value));
         txPacket.append(" ");
@@ -278,20 +277,20 @@ void QROVController::processPi(QString packet)
     QTextStream stream(&packet);
     stream >> tempC >> uptime >> usedMemoryPercentage >> usedCpuPercentage;
 
-    rov()->piData.tempC = tempC;
-    rov()->piData.uptimeS = (int)(uptime);
-    rov()->piData.ipAddress = piAddress;
-    rov()->piData.usedMemory = usedMemoryPercentage;
-    rov()->piData.usedCpu = usedCpuPercentage;
+    mRov.piData.tempC = tempC;
+    mRov.piData.uptimeS = (int)(uptime);
+    mRov.piData.ipAddress = piAddress;
+    mRov.piData.usedMemory = usedMemoryPercentage;
+    mRov.piData.usedCpu = usedCpuPercentage;
 
     mutex.unlock();
 }
 
 void QROVController::noJoystick()
 {
-    for(int i=0;i<rov()->motors.count();i++)
+    for(int i=0;i<mRov.motors.count();i++)
     {
-        rov()->motors[i].value = 1500; //set everything neutral
+        mRov.motors[i].value = 1500; //set everything neutral
     }
 }
 
@@ -350,12 +349,12 @@ void QROVController::loadSettings()
     myVectorDrive->initVector(MOTORMIN,MOTORMAX,joySettings.deadX,joySettings.deadY,joySettings.deadZ);
 
     //Video
-    IpVideoFeed videoFeed = rov()->videoFeed;
+    IpVideoFeed videoFeed = mRov.videoFeed;
     videoFeed.name = mySettings->value("videoFeeds/name", "Main").toString();
     videoFeed.url = mySettings->value("videoFeeds/url", "http://127.0.0.1:8080/javascript_simple.html").toUrl();
     videoFeed.autoGenerate = mySettings->value("videoFeeds/autoGenerate", true).toBool();
 
-    rov()->videoFeed = videoFeed;
+    mRov.videoFeed = videoFeed;
 
     mutex.unlock();
 }
@@ -365,9 +364,9 @@ void QROVController::saveSettings()
     QMutex mutex;
     mutex.lock();
     //Relay Names
-    for(int i=0; i<rov()->relays.count(); i++)
+    for(int i=0; i<mRov.relays.count(); i++)
     {
-        mySettings->setValue("names/relay" + QString::number(i), rov()->relays[i].name);
+        mySettings->setValue("names/relay" + QString::number(i), mRov.relays[i].name);
     }
 
     //Bilinear
@@ -401,9 +400,9 @@ void QROVController::saveSettings()
     }
 
     //Video
-    mySettings->setValue("videoFeeds/name", rov()->videoFeed.name);
-    mySettings->setValue("videoFeeds/url", rov()->videoFeed.url);
-    mySettings->setValue("videoFeeds/autoGenerate", rov()->videoFeed.autoGenerate);
+    mySettings->setValue("videoFeeds/name", mRov.videoFeed.name);
+    mySettings->setValue("videoFeeds/url", mRov.videoFeed.url);
+    mySettings->setValue("videoFeeds/autoGenerate", mRov.videoFeed.autoGenerate);
 
     mutex.unlock();
     emit savedSettings("Settings saved");
@@ -541,15 +540,15 @@ void QROVController::updateJoystickData()
     }
 
     //Execute vector math
-    if(rov()->motorLayout == vectorDrive)
+    if(mRov.motorLayout == vectorDrive)
     {
         myVectorDrive->vectorMath(joy->axis[joySettings.axisX],joy->axis[joySettings.axisY],joy->axis[joySettings.axisZ],joy->axis[joySettings.axisV],false);
 
-        if(rov()->motors.count() == 6)
+        if(mRov.motors.count() == 6)
         {
-            for(int i=0;i<rov()->motors.count();i++)    //retrieve vector values
+            for(int i=0;i<mRov.motors.count();i++)    //retrieve vector values
             {
-                rov()->motors[i].value = myVectorDrive->getVectorValue(i);
+                mRov.motors[i].value = myVectorDrive->getVectorValue(i);
             }
         }
 
@@ -565,15 +564,15 @@ void QROVController::updateJoystickData()
 
         joy->axis[joySettings.axisL] = joy->axis[joySettings.axisL] + 32768;
         double percentL = ((double)joy->axis[joySettings.axisL] / 65355.0);
-        rov()->motors[0].value = (int)((percentL * motorRange) + MOTORMIN);
+        mRov.motors[0].value = (int)((percentL * motorRange) + MOTORMIN);
 
         joy->axis[joySettings.axisR] = joy->axis[joySettings.axisR] + 32768;
         double percentR = ((double)joy->axis[joySettings.axisR] / 65355.0);
-        rov()->motors[1].value = (int)((percentR * motorRange) + MOTORMIN);
+        mRov.motors[1].value = (int)((percentR * motorRange) + MOTORMIN);
 
         joy->axis[joySettings.axisV] = joy->axis[joySettings.axisV] + 32768;
         double percentV = ((double)joy->axis[joySettings.axisV] / 65355.0);
-        rov()->motors[2].value = (int)((percentV * motorRange) + MOTORMIN);
+        mRov.motors[2].value = (int)((percentV * motorRange) + MOTORMIN);
 
     }
     mutex.unlock();

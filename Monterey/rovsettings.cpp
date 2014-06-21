@@ -24,7 +24,7 @@ ROVSettings::ROVSettings(QWidget *parent) :
     }
     ui->listJoysticks->item(0)->setSelected(true);
 
-   videoFeed = p->controller->rov()->videoFeed;
+   videoFeed = p->controller->rov().videoFeed;
    ui->ipVideoFeedSettings0->setIpVideoFeed(videoFeed);
    connect(ui->ipVideoFeedSettings0, SIGNAL(autoGenerateClicked(bool)), this, SLOT(onAutoGenerateVideoFeedUrlClicked(bool)));
 }
@@ -48,7 +48,7 @@ void ROVSettings::on_pbSave_clicked()
     p->controller->setBilinearEnabled(ui->cbBilinearEnabled->isChecked());
 
     videoFeed = ui->ipVideoFeedSettings0->getIpVideoFeed();
-    p->controller->rov()->videoFeed = videoFeed;
+    p->controller->editRov().videoFeed = videoFeed;
 
     //Save the settings
     p->controller->saveSettings();
@@ -65,8 +65,8 @@ void ROVSettings::onAutoGenerateVideoFeedUrlClicked(bool enabled)
     {
         QString url;
         url.append("http://");
-        if(!p->controller->rov()->piData.ipAddress.isNull())
-            url.append(p->controller->rov()->piData.ipAddress.toString());
+        if(!p->controller->rov().piData.ipAddress.isNull())
+            url.append(p->controller->rov().piData.ipAddress.toString());
         else
             url.append("127.0.0.1");
         url.append(":8080/javascript_simple.html");
@@ -76,6 +76,6 @@ void ROVSettings::onAutoGenerateVideoFeedUrlClicked(bool enabled)
     else
     {
         ui->ipVideoFeedSettings0->enableUrlEditing();
-        ui->ipVideoFeedSettings0->setUrl(p->controller->rov()->videoFeed.url.toString());
+        ui->ipVideoFeedSettings0->setUrl(p->controller->rov().videoFeed.url.toString());
     }
 }
