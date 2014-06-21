@@ -2,6 +2,7 @@
 #include "extraclasses/ConfigParser/configparser.h"
 #include <QDebug>
 #include <QJsonObject>
+#include <QDir>
 #include "extraclasses/QROV/qrov.h"
 
 QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent) :
@@ -15,7 +16,9 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     numberOfAxes = 0;
 
     //Parse the ROV configuration file
-    ConfigParser rovConfigParser("rov.json", this);
+    QDir dir;
+    QString filePath = dir.absoluteFilePath("rov.json");
+    ConfigParser rovConfigParser(filePath, this);
     if(!rovConfigParser.parseRov(mRov))    //try to read the user-specified config
     {
         qWarning() << "Could not parse ROV configuration file.  Loading defaults.";
@@ -36,7 +39,7 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     }
     else
     {
-        statusMessage = "Loaded ROV configuration.";
+        statusMessage = QString("Loaded ROV configuration: %1").arg(filePath);
     }
 
     joy = new QJoystick();
