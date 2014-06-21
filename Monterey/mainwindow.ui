@@ -40,7 +40,6 @@
            <widget class="QLabel" name="label_11">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
@@ -53,7 +52,6 @@
            <widget class="QLabel" name="labCurrentTime">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
@@ -66,7 +64,6 @@
            <widget class="QLabel" name="label_13">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
@@ -79,7 +76,6 @@
            <widget class="QLabel" name="labDiveTime">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
