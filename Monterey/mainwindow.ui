@@ -355,6 +355,10 @@
     <addaction name="actionRescan_Joysticks"/>
     <addaction name="separator"/>
     <addaction name="actionDive_Timer_Reset"/>
+    <addaction name="separator"/>
+    <addaction name="actionEnable_Dive_Logging"/>
+    <addaction name="actionSave_Dive_Log"/>
+    <addaction name="actionClear_Dive_Log"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -448,6 +452,27 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionSave_Dive_Log">
+   <property name="text">
+    <string>Save Dive Log</string>
+   </property>
+  </action>
+  <action name="actionEnable_Dive_Logging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Enable Dive Logging</string>
+   </property>
+  </action>
+  <action name="actionClear_Dive_Log">
+   <property name="text">
+    <string>Clear Dive Log</string>
    </property>
   </action>
  </widget>

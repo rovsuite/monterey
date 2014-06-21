@@ -60,6 +60,9 @@ public slots:
 
     void appendToActivityMonitor(QString message);
 
+    void saveRovLogFile();
+    void clearLog();
+
 private slots:
     //Buttons
     void on_pbRelay_clicked();

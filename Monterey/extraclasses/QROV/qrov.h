@@ -5,6 +5,10 @@
 #include <QList>
 #include <QHostAddress>
 #include <QUrl>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QDateTime>
 
 enum MotorLayout { vectorDrive, tankDrive };
 
@@ -101,6 +105,7 @@ struct QROV
 {
     double version;
     double maxDepth;
+    qint64 msSinceEpoch;
     MotorLayout motorLayout;
     IpVideoFeed videoFeed;
     PiData piData;
@@ -116,6 +121,7 @@ struct QROV
         version = v;
         videoFeed = feed;
         piData = pi;
+        msSinceEpoch = QDateTime::currentMSecsSinceEpoch();
 
         motors.clear();
         for(int i=0; i<numMotors; i++)
@@ -141,6 +147,8 @@ struct QROV
         QROV(0, IpVideoFeed("main", QUrl("http://127.0.0.1"), false), PiData(), 0, 0, 0, 0, 100);
     }
 };
+
+//QROV helper functions
 
 inline QROVSensor getDepthSensor(const QROV& rov)
 {
@@ -180,6 +188,88 @@ inline QROVSensor getVoltageSensor(const QROV& rov)
     }
 
     return QROVSensor("voltage", "volts", 0);
+}
+
+inline QJsonObject getPiDataAsJsonObject(const PiData& data)
+{
+    QJsonObject object;
+    object["tempC"] = data.tempC;
+    object["uptimeS"] = data.uptimeS;
+    object["ipAddress"] = data.ipAddress.toString();
+    object["usedMemory"] = data.usedMemory;
+    object["usedCpu"] = data.usedCpu;
+
+    return object;
+}
+
+inline QJsonObject getIpVideoFeedAsJsonObject(const IpVideoFeed& feed)
+{
+    QJsonObject object;
+    object["name"] = feed.name;
+    object["url"] = feed.url.toString();
+    object["autoGenerate"] = feed.autoGenerate;
+
+    return object;
+}
+
+//Return the ROV as a JSON object for easy saving
+inline QJsonObject getRovAsJsonObject(const QROV& rov)
+{
+    QJsonObject object;
+
+    QJsonArray motorArray;
+    foreach(QROVMotor motor, rov.motors)
+    {
+        QJsonObject motorObject;
+        motorObject["value"] = motor.value;
+
+        motorArray.append(motorObject);
+    }
+    object["motors"] = motorArray;
+
+    QJsonArray relayArray;
+    foreach(QROVRelay relay, rov.relays)
+    {
+        QJsonObject relayObject;
+        relayObject["name"] = relay.name;
+        relayObject["enabled"] = relay.enabled;
+
+        relayArray.append(relayObject);
+    }
+    object["relays"] = relayArray;
+
+    QJsonArray servoArray;
+    foreach(QROVServo servo, rov.servos)
+    {
+        QJsonObject servoObject;
+        servoObject["name"] = servo.name;
+        servoObject["value"] = servo.value;
+
+        servoArray.append(servoObject);
+    }
+    object["servos"] = servoArray;
+
+    QJsonArray sensorArray;
+    foreach(QROVSensor sensor, rov.sensors)
+    {
+        QJsonObject sensorObject;
+        sensorObject["name"] = sensor.name;
+        sensorObject["units"] = sensor.units;
+        sensorObject["value"] = sensor.value;
+
+        sensorArray.append(sensorObject);
+    }
+    object["sensors"] = sensorArray;
+
+    object["version"] = rov.version;
+    object["maxDepth"] = rov.maxDepth;
+    object["motorLayout"] = rov.motorLayout;
+    object["msSinceEpoch"] = rov.msSinceEpoch;
+
+    object["videoFeed"] = getIpVideoFeedAsJsonObject(rov.videoFeed);
+    object["piData"] = getPiDataAsJsonObject(rov.piData);
+
+    return object;
 }
 
 #endif // QROV_H

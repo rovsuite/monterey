@@ -1,6 +1,7 @@
 #include "qrovcontroller.h"
 #include "extraclasses/ConfigParser/configparser.h"
 #include <QDebug>
+#include <QJsonObject>
 #include "extraclasses/QROV/qrov.h"
 
 QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent) :
@@ -91,6 +92,73 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     packetTimer->start();
     mutex.unlock();
     qDebug() << "Controller finished setup!";
+}
+
+QROVController::~QROVController()
+{
+    saveSettings();
+
+    delete monitorJoystick;
+    delete mySettings;
+    delete captureRx;
+    delete capturePi;
+    delete txSocket;
+    delete joy;
+    delete diveTimer;
+    delete packetTimer;
+    delete myVectorDrive;
+}
+
+bool QROVController::saveRovLog(const QString &filename)
+{
+    QFile file(filename);
+    file.open(QIODevice::WriteOnly);
+    QString message;
+    if(file.isOpen())
+    {
+        message = "Opened log file: %1";
+        message = message.arg(filename);
+        emit appendToActivityMonitor(message);
+        QJsonArray rovArray;
+        while(!rovHistory.isEmpty())
+        {
+            rovArray.append(getRovAsJsonObject(rovHistory.front()));
+            rovHistory.pop_front();
+        }
+
+        QJsonDocument doc(rovArray);
+        QTextStream out(&file);
+
+        out << doc.toJson();
+        file.close();
+
+        if(out.status() != QTextStream::WriteFailed)
+        {
+            message = "Saved log file: %1";
+            message = message.arg(filename);
+            emit appendToActivityMonitor(message);
+            return true;
+        }
+    }
+
+    message = "Failed to save log: %1\nError: %2";
+    message = message.arg(filename, file.errorString());
+
+    //If the saving failed
+    emit appendToActivityMonitor(message);
+    return false;
+}
+
+void QROVController::enableLogging(bool enable)
+{
+    mLoggingEnabled = enable;
+    emit appendToActivityMonitor(QString("Dive logging ") + (enable ? "enabled" : "disabled"));
+}
+
+void QROVController::clearLog()
+{
+    rovHistory.clear();
+    emit appendToActivityMonitor("Dive log cleared");
 }
 
 void QROVController::initJoysticks()
@@ -259,6 +327,9 @@ void QROVController::sendPacket()
 
     txSocket->writeDatagram(txDatagram.data(), txDatagram.size(), QHostAddress::Broadcast, TOBIPORT);
 
+    mRov.msSinceEpoch = QDateTime::currentMSecsSinceEpoch(); //timestamp the ROV state
+    logRovState();
+
     emit sentPacket(txPacket);
     mutex.unlock();
 }
@@ -353,8 +424,10 @@ void QROVController::loadSettings()
     videoFeed.name = mySettings->value("videoFeeds/name", "Main").toString();
     videoFeed.url = mySettings->value("videoFeeds/url", "http://127.0.0.1:8080/javascript_simple.html").toUrl();
     videoFeed.autoGenerate = mySettings->value("videoFeeds/autoGenerate", true).toBool();
-
     mRov.videoFeed = videoFeed;
+
+    //Logging
+    mLoggingEnabled = mySettings->value("logging/history/enabled", true).toBool();
 
     mutex.unlock();
 }
@@ -403,6 +476,9 @@ void QROVController::saveSettings()
     mySettings->setValue("videoFeeds/name", mRov.videoFeed.name);
     mySettings->setValue("videoFeeds/url", mRov.videoFeed.url);
     mySettings->setValue("videoFeeds/autoGenerate", mRov.videoFeed.autoGenerate);
+
+    //Logging
+    mySettings->setValue("logging/history/enabled", mLoggingEnabled);
 
     mutex.unlock();
     emit savedSettings("Settings saved");
@@ -597,4 +673,12 @@ void QROVController::setValidity(bool state)
 bool QROVController::getValidity() const
 {
    return mValidity;
+}
+
+void QROVController::logRovState()
+{
+    if(isLoggingEnabled())
+    {
+        rovHistory.push_back(mRov);
+    }
 }

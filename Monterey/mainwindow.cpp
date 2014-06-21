@@ -11,6 +11,7 @@
 #include <QSlider>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -59,6 +60,9 @@ MainWindow::MainWindow(QWidget *parent) :
        qCritical() << "ROVController unable to start, QUITTING";
         exit(-2);
    }
+
+   //Load the current logging state
+   ui->actionEnable_Dive_Logging->setChecked(controller->isLoggingEnabled());
 
     //Add the right amount of relay buttons
     for(int i=0; i<controller->relayMappings.count(); i++)
@@ -167,6 +171,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
     connect(ui->actionCheck_for_Updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
     connect(ui->actionFullscreen, SIGNAL(toggled(bool)), this, SLOT(showFullscreen(bool)));
+    connect(ui->actionSave_Dive_Log, SIGNAL(triggered()), this, SLOT(saveRovLogFile()));
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), controller, SLOT(enableLogging(bool)));
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), ui->actionClear_Dive_Log, SLOT(setEnabled(bool)));
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), ui->actionSave_Dive_Log, SLOT(setEnabled(bool)));
+    connect(ui->actionClear_Dive_Log, SIGNAL(triggered()), this, SLOT(clearLog()));
     connect(controller, SIGNAL(comTiboChanged(bool)), this, SLOT(onComTiboChanged(bool)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
     connect(controller, SIGNAL(comPiChanged(bool)), this, SLOT(onComPiChange(bool)));
@@ -204,6 +213,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     mySettings->setValue("splitterStateHorizontal", ui->splitterHorizontal->saveState());
     mySettings->setValue("splitterStateVertical", ui->splitterVertical->saveState());
     mySettings->endGroup();
+    event->accept();
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
@@ -275,25 +285,6 @@ void MainWindow::loadSettings()
     {
         relayButtons.at(i)->setText(controller->rov().relays[i].name);
     }
-
-    //Load the units
-    /*
-    QCPPlotTitle *title = 0;
-    title = qobject_cast<QCPPlotTitle*>(ui->plotSensor0->plotLayout()->element(0,0));
-    if(title != 0)
-    {
-        QCPPlotTitle *newTitle = new QCPPlotTitle(ui->plotSensor0);
-        newTitle->setText(controller->rov->sensorOther0->getName());
-        newTitle->setFont(title->font());
-        newTitle->setTextColor(title->textColor());
-        ui->plotSensor0->plotLayout()->remove(title);
-        ui->plotSensor0->plotLayout()->addElement(0,0,newTitle);
-        ui->plotSensor0->replot();  //refreshes the title
-    }
-    else
-        qWarning() << "No QCPPlotTitle on " << ui->plotSensor0;
-    */
-
 
     //Display loading in activity monitor
     activityMonitor->display("Settings loaded");
@@ -459,6 +450,27 @@ void MainWindow::appendToActivityMonitor(QString message)
     else
     {
         qWarning() << "No activityMonitor object!";
+    }
+}
+
+void MainWindow::saveRovLogFile()
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Save Dive Log", QDir::homePath(), "JSON (*.json)");
+    controller->saveRovLog(filename);
+}
+
+void MainWindow::clearLog()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Clear the dive log?");
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setInformativeText("All recorded data will be lost!");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+    if(ret == QMessageBox::Yes)
+    {
+        controller->clearLog();
     }
 }
 

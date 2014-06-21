@@ -16,6 +16,7 @@
 #include <QMutex>
 #include <QPushButton>
 #include <QSlider>
+#include <QQueue>
 #include "qrov.h"
 #include "qjoystick.h"
 #include "../../extraclasses/QVectorDrive2/qvectordrive2.h"
@@ -54,6 +55,7 @@ class QROVController : public QObject
     Q_OBJECT
 public:
     explicit QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent = 0);
+    ~QROVController();
 
     QList<int> joystickAxesValues;
     QBoolMonitor *monitorJoystick;
@@ -130,8 +132,15 @@ signals:
 
 public slots:
 
-    const QROV& rov() { return mRov; }
+    const QROV& rov() const { return mRov; }
     QROV& editRov() { return mRov; }
+
+    //ROV Log functions
+    bool saveRovLog(const QString& filename);
+    bool isLoggingEnabled() const { return mLoggingEnabled; }
+    void enableLogging(bool enable);
+    void clearLog();
+    bool logHasItems() { return !rovHistory.empty(); }
 
     //Joystick
     void rescanJoysticks(); //!< Reenumerate joysticks
@@ -181,7 +190,6 @@ public slots:
     void loadSettings();    //!< Force a loading of the settings
     void saveSettings();    //!< Force a saving of the settings
 
-
     //Dive timer
     void diveTimeReset();   //!< Reset the dive timer
     QString diveTimeString(); //!< Convert the milliseconds to minutes and hours and display in the gui
@@ -191,6 +199,8 @@ private slots:
 
     void setValidity(bool state);
     bool getValidity() const;
+
+    void logRovState(); //Save ROV state for writting to a log later
 
     //Joystick
     void initJoysticks();   //!< Initialize joystick systems
@@ -211,7 +221,10 @@ private slots:
 private:
     QSettings *mySettings;
 
+    //ROV State and logging
     QROV mRov;
+    QQueue<QROV> rovHistory;
+    bool mLoggingEnabled;
 
     bool mValidity; //is the controller in a valid state
 
