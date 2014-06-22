@@ -1,4 +1,4 @@
-Welcome to Monterey version 3.0.0!
+Welcome to Monterey version 4.0!
 
 Monterey is a FOSS ROV controller that is one of the modules of ROV-suite (http://github.com/rovsuite).  It is written to be simple to use and easy to modify.  After all, not everyone's ROV will have only 3 relays, 2 servos and 5 sensors.  Two main motor layouts are supported by default to give you, the user, support for both vector drive and tank drive configurations.  For controlling the ROV, a wide variety of joysticks are supported through the SDL library (www.libsdl.org).    My goal is to give you the best possible ROV controller for your ROV.
 

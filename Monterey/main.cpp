@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QApplication::setApplicationName("Monterey");
-    QApplication::setApplicationVersion("3.0");
+    QApplication::setApplicationVersion(VERSION);
     QApplication::setOrganizationName("ROV-Suite");
 
     a.setStyle(QStyleFactory::create("Fusion"));

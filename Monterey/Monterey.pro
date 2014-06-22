@@ -9,8 +9,10 @@ QT       += core gui network svg widgets quick webkit
 CONFIG += c++11
 
 TARGET = Monterey
-VERSION = 3.0
+VERSION = 4.0
 TEMPLATE = app
+
+DEFINES += VERSION=\\\"$$VERSION\\\"
 
 SOURCES += main.cpp\
         mainwindow.cpp \
