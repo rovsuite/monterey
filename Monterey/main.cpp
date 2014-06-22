@@ -2,8 +2,11 @@
 #include <QStyleFactory>
 #include "mainwindow.h"
 #include "extraclasses/Fervor/fvupdater.h"
+#include "extraclasses/QROVController/qrovcontroller.h"
 
 #undef main
+
+typedef QROVController::MsgType MsgType;
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +40,9 @@ int main(int argc, char *argv[])
 
     FvUpdater::sharedUpdater()->SetFeedURL("https://dl.dropboxusercontent.com/u/4649414/ROV-Suite/Appcast.xml");
     FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
+
+    qRegisterMetaType<MsgType>("MsgType");
+
     MainWindow w;
     w.show();
 

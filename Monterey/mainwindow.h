@@ -35,6 +35,8 @@ namespace Ui {
     class MainWindow;
 }
 
+typedef QROVController::MsgType MsgType;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -58,7 +60,7 @@ public slots:
 
     void onCalledServoChange(int id, int direction);
 
-    void appendToActivityMonitor(QString message);
+    void appendToActivityMonitor(QString message, MsgType type);
 
     void saveRovLogFile();
     void clearLog();

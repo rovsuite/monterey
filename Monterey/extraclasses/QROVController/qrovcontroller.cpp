@@ -121,7 +121,7 @@ bool QROVController::saveRovLog(const QString &filename)
     {
         message = "Opened log file: %1";
         message = message.arg(filename);
-        emit appendToActivityMonitor(message);
+        emit appendToActivityMonitor(message, MsgType::Info);
         QJsonArray rovArray;
         while(!rovHistory.isEmpty())
         {
@@ -139,7 +139,7 @@ bool QROVController::saveRovLog(const QString &filename)
         {
             message = "Saved log file: %1";
             message = message.arg(filename);
-            emit appendToActivityMonitor(message);
+            emit appendToActivityMonitor(message, MsgType::Good);
             return true;
         }
     }
@@ -148,20 +148,20 @@ bool QROVController::saveRovLog(const QString &filename)
     message = message.arg(filename, file.errorString());
 
     //If the saving failed
-    emit appendToActivityMonitor(message);
+    emit appendToActivityMonitor(message, MsgType::Bad);
     return false;
 }
 
 void QROVController::enableLogging(bool enable)
 {
     mLoggingEnabled = enable;
-    emit appendToActivityMonitor(QString("Dive logging ") + (enable ? "enabled" : "disabled"));
+    emit appendToActivityMonitor(QString("Dive logging ") + (enable ? "enabled" : "disabled"), (enable ? MsgType::Good : MsgType::Bad));
 }
 
 void QROVController::clearLog()
 {
     rovHistory.clear();
-    emit appendToActivityMonitor("Dive log cleared");
+    emit appendToActivityMonitor("Dive log cleared", MsgType::Warn);
 }
 
 void QROVController::initJoysticks()
@@ -484,7 +484,7 @@ void QROVController::saveSettings()
     mySettings->setValue("logging/history/enabled", mLoggingEnabled);
 
     mutex.unlock();
-    emit savedSettings("Settings saved");
+    emit savedSettings("Settings saved", MsgType::Good);
 }
 
 void QROVController::joystickButtonClicked(int buttonID)
@@ -660,7 +660,7 @@ void QROVController::updateJoystickData()
 void QROVController::diveTimeReset()
 {
     diveTimer->reset();
-    emit appendToActivityMonitor("Dive timer reset");
+    emit appendToActivityMonitor("Dive timer reset", MsgType::Warn);
 }
 
 QString QROVController::diveTimeString()

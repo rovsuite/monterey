@@ -8,6 +8,11 @@
 #include <QTextEdit>
 #include <QTime>
 #include <QtDebug>
+#include <QMap>
+#include <QColor>
+#include "../QROVController/qrovcontroller.h"
+
+typedef QROVController::MsgType MsgType;
 
 class QActivityMonitor : public QObject
 {
@@ -18,15 +23,17 @@ public:
 signals:
 
 public slots:
-    void display(QString message);
+    void display(QString message, MsgType type);
     void clear();
     void setTextEdit(QTextEdit* textEdit);
     void setAutoscroll(bool enabled);
+    void setColors(QColor info, QColor good, QColor warn, QColor bad);
 
 private:
     bool autoscroll;
     QTextEdit* activityDisplay;
     QTime time;
+    QMap<MsgType, QColor> mColorMap;
 
 };
 

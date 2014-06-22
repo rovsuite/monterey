@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "extraclasses/Fervor/fvupdater.h"
+#include "extraclasses/QActivityMonitor/qactivitymonitor.h"
 #include <QtWebKit>
 #include <QWebView>
 #include <QPalette>
@@ -49,11 +50,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Setup the activity monitor
     activityMonitor = new QActivityMonitor(ui->teLog);
-    activityMonitor->display("Monterey started...");
+    activityMonitor->display("Monterey started...", MsgType::Info);
     QString versionDisp("Version: ");
     versionDisp.append(version);
-    activityMonitor->display(versionDisp);
-    activityMonitor->display(statusMessage);
+    activityMonitor->display(versionDisp, MsgType::Info);
+    activityMonitor->display(statusMessage, (rovControllerReady ? MsgType::Good : MsgType::Bad));
 
    if(!rovControllerReady)
    {
@@ -153,12 +154,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if(controller->isJoyAttached())
     {
-        activityMonitor->display("Joystick attached");
+        activityMonitor->display("Joystick attached", MsgType::Good);
         statusLights.joystick->setStatus(true);
     }
     else
     {
-        activityMonitor->display("Joystick not attached");
+        activityMonitor->display("Joystick not attached", MsgType::Bad);
         statusLights.joystick->setStatus(false);
     }
 
@@ -179,10 +180,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller, SIGNAL(comTiboChanged(bool)), this, SLOT(onComTiboChanged(bool)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
     connect(controller, SIGNAL(comPiChanged(bool)), this, SLOT(onComPiChange(bool)));
-    connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
+    connect(controller, SIGNAL(savedSettings(QString, MsgType)), activityMonitor, SLOT(display(QString, MsgType)));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
     connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
-    connect(controller, SIGNAL(appendToActivityMonitor(QString)), this, SLOT(appendToActivityMonitor(QString)));
+    connect(controller, SIGNAL(appendToActivityMonitor(QString, MsgType)), this, SLOT(appendToActivityMonitor(QString, MsgType)));
     connect(ui->zoomSlider, SIGNAL(sliderMoved(int)), this, SLOT(zoomTheCameraFeed(int)));
 
     //Connect the relay buttons to the relay handling function
@@ -287,7 +288,7 @@ void MainWindow::loadSettings()
     }
 
     //Display loading in activity monitor
-    activityMonitor->display("Settings loaded");
+    activityMonitor->display("Settings loaded", MsgType::Good);
 
     //Refresh the depth tape
     depthTape->setMaxDepth((int)controller->rov().maxDepth);
@@ -441,11 +442,11 @@ void MainWindow::onCalledServoChange(int id, int direction)
     }
 }
 
-void MainWindow::appendToActivityMonitor(QString message)
+void MainWindow::appendToActivityMonitor(QString message, MsgType type)
 {
     if(activityMonitor)
     {
-        activityMonitor->display(message);
+        activityMonitor->display(message, type);
     }
     else
     {
@@ -485,12 +486,12 @@ void MainWindow::lostJoystick()
 {
     if(controller->isJoyAttached())
     {
-        activityMonitor->display("Joystick attached");
+        activityMonitor->display("Joystick attached", MsgType::Good);
         statusLights.joystick->setStatus(true);
     }
     else
     {
-        activityMonitor->display("Joystick detached");
+        activityMonitor->display("Joystick detached", MsgType::Warn);
         statusLights.joystick->setStatus(false);
     }
 }
@@ -556,11 +557,11 @@ void MainWindow::onComTiboChanged(bool status)
 {
     if(status)
     {
-        activityMonitor->display("Gained TIBO");
+        activityMonitor->display("Gained TIBO", MsgType::Good);
     }
     else
     {
-        activityMonitor->display("Lost TIBO");
+        activityMonitor->display("Lost TIBO", MsgType::Bad);
     }
 }
 
@@ -568,11 +569,11 @@ void MainWindow::onComPiChange(bool status)
 {
     if(status)
     {
-        activityMonitor->display("Gained Raspberry Pi COM");
+        activityMonitor->display("Gained Raspberry Pi COM", MsgType::Good);
     }
     else
     {
-        activityMonitor->display("Lost Raspberry Pi COM");
+        activityMonitor->display("Lost Raspberry Pi COM", MsgType::Bad);
     }
 }
 

@@ -57,6 +57,8 @@ public:
     explicit QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent = 0);
     ~QROVController();
 
+    enum MsgType { Info, Good, Warn, Bad };
+
     QList<int> joystickAxesValues;
     QBoolMonitor *monitorJoystick;
 
@@ -125,10 +127,10 @@ signals:
     //Misc UI Interactions
     void clickRelayButton(QPushButton * pb);
     void changeServo(int id, int direction);
-    void appendToActivityMonitor(QString message);
+    void appendToActivityMonitor(QString message, MsgType type);
 
     //Misc
-    void savedSettings(QString message);
+    void savedSettings(QString message, MsgType type);
 
 public slots:
 
