@@ -115,5 +115,5 @@ void DepthTape::initializeTicks(int maxDepth)
     lastChange = 0;
     lastDepth = 0;
     refreshPalette();
-    viewer->show();
+    //viewer->show();
 }

@@ -2,7 +2,7 @@
 #define IPVIDEOFEEDSETTINGSWIDGET_H
 
 #include <QWidget>
-#include "extraclasses/QROV/qrov.h"
+#include "../../extraclasses/QROV/qrov.h"
 
 namespace Ui {
 class IpVideoFeedSettingsWidget;

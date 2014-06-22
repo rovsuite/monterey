@@ -1,9 +1,9 @@
 #include "qrovcontroller.h"
-#include "extraclasses/ConfigParser/configparser.h"
+#include "../../extraclasses/ConfigParser/configparser.h"
 #include <QDebug>
 #include <QJsonObject>
 #include <QDir>
-#include "extraclasses/QROV/qrov.h"
+#include "../../extraclasses/QROV/qrov.h"
 
 QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent) :
     QObject(parent)
