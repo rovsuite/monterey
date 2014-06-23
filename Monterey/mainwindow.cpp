@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "extraclasses/Fervor/fvupdater.h"
+#include "extraclasses/QActivityMonitor/qactivitymonitor.h"
 #include <QtWebKit>
 #include <QWebView>
 #include <QPalette>
@@ -9,6 +10,9 @@
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QSlider>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -35,13 +39,31 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLights.com = 0;
     statusLights.joystick = 0;
     statusLights.rPi = 0;
-    statusLights.tahoe = 0;
 
     //ROV control engine
-    controller = new QROVController();
+    bool rovControllerReady = false;
+    QString statusMessage = "";
+    controller = new QROVController(rovControllerReady, statusMessage);
     engineThread = new QThread(this); //create a second thread
     controller->moveToThread(engineThread); //move the QROVController engine to the second thread
     engineThread->start();
+
+    //Setup the activity monitor
+    activityMonitor = new QActivityMonitor(ui->teLog);
+    activityMonitor->display("Monterey started...", MsgType::Info);
+    QString versionDisp("Version: ");
+    versionDisp.append(version);
+    activityMonitor->display(versionDisp, MsgType::Info);
+    activityMonitor->display(statusMessage, (rovControllerReady ? MsgType::Good : MsgType::Bad));
+
+   if(!rovControllerReady)
+   {
+       qCritical() << "ROVController unable to start, QUITTING";
+        exit(-2);
+   }
+
+   //Load the current logging state
+   ui->actionEnable_Dive_Logging->setChecked(controller->isLoggingEnabled());
 
     //Add the right amount of relay buttons
     for(int i=0; i<controller->relayMappings.count(); i++)
@@ -82,12 +104,35 @@ MainWindow::MainWindow(QWidget *parent) :
         controller->servoMappings[i].slider = slider;
     }
 
+    //Add the right amount of sensors
+    sensorDisplays.clear();
+    QVBoxLayout *verticalLayout = new QVBoxLayout(ui->groupBoxSensorReadouts);
+    foreach(QROVSensor sensor, controller->rov().sensors)
+    {
+        QHBoxLayout *hLayout = new QHBoxLayout(this);
+        QLabel *labelName = new QLabel(this);
+        labelName->setText(sensor.name + ":");
+        labelName->setAlignment(Qt::AlignRight);
+        QLCDNumber *lcd = new QLCDNumber(this);
+        lcd->display(sensor.value);
+        lcd->setSegmentStyle(QLCDNumber::Flat);
+        sensorDisplays.append(lcd);
+        QLabel *labelUnits = new QLabel(this);
+        labelUnits->setText(sensor.units);
+        labelUnits->setAlignment(Qt::AlignLeft);
+        hLayout->addWidget(labelName);
+        hLayout->addWidget(lcd);
+        hLayout->addWidget(labelUnits);
+        hLayout->setAlignment(hLayout, Qt::AlignHCenter);
+        verticalLayout->addLayout(hLayout);
+    }
+    ui->groupBoxSensorReadouts->setLayout(verticalLayout);
+
     //Timer for updating the graph
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
     ui->plotRPiCpuTempC->addGraph();
-    ui->plotSensor0->addGraph();
     ui->plotVoltage->addGraph();
 
     //Setup the video feed display
@@ -109,12 +154,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if(controller->isJoyAttached())
     {
-        activityMonitor->display("Joystick attached");
+        activityMonitor->display("Joystick attached", MsgType::Good);
         statusLights.joystick->setStatus(true);
     }
     else
     {
-        activityMonitor->display("Joystick not attached");
+        activityMonitor->display("Joystick not attached", MsgType::Bad);
         statusLights.joystick->setStatus(false);
     }
 
@@ -127,15 +172,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
     connect(ui->actionCheck_for_Updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
     connect(ui->actionFullscreen, SIGNAL(toggled(bool)), this, SLOT(showFullscreen(bool)));
+    connect(ui->actionSave_Dive_Log, SIGNAL(triggered()), this, SLOT(saveRovLogFile()));
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), controller, SLOT(enableLogging(bool)));
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), ui->actionClear_Dive_Log, SLOT(setEnabled(bool)));
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), ui->actionSave_Dive_Log, SLOT(setEnabled(bool)));
+    connect(ui->actionClear_Dive_Log, SIGNAL(triggered()), this, SLOT(clearLog()));
     connect(controller, SIGNAL(comTiboChanged(bool)), this, SLOT(onComTiboChanged(bool)));
     connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
-    connect(controller, SIGNAL(comTahoeChanged(bool)), this, SLOT(onComTahoeChanged(bool)));
     connect(controller, SIGNAL(comPiChanged(bool)), this, SLOT(onComPiChange(bool)));
-    connect(controller, SIGNAL(savedSettings(QString)), activityMonitor, SLOT(display(QString)));
-    connect(controller, SIGNAL(onTahoeProcessed()), this, SLOT(displayTahoe()));
+    connect(controller, SIGNAL(savedSettings(QString, MsgType)), activityMonitor, SLOT(display(QString, MsgType)));
     connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
     connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
-    connect(controller, SIGNAL(appendToActivityMonitor(QString)), this, SLOT(appendToActivityMonitor(QString)));
+    connect(controller, SIGNAL(appendToActivityMonitor(QString, MsgType)), this, SLOT(appendToActivityMonitor(QString, MsgType)));
     connect(ui->zoomSlider, SIGNAL(sliderMoved(int)), this, SLOT(zoomTheCameraFeed(int)));
 
     //Connect the relay buttons to the relay handling function
@@ -166,6 +214,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     mySettings->setValue("splitterStateHorizontal", ui->splitterHorizontal->saveState());
     mySettings->setValue("splitterStateVertical", ui->splitterVertical->saveState());
     mySettings->endGroup();
+    event->accept();
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
@@ -233,46 +282,21 @@ void MainWindow::loadSettings()
     controller->loadSettings();
 
     //Load the relay names
-    for(int i=0; i<controller->rov->listRelays.count(); i++)
+    for(int i=0; i<controller->rov().relays.count(); i++)
     {
-        relayButtons.at(i)->setText(controller->rov->listRelays[i]->getName());
+        relayButtons.at(i)->setText(controller->rov().relays[i].name);
     }
-
-    //Load the units
-    ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
-    ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
-    ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
-
-    //Load the sensor names
-    ui->labSensor0->setText(controller->rov->sensorOther0->getName() + ":");
-    ui->labSensor1->setText(controller->rov->sensorOther1->getName() + ":");
-    QCPPlotTitle *title = 0;
-    title = qobject_cast<QCPPlotTitle*>(ui->plotSensor0->plotLayout()->element(0,0));
-    if(title != 0)
-    {
-        QCPPlotTitle *newTitle = new QCPPlotTitle(ui->plotSensor0);
-        newTitle->setText(controller->rov->sensorOther0->getName());
-        newTitle->setFont(title->font());
-        newTitle->setTextColor(title->textColor());
-        ui->plotSensor0->plotLayout()->remove(title);
-        ui->plotSensor0->plotLayout()->addElement(0,0,newTitle);
-        ui->plotSensor0->replot();  //refreshes the title
-    }
-    else
-        qWarning() << "No QCPPlotTitle on " << ui->plotSensor0;
-
 
     //Display loading in activity monitor
-    activityMonitor->display("Settings loaded");
+    activityMonitor->display("Settings loaded", MsgType::Good);
 
     //Refresh the depth tape
-    depthTape->setMaxDepth((int)controller->rov->sensorDepth->getMax());
+    depthTape->setMaxDepth((int)controller->rov().maxDepth);
 
-    qDebug() << "IP Video URL: " << controller->rov->getVideoFeeds().first()->url();
     //Load the proper video channel
-    if(webCamViewer && controller->rov->getVideoFeeds().first()->url().isValid())
+    if(webCamViewer && controller->rov().videoFeed.url.isValid())
     {
-        webCamViewer->load(controller->rov->getVideoFeeds().first()->url());
+        webCamViewer->load(controller->rov().videoFeed.url);
         webCamViewer->show();
     }
     else
@@ -289,13 +313,6 @@ void MainWindow::loadSettings()
 void MainWindow::setupCustomWidgets()
 {
     controller->loadSettings();
-
-    //Setup the activity monitor
-    activityMonitor = new QActivityMonitor(ui->teLog);
-    activityMonitor->display("Monterey started...");
-    QString versionDisp("Version: ");
-    versionDisp.append(version);
-    activityMonitor->display(versionDisp);
 
     //Setup status lights
     QGridLayout * statusGrid = qobject_cast<QGridLayout*>(ui->groupBoxStatus->layout());
@@ -322,14 +339,6 @@ void MainWindow::setupCustomWidgets()
     statusLights.joystick = new LedIndicator;
     statusLights.joystick->setIndicatorTitle("Joystick");
     statusGrid->addWidget(statusLights.joystick->container, 1, 0, 1, 1);
-
-    if(statusLights.tahoe != 0)
-    {
-        delete statusLights.tahoe;
-    }
-    statusLights.tahoe = new LedIndicator;
-    statusLights.tahoe->setIndicatorTitle("Tahoe");
-    statusGrid->addWidget(statusLights.tahoe->container, 1, 1, 1, 1);
 
     //Setup the plots
     auto setStyleOnPlot = [this]( QCustomPlot *plot, QString titleString )
@@ -398,9 +407,6 @@ void MainWindow::setupCustomWidgets()
     rPiTitle.append("C");
     setStyleOnPlot(ui->plotRPiCpuTempC, rPiTitle);
 
-    //Sensor0 graph
-    setStyleOnPlot(ui->plotSensor0, controller->rov->sensorOther0->getName());
-
     QVector<QString> depthLabels;
     QVector<double> depthTicks;
     depthLabels << "0%" << "25%" << "50%" << "75%" << "max";
@@ -410,13 +416,6 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->yAxis->setTickVector(depthTicks);
     ui->plotDepth->yAxis->setTickVectorLabels(depthLabels);
     //ui->plotDepth->xAxis->setGrid(true);
-
-    //Setup array of QLCDNumbers for sensor readouts
-    ui->labUnitsDepth->setText(controller->rov->sensorDepth->getUnits());
-    ui->labUnitsHeading->setText(controller->rov->sensorCompass->getUnits());
-    ui->labUnitsVoltage->setText(controller->rov->sensorVoltage->getUnits());
-    ui->labUnits0->setText(controller->rov->sensorOther0->getUnits());
-    ui->labUnits1->setText(controller->rov->sensorOther1->getUnits());
 
     setupDepthTape();
     setupCompass();
@@ -443,15 +442,36 @@ void MainWindow::onCalledServoChange(int id, int direction)
     }
 }
 
-void MainWindow::appendToActivityMonitor(QString message)
+void MainWindow::appendToActivityMonitor(QString message, MsgType type)
 {
     if(activityMonitor)
     {
-        activityMonitor->display(message);
+        activityMonitor->display(message, type);
     }
     else
     {
         qWarning() << "No activityMonitor object!";
+    }
+}
+
+void MainWindow::saveRovLogFile()
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Save Dive Log", QDir::homePath(), "JSON (*.json)");
+    controller->saveRovLog(filename);
+}
+
+void MainWindow::clearLog()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Clear the dive log?");
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setInformativeText("All recorded data will be lost!");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+    if(ret == QMessageBox::Yes)
+    {
+        controller->clearLog();
     }
 }
 
@@ -460,33 +480,19 @@ void MainWindow::refreshGUI()
     loadData(); //load data from the controller object
     displayTime();  //display the current time
     showDiveTimer();  //show the time according to the dive timer
-    thresholdCheck();   //check for values exceeding thresholds
 }
 
 void MainWindow::lostJoystick()
 {
     if(controller->isJoyAttached())
     {
-        activityMonitor->display("Joystick attached");
+        activityMonitor->display("Joystick attached", MsgType::Good);
         statusLights.joystick->setStatus(true);
     }
     else
     {
-        activityMonitor->display("Joystick detached");
+        activityMonitor->display("Joystick detached", MsgType::Warn);
         statusLights.joystick->setStatus(false);
-    }
-}
-
-void MainWindow::displayTahoe()
-{
-    for(int i=0; i<relayButtons.count(); i++)
-    {
-        relayButtons[i]->setChecked(controller->rov->listRelays.at(i)->getState());
-    }
-
-    for(int i=0; i < servoSliders.count(); i++)
-    {
-        servoSliders[i]->setValue(controller->rov->listServos.at(i)->getValue());
     }
 }
 
@@ -497,7 +503,7 @@ void MainWindow::checkForUpdates()
 
 void MainWindow::setupDepthTape()
 {
-    depthTape = new DepthTape((int)controller->rov->sensorDepth->getMax());
+    depthTape = new DepthTape((int)controller->rov().maxDepth);
     ui->gridLayoutHUD->addWidget(depthTape->container, 1,0,4,1);
 }
 
@@ -551,23 +557,11 @@ void MainWindow::onComTiboChanged(bool status)
 {
     if(status)
     {
-        activityMonitor->display("Gained TIBO");
+        activityMonitor->display("Gained TIBO", MsgType::Good);
     }
     else
     {
-        activityMonitor->display("Lost TIBO");
-    }
-}
-
-void MainWindow::onComTahoeChanged(bool status)
-{
-    if(status)
-    {
-        activityMonitor->display("Gained Tahoe COM");
-    }
-    else
-    {
-        activityMonitor->display("Lost Tahoe COM");
+        activityMonitor->display("Lost TIBO", MsgType::Bad);
     }
 }
 
@@ -575,42 +569,23 @@ void MainWindow::onComPiChange(bool status)
 {
     if(status)
     {
-        activityMonitor->display("Gained Raspberry Pi COM");
+        activityMonitor->display("Gained Raspberry Pi COM", MsgType::Good);
     }
     else
     {
-        activityMonitor->display("Lost Raspberry Pi COM");
-    }
-}
-
-void MainWindow::thresholdCheck()   //TODO: REMOVE
-{
-    //if the ROV is too deep
-    if(controller->rov->sensorDepth->getValue() > controller->rov->sensorDepth->getThreshold())
-    {
-        ui->lcdDepth->setStyleSheet("QLCDNumber { color : red }");
-    }
-    else    //if ROV's depth is OK
-    {
-        ui->lcdDepth->setStyleSheet("QLCDNumber { color : none }");
+        activityMonitor->display("Lost Raspberry Pi COM", MsgType::Bad);
     }
 }
 
 void MainWindow::loadData()
 {
-    //Display data in the numerical readouts
-    ui->lcdDepth->display(controller->rov->sensorDepth->getValue());
-    ui->lcdSensor0->display(controller->rov->sensorOther0->getValue());
-    ui->lcdSensor1->display(controller->rov->sensorOther1->getValue());
-    ui->lcdVoltage->display(controller->rov->sensorVoltage->getValue());
-    ui->lcdHeading->display(controller->rov->sensorCompass->getValue());
+    //Display the sensor values
+    for(int i=0; i<controller->rov().sensors.count(); i++)
+    {
+        sensorDisplays[i]->display(controller->rov().sensors[i].value);
+    }
 
     //Display the data graphically
-    depthPoints.append(-100*(controller->rov->sensorDepth->getValue()/controller->rov->sensorDepth->getMax()));
-    voltagePoints.append(controller->rov->sensorVoltage->getValue());
-    rPiCpuTempCPoints.append(controller->rov->piData->tempC());
-    sensor0Points.append(controller->rov->sensorOther0->getValue());
-
     int timeElapsed = graphTime->elapsed();
 
     auto loadGraphData = [this, timeElapsed]( QCustomPlot *plot, double dataPoint, bool autoAdjustYAxis, bool canBeNegative)
@@ -639,13 +614,12 @@ void MainWindow::loadData()
         plot->replot();
     };
 
-    loadGraphData(ui->plotDepth, depthPoints.last(), false, true);
-    loadGraphData(ui->plotRPiCpuTempC, rPiCpuTempCPoints.last(), true, false);
-    loadGraphData(ui->plotSensor0, sensor0Points.last(), true, true);
-    loadGraphData(ui->plotVoltage, voltagePoints.last(), true, false);
+    loadGraphData(ui->plotDepth, -100*(getDepthSensor(controller->rov()).value / controller->rov().maxDepth), false, true);
+    loadGraphData(ui->plotRPiCpuTempC, controller->rov().piData.tempC, true, false);
+    loadGraphData(ui->plotVoltage, getVoltageSensor(controller->rov()).value, true, false);
 
-    depthTape->onDepthChange(controller->rov->sensorDepth->getValue(), controller->rov->sensorDepth->getUnits());
-    compass->onHeadingChange(controller->rov->sensorCompass->getValue());
+    depthTape->onDepthChange(getDepthSensor(controller->rov()).value, getDepthSensor(controller->rov()).units);   //TODO: test
+    compass->onHeadingChange(getHeadingSensor(controller->rov()).value);
 
     //Light up the indicators
     if(controller->getStatusTIBO() != statusLights.com->status())
@@ -653,9 +627,6 @@ void MainWindow::loadData()
 
     if(controller->getStatusPi() != statusLights.rPi->status())
         statusLights.rPi->setStatus(controller->getStatusPi());
-
-    if(controller->getStatusTahoe() != statusLights.tahoe->status())
-        statusLights.tahoe->setStatus(controller->getStatusTahoe());
 }
 
 void MainWindow::displayTime()
@@ -673,7 +644,7 @@ void MainWindow::on_pbRelay_clicked()
     {
         if(controller->relayMappings[i].pushButton == sender())
         {
-            controller->rov->listRelays.at(i)->setState(relayButtons.at(i)->isChecked());
+            controller->editRov().relays[i].enabled = relayButtons.at(i)->isChecked();
         }
     }
 }
@@ -685,7 +656,7 @@ void MainWindow::on_vsServo_valueChanged(int value)
     {
         if(controller->servoMappings[i].slider == sender())
         {
-            controller->rov->listServos.at(i)->setValue(value);
+            controller->editRov().servos[i].value = value;
         }
     }
 }
@@ -693,10 +664,6 @@ void MainWindow::on_vsServo_valueChanged(int value)
 // Copies log to system clipboard for easy sharing
 void MainWindow::on_buttonCopyLogToClipboard_clicked()
 {
-//    This is more of a hack-ish solution
-//    ui->teLog->selectAll();
-//    ui->teLog->copy();
-
     QClipboard *p_Clipboard = QApplication::clipboard();
     p_Clipboard->setText(ui->teLog->toPlainText());
 }

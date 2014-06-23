@@ -35,6 +35,8 @@ namespace Ui {
     class MainWindow;
 }
 
+typedef QROVController::MsgType MsgType;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -58,7 +60,10 @@ public slots:
 
     void onCalledServoChange(int id, int direction);
 
-    void appendToActivityMonitor(QString message);
+    void appendToActivityMonitor(QString message, MsgType type);
+
+    void saveRovLogFile();
+    void clearLog();
 
 private slots:
     //Buttons
@@ -77,19 +82,14 @@ private slots:
 
     //Show misc. values
     void refreshGUI();  //!< Refresh the GUI on a timer
-    void displayTahoe();    //!< Display the values sent over by Tahoe so that the use knows what's going on
     void showDiveTimer();   //!< Display the dive timer
     void onComTiboChanged(bool status);    //!< Add TIBO lost/gained to the activity monitor
-    void onComTahoeChanged(bool status);   //!< Add Tahoe COM lost/gained to the activity monitor
     void onComPiChange(bool status); //!< Add RPi COM lost/gained to the activity monitor
     void displayTime(); //!< Display the current time
     void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
 
     //Grab new data from the ROV controller
     void loadData();    //!< Load the data from the ROV controller and display it
-
-    //Check sensor thresholds (MIGHT REMOVE)
-    void thresholdCheck();  //!< Check the input values to see if they reach thresholds and alert the user if they do
 
     //Setup QML widgets
     void setupDepthTape();  //!< Configure the depth tape
@@ -114,11 +114,8 @@ private:
 
     QList<QPushButton*> relayButtons;
     QList<QSlider*> servoSliders;
+    QList<QLCDNumber*> sensorDisplays;
 
-    QVector<double> depthPoints;
-    QVector<double> voltagePoints;
-    QVector<double> rPiCpuTempCPoints;
-    QVector<double> sensor0Points;
     QTime *graphTime;
     DepthTape *depthTape;
     Compass *compass;
@@ -132,7 +129,6 @@ private:
     LedIndicator *com;
     LedIndicator *joystick;
     LedIndicator *rPi;
-    LedIndicator *tahoe;
     }statusLights;
 };
 

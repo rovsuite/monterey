@@ -16,12 +16,12 @@
 #include <QMutex>
 #include <QPushButton>
 #include <QSlider>
+#include <QQueue>
 #include "qrov.h"
 #include "qjoystick.h"
 #include "../../extraclasses/QVectorDrive2/qvectordrive2.h"
 #include "../../extraclasses/QBoolMonitor/qboolmonitor.h"
 #include "../../extraclasses/DiveTimer/divetimer.h"
-#include "../../extraclasses/PiData/pidata.h"
 #include "../../extraclasses/UdpCapture/udpcapture.h"
 
 /* Settings area where the user can tweak monterey for their own personal
@@ -30,9 +30,9 @@
  * relays or servos will need to be manually propagated to the UI.
  */
 
-#define numberOfMotors 6
-#define numberOfRelays 3
-#define numberOfServos 3
+//#define numberOfMotors 6
+//#define numberOfRelays 3
+//#define numberOfServos 3
 
 #define MOTORMIN 1000
 #define MOTORMAX 2000
@@ -44,8 +44,6 @@
 #define PITIMEOUT 5000
 #define TOBIPORT 51000
 #define TIBOPORT 50000
-#define TAHOERXPORT 52000
-#define TAHOETXPORT 53000
 #define PIRXPORT 5060
 
 /*
@@ -56,9 +54,11 @@ class QROVController : public QObject
 {
     Q_OBJECT
 public:
-    explicit QROVController(QObject *parent = 0);
+    explicit QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent = 0);
+    ~QROVController();
 
-    QROV *rov;
+    enum MsgType { Info, Good, Warn, Bad };
+
     QList<int> joystickAxesValues;
     QBoolMonitor *monitorJoystick;
 
@@ -121,20 +121,29 @@ signals:
     //Networking
     void sentPacket(QString packet);
     void receivedPacket(QString packet);
-    void onTahoeProcessed();
     void comTiboChanged(bool status);
-    void comTahoeChanged(bool status);
     void comPiChanged(bool status);
 
     //Misc UI Interactions
     void clickRelayButton(QPushButton * pb);
     void changeServo(int id, int direction);
-    void appendToActivityMonitor(QString message);
+    void appendToActivityMonitor(QString message, MsgType type);
 
     //Misc
-    void savedSettings(QString message);
+    void savedSettings(QString message, MsgType type);
 
 public slots:
+
+    const QROV& rov() const { return mRov; }
+    QROV& editRov() { return mRov; }
+
+    //ROV Log functions
+    bool saveRovLog(const QString& filename);
+    bool isLoggingEnabled() const { return mLoggingEnabled; }
+    void enableLogging(bool enable);
+    void clearLog();
+    bool logHasItems() { return !rovHistory.empty(); }
+
     //Joystick
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
@@ -177,13 +186,11 @@ public slots:
     int getPortTIBO();  //!< Get the TIBO port
     int getPortRpiTibo(); //!< Get the port that the Raspberry Pi sends to
     bool getStatusTIBO() { return captureRx->comStatus(); }    //!< Return the status of TIBO
-    bool getStatusTahoe() { return captureTahoe->comStatus(); }  //!< Return the status of Tahoe's COM
     bool getStatusPi() { return capturePi->comStatus(); }
 
     //Settings
     void loadSettings();    //!< Force a loading of the settings
     void saveSettings();    //!< Force a saving of the settings
-
 
     //Dive timer
     void diveTimeReset();   //!< Reset the dive timer
@@ -191,6 +198,11 @@ public slots:
 
 private slots:
     void motherFunction();  //!< Used to loop the application
+
+    void setValidity(bool state);
+    bool getValidity() const;
+
+    void logRovState(); //Save ROV state for writting to a log later
 
     //Joystick
     void initJoysticks();   //!< Initialize joystick systems
@@ -203,9 +215,6 @@ private slots:
     //Networking
     void processPacket(QString packet);   //!< Process the packet received from the ROV
     void sendPacket();  //!< Send a packet to the ROV
-    void sendDebug();   //!< Send a debug packet out to any listeners
-    void processTahoe(QString packet);    //!< Process the packet from Tahoe
-    void sendTahoe();   //!< Send the packet to Tahoe
     void processPi(QString packet);
 
     //Misc
@@ -214,9 +223,15 @@ private slots:
 private:
     QSettings *mySettings;
 
+    //ROV State and logging
+    QROV mRov;
+    QQueue<QROV> rovHistory;
+    bool mLoggingEnabled;
+
+    bool mValidity; //is the controller in a valid state
+
     //Networking
     UdpCapture *captureRx;
-    UdpCapture *captureTahoe;
     UdpCapture *capturePi;
     QUdpSocket *txSocket;
 

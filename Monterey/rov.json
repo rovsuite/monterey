@@ -1,0 +1,41 @@
+{
+    "relays": [
+        {
+            "name": "Relay0"
+        },
+        {
+            "name": "Relay1"
+        },
+        {
+            "name": "Relay2"
+        }
+    ],
+    "servos": [
+        {
+            "name": "Servo0"
+        },
+        {
+            "name": "Servo1"
+        }
+    ],
+    "sensors": [
+        {
+            "units": "meters",
+            "name": "depth"
+        },
+        {
+            "units": "volts",
+            "name": "voltage"
+        },
+        {
+            "units": "amps",
+            "name": "current"
+        },
+        {
+            "units": "degrees",
+            "name": "heading"
+        }
+    ],
+    "motorLayout" : "tank",
+    "maxDepth" : 100
+}

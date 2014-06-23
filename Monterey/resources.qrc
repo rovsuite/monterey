@@ -19,4 +19,7 @@
         <file>resources/CompassTick.qml</file>
         <file>resources/LedIndicator.qml</file>
     </qresource>
+    <qresource prefix="/default">
+        <file>rov.json</file>
+    </qresource>
 </RCC>

@@ -158,5 +158,5 @@ void Compass::initializeTicks()
     lastChange = 0;
     lastHeading = 0;
     refreshPalette();
-    viewer->show();
+    //viewer->show();
 }

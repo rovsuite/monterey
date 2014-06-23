@@ -40,7 +40,6 @@
            <widget class="QLabel" name="label_11">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
@@ -53,7 +52,6 @@
            <widget class="QLabel" name="labCurrentTime">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
@@ -66,7 +64,6 @@
            <widget class="QLabel" name="label_13">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
@@ -79,7 +76,6 @@
            <widget class="QLabel" name="labDiveTime">
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
@@ -155,16 +151,6 @@
             </item>
             <item>
              <widget class="QCustomPlot" name="plotRPiCpuTempC" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCustomPlot" name="plotSensor0" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -252,162 +238,10 @@
            </spacer>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox_4">
+           <widget class="QGroupBox" name="groupBoxSensorReadouts">
             <property name="title">
              <string>Sensor Readouts</string>
             </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Depth:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLCDNumber" name="lcdDepth">
-               <property name="frameShape">
-                <enum>QFrame::Box</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="labUnitsDepth">
-               <property name="text">
-                <string>meters</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_6">
-               <property name="text">
-                <string>Heading:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLCDNumber" name="lcdHeading">
-               <property name="frameShape">
-                <enum>QFrame::Box</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="labUnitsHeading">
-               <property name="text">
-                <string>degrees</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_7">
-               <property name="text">
-                <string>Voltage:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLCDNumber" name="lcdVoltage">
-               <property name="frameShape">
-                <enum>QFrame::Box</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="QLabel" name="labUnitsVoltage">
-               <property name="text">
-                <string>volts</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="labSensor0">
-               <property name="text">
-                <string>Sensor0:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLCDNumber" name="lcdSensor0">
-               <property name="frameShape">
-                <enum>QFrame::Box</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="2">
-              <widget class="QLabel" name="labUnits0">
-               <property name="text">
-                <string>units</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="labSensor1">
-               <property name="text">
-                <string>Sensor1:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QLCDNumber" name="lcdSensor1">
-               <property name="frameShape">
-                <enum>QFrame::Box</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="segmentStyle">
-                <enum>QLCDNumber::Flat</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="2">
-              <widget class="QLabel" name="labUnits1">
-               <property name="text">
-                <string>units</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </widget>
           </item>
           <item>
@@ -429,7 +263,7 @@
           <item>
            <widget class="QTextEdit" name="teLog">
             <property name="lineWrapMode">
-             <enum>QTextEdit::NoWrap</enum>
+             <enum>QTextEdit::WidgetWidth</enum>
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -521,6 +355,10 @@
     <addaction name="actionRescan_Joysticks"/>
     <addaction name="separator"/>
     <addaction name="actionDive_Timer_Reset"/>
+    <addaction name="separator"/>
+    <addaction name="actionEnable_Dive_Logging"/>
+    <addaction name="actionSave_Dive_Log"/>
+    <addaction name="actionClear_Dive_Log"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -614,6 +452,27 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionSave_Dive_Log">
+   <property name="text">
+    <string>Save Dive Log</string>
+   </property>
+  </action>
+  <action name="actionEnable_Dive_Logging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Enable Dive Logging</string>
+   </property>
+  </action>
+  <action name="actionClear_Dive_Log">
+   <property name="text">
+    <string>Clear Dive Log</string>
    </property>
   </action>
  </widget>

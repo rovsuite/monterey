@@ -9,8 +9,10 @@ QT       += core gui network svg widgets quick webkit
 CONFIG += c++11
 
 TARGET = Monterey
-VERSION = 3.0
+VERSION = 4.0
 TEMPLATE = app
+
+DEFINES += VERSION=\\\"$$VERSION\\\"
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -23,7 +25,6 @@ SOURCES += main.cpp\
     rovsettings.cpp \
     rovmappings.cpp \
     rovabout.cpp \
-    extraclasses/QROV/qrov.cpp \
     extraclasses/QROVController/qrovcontroller.cpp \
     extraclasses/QROVSensor/qrovsensor.cpp \
     extraclasses/QJoystick/qjoystick.cpp \
@@ -31,13 +32,12 @@ SOURCES += main.cpp\
     extraclasses/QCustomPlot/qcustomplot.cpp \
     extraclasses/DepthTape/depthtape.cpp \
     extraclasses/DiveTimer/divetimer.cpp \
-    extraclasses/IpVideoFeed/ipvideofeed.cpp \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.cpp \
-    extraclasses/PiData/pidata.cpp \
     extraclasses/Compass/compass.cpp \
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.cpp \
     extraclasses/LedIndicator/ledindicator.cpp \
-    extraclasses/UdpCapture/udpcapture.cpp
+    extraclasses/UdpCapture/udpcapture.cpp \
+    extraclasses/ConfigParser/configparser.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -57,13 +57,12 @@ HEADERS  += mainwindow.h \
     extraclasses/QCustomPlot/qcustomplot.h \
     extraclasses/DepthTape/depthtape.h \
     extraclasses/DiveTimer/divetimer.h \
-    extraclasses/IpVideoFeed/ipvideofeed.h \
     extraclasses/IpVideoFeedSettingsWidget/ipvideofeedsettingswidget.h \
-    extraclasses/PiData/pidata.h \
     extraclasses/Compass/compass.h \
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.h \
     extraclasses/LedIndicator/ledindicator.h \
-    extraclasses/UdpCapture/udpcapture.h
+    extraclasses/UdpCapture/udpcapture.h \
+    extraclasses/ConfigParser/configparser.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \
@@ -111,7 +110,7 @@ RC_FILE = monterey.rc
 
 DEFINES += SDL_WIN
 LIBS += -L../Monterey/depends/windows/
-LIBS += -lSDL.dll
+LIBS += -lSDL
 }
 
 # Fervor autoupdater
