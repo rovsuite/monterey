@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QString>
 #include <QList>
+#include "../QJoystickInterface/qjoystickinterface.h"
 
 #ifdef Q_OS_LINUX
 #include "../../SDL-linux/SDL.h"
@@ -14,37 +15,36 @@
 #include "../../SDL/SDL.h"
 #endif
 
-class QJoystick : public QObject
+class QJoystick: public QJoystickInterface
 {
     Q_OBJECT
-public:
-    QJoystick();
-    ~QJoystick();
-    int availableJoysticks();
-    int currentJoystick();
-    QString joystickName(int id);
-    int joystickNumAxes(int id);
-    int joystickNumButtons(int id);
-    QList<int> axis;
-    QList<bool> buttons;
-    QList<bool> buttonsToggled; //Konstad
-    QList<bool> hatsToggled; //Konstad
-    void getdata();
-    int joystickNumHats(int id); //find out the number of hats (Konstad)
-    QList<int> hats;    //POV hat (Konstad)
+    public:
+        virtual QJoystick();
+        virtual ~QJoystick();
 
-public slots:
-    void setJoystick(int jsNumber);
-    int reenumerateDevices();   //(konstad) Rescan for joysticks and return # of joysticks
+        public slots:
+        virtual int reenumerateDevices(); 
 
-signals:
-    void toggleStateChanged(int button);
-    void hatStateChanged(int hat);
+        virtual const QString& name() const;
 
-private:
-    SDL_Joystick* m_joystick;
-    QList<bool> buttonsPrevious;    //konstad
-    QList<int> hatsPrevious;    //konstad
+        virtual int numJoysticks() const;
+
+        virtual int numAxes() const;
+
+        virtual int numHats() const;
+
+        virtual int numButtons() const;
+
+    signals:
+
+    protected:
+        virtual void init();
+
+    private slots:
+        virtual void getData();
+
+    private:
+        SDL_Joystick *mJoystick;
 };
 
 #endif // QJOYSTICK_H
