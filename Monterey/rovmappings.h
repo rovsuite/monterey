@@ -2,15 +2,15 @@
 #define ROVMAPPINGS_H
 
 #include <QDialog>
-#include <QTimer>
-#include <QLineEdit>
-#include <QComboBox>
 #include <QList>
 
 namespace Ui {
     class ROVMappings;
 }
 
+class QComboBox;
+class QTimer;
+class QLineEdit;
 class ROVMappings : public QDialog
 {
     Q_OBJECT
@@ -27,7 +27,6 @@ private slots:
 private:
     Ui::ROVMappings *ui;
     QTimer *updateTimer;
-    int numAxes;
 
     //Keep track of relay settings
     QList<QComboBox*> relayButtons;

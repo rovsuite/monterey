@@ -18,7 +18,6 @@
 #include <QSlider>
 #include <QQueue>
 #include "qrov.h"
-#include "qjoystick.h"
 #include "../../extraclasses/QVectorDrive2/qvectordrive2.h"
 #include "../../extraclasses/QBoolMonitor/qboolmonitor.h"
 #include "../../extraclasses/DiveTimer/divetimer.h"
@@ -29,10 +28,6 @@
  * are measured in milliseconds.  Please note that any change in motors,
  * relays or servos will need to be manually propagated to the UI.
  */
-
-//#define numberOfMotors 6
-//#define numberOfRelays 3
-//#define numberOfServos 3
 
 #define MOTORMIN 1000
 #define MOTORMAX 2000
@@ -50,6 +45,7 @@
  *  END OF SETTINGS AREA
  */
 
+class QJoystickInterface;
 class QROVController : public QObject
 {
     Q_OBJECT
@@ -59,7 +55,6 @@ public:
 
     enum MsgType { Info, Good, Warn, Bad };
 
-    QList<int> joystickAxesValues;
     QBoolMonitor *monitorJoystick;
 
     //Struct to map user input (UI and JS) to relays
@@ -142,51 +137,57 @@ public slots:
     bool isLoggingEnabled() const { return mLoggingEnabled; }
     void enableLogging(bool enable);
     void clearLog();
-    bool logHasItems() { return !rovHistory.empty(); }
+    bool logHasItems() const { return !rovHistory.empty(); }
 
     //Joystick
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
-    int getJoystickNumberAxes() { return numberOfAxes; }   //!< Get the number of axes
-    int getJoystickNumberButtons() { return joy->joystickNumButtons(0); } //!< Get the number of buttons
-    int getJoystickCurrentHatValue();    //!< Get the current hat value
-    QList<int> getJoystickCurrentButtonValue();    //!< Get the (first in list) currently pressed button if one is pressed
-    int getJoyID() { return joyID; }    //!< get the ID of the currently selected joystick
-    void setJoyID(int j) { joyID = j; } //!< set the joystick to be read
-    int getJoystickAxesValues(int index) { return joystickAxesValues[index]; }
-    int getJoysAvail() { joysAvail = joy->availableJoysticks(); return joysAvail; }    //!< Return the number of attached joysticks
-    bool isJoyAttached() { return joyAttached; } //!< Return the joystick attached status
-    int getAxisX() { return joySettings.axisX; }    //!< Get the axis x ID
+    const QList<int>&  getJoystickAxesValues()     const;
+    QList<int>  getJoystickHatsPressed()    const;
+    const QList<bool>& getJoystickButtonsPressed() const;
+    int getJoyId() const;
+    int getNumberJoysticks() const;
+    bool isJoyAttached() const { return joyAttached; } //!< Return the joystick attached status
+    int getAxisX() const { return joySettings.axisX; }    //!< Get the axis x ID
     void setAxisX(int x) { joySettings.axisX = x; }
-    int getAxisY() { return joySettings.axisY; }
+    int getAxisY() const { return joySettings.axisY; }
     void setAxisY(int y) { joySettings.axisY = y; }
-    int getAxisZ() { return joySettings.axisZ; }
+    int getAxisZ() const { return joySettings.axisZ; }
     void setAxisZ(int z) { joySettings.axisZ = z; }
-    int getAxisV() { return joySettings.axisV; }
+    int getAxisV() const { return joySettings.axisV; }
     void setAxisV(int v) { joySettings.axisV = v; }
-    int getAxisL() { return joySettings.axisL; }
+    int getAxisL() const { return joySettings.axisL; }
     void setAxisL(int l) { joySettings.axisL = l; }
-    int getAxisR() { return joySettings.axisR; }
+    int getAxisR() const { return joySettings.axisR; }
     void setAxisR(int r) { joySettings.axisR = r; }
+
+    //Catch Joystick signals
+    void onButtonPressed(int button);
+    void onButtonReleased(int button);
+    void onButtonToggled(int button, bool state);
+    void onHatPressed(int hat, int dir);
+    void onHatReleased(int hat, int dir);
+    void onHatToggled(int hat, int dir, bool state);
+    void onAxesUpdated(const QList<int>& values);
 
     //Motor math
     void setBilinearRatio(double r) { joySettings.bilinearRatio = r; }
-    double getBilinearRatio() { return joySettings.bilinearRatio; }
+    double getBilinearRatio() const { return joySettings.bilinearRatio; }
     void setBilinearEnabled(bool b) { joySettings.bilinearEnabled = b; }
-    bool getBilinearEnabled() { return joySettings.bilinearEnabled; }
+    bool getBilinearEnabled() const { return joySettings.bilinearEnabled; }
     void setXDeadzone(int x) { joySettings.deadX = x; }
-    int getXDeadzone() { return joySettings.deadX; }
+    int getXDeadzone() const { return joySettings.deadX; }
     void setYDeadzone(int y) { joySettings.deadY = y; }
-    int getYDeadzone() { return joySettings.deadY; }
+    int getYDeadzone() const { return joySettings.deadY; }
     void setZDeadzone(int z) { joySettings.deadZ = z; }
-    int getZDeadzone() { return joySettings.deadZ; }
+    int getZDeadzone() const { return joySettings.deadZ; }
 
     //Networking
-    int getPortTOBI();  //!< Get the TOBI port
-    int getPortTIBO();  //!< Get the TIBO port
-    int getPortRpiTibo(); //!< Get the port that the Raspberry Pi sends to
-    bool getStatusTIBO() { return captureRx->comStatus(); }    //!< Return the status of TIBO
-    bool getStatusPi() { return capturePi->comStatus(); }
+    int getPortTOBI() const;  //!< Get the TOBI port
+    int getPortTIBO() const;  //!< Get the TIBO port
+    int getPortRpiTibo() const; //!< Get the port that the Raspberry Pi sends to
+    bool getStatusTIBO() const { return captureRx->comStatus(); }    //!< Return the status of TIBO
+    bool getStatusPi() const { return capturePi->comStatus(); }
 
     //Settings
     void loadSettings();    //!< Force a loading of the settings
@@ -194,7 +195,7 @@ public slots:
 
     //Dive timer
     void diveTimeReset();   //!< Reset the dive timer
-    QString diveTimeString(); //!< Convert the milliseconds to minutes and hours and display in the gui
+    QString diveTimeString() const; //!< Convert the milliseconds to minutes and hours and display in the gui
 
 private slots:
     void motherFunction();  //!< Used to loop the application
@@ -206,11 +207,8 @@ private slots:
 
     //Joystick
     void initJoysticks();   //!< Initialize joystick systems
-    void updateJoystickData();  //!< Read joystick data
     void readMappings();    //!< Read adjustable mappings
     void noJoystick();   //!< Put the ROV motors into a neutral state if the joystick is not attached
-    void joystickButtonClicked(int buttonID);
-    void joystickHatClicked(int hatID);
 
     //Networking
     void processPacket(QString packet);   //!< Process the packet received from the ROV
@@ -218,7 +216,7 @@ private slots:
     void processPi(QString packet);
 
     //Misc
-    int mapInt(int input, int inMin, int inMax, int outMin, int outMax);    //!< map a value from one range to another range, stolen from http://arduino.cc
+    int mapInt(int input, int inMin, int inMax, int outMin, int outMax) const;    //!< map a value from one range to another range, stolen from http://arduino.cc
 
 private:
     QSettings *mySettings;
@@ -236,11 +234,8 @@ private:
     QUdpSocket *txSocket;
 
     //Joystick
-    QJoystick *joy; //joystick object
-    int joysAvail;
-    int joyID;
+    QJoystickInterface *joy; //joystick object
     bool joyAttached;
-    int numberOfAxes;
 
     //Timers
     DiveTimer *diveTimer;

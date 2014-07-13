@@ -1,146 +1,193 @@
 #include "qjoystick.h"
 
-#include <QDebug>
-
-#define POLL_INTERVAL 40
-
 QJoystick::QJoystick()
 {
     // Sure, we're only using the Joystick, but SDL doesn't work if video isn't initialised
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-}
-
-int QJoystick::currentJoystick()
-{
-    return SDL_JoystickIndex(m_joystick);
-}
-
-QString QJoystick::joystickName(int js)
-{
-    Q_ASSERT(js < availableJoysticks());
-    Q_ASSERT(js >= 0);
-    return QString(SDL_JoystickName(js));
-}
-
-int QJoystick::joystickNumAxes(int js)
-{
-    Q_ASSERT(js < availableJoysticks());
-    Q_ASSERT(js >= 0);
-    return (SDL_JoystickNumAxes(m_joystick));
-}
-
-int QJoystick::joystickNumButtons(int js)
-{
-    Q_ASSERT(js < availableJoysticks());
-    Q_ASSERT(js >= 0);
-    return (SDL_JoystickNumButtons(m_joystick));
-}
-
-int QJoystick::joystickNumHats(int js)  //Added by Chris Konstad
-{
-    Q_ASSERT(js < availableJoysticks());
-    Q_ASSERT(js >= 0);
-    return (SDL_JoystickNumHats(m_joystick));
-}
-
-void QJoystick::setJoystick(int js)
-{
-    Q_ASSERT(js < availableJoysticks());
-    Q_ASSERT(js >= 0);
-    buttonsPrevious.clear();    //konstad
-    buttonsToggled.clear(); //konstad
-    hatsPrevious.clear();   //Konstad
-    hatsToggled.clear();    //konstad
-    buttons.clear();    //konstad
-    hats.clear();   //konstad
-
-    //SDL_JoystickClose(m_joystick);    //changed by Konstad to possibly fix crashing issue
-    m_joystick = SDL_JoystickOpen(js);
-
-    for(int i=0;i<SDL_JoystickNumButtons(m_joystick);i++)   //for each button (konstad)
-    {
-        buttonsPrevious.append(false);  //start with all set to false
-        buttonsToggled.append(false);   //start with all set to false
-        buttons.append(false);
-    }
-    for(int i=0;i<SDL_JoystickNumHats(m_joystick);i++)
-    {
-        hatsPrevious.append(0);
-        hatsToggled.append(false);
-        hats.append(0);
-    }
-    for(int i=0;i<SDL_JoystickNumAxes(m_joystick);i++)
-    {
-        axis.append(0);
-    }
-}
-
-int QJoystick::reenumerateDevices()
-{
-    SDL_QuitSubSystem(SDL_INIT_JOYSTICK);   //Quit the subsystem
-    SDL_Init(SDL_INIT_JOYSTICK);    //Re-open the subsystem (also reenumerate devices)
-
-    return SDL_NumJoysticks();  //return the number of attached joysticks
+    mJoystick = NULL;   //js not opened yet
 }
 
 QJoystick::~QJoystick()
 {
-    axis.clear();
-    buttons.clear();
-    hats.clear();   //konstad
-    buttonsPrevious.clear();    //konstad
-    buttonsToggled.clear(); //konstad
-    hatsPrevious.clear();   //konstad
-    hatsToggled.clear();    //konstad
-    SDL_JoystickClose(m_joystick);
+    SDL_JoystickClose(mJoystick);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-    this->deleteLater();
 }
 
+void QJoystick::init()
+{
+    Q_ASSERT(currentJoystick() >= 0);
+    Q_ASSERT(currentJoystick() < numJoysticks());
 
-int QJoystick::availableJoysticks()
+    mJoystick  = SDL_JoystickOpen(currentJoystick());
+    QJoystickInterface::init();
+}
+
+QString QJoystick::name() const
+{
+    return QString(SDL_JoystickName(currentJoystick()));
+}
+
+int QJoystick::numAxes() const
+{
+    int ret = -1;
+    if(mJoystick != NULL)
+    {
+        ret = SDL_JoystickNumAxes(mJoystick);
+    }
+
+    return ret;
+}
+
+int QJoystick::numButtons() const
+{
+    int ret = -1;
+    if(mJoystick != NULL)
+    {
+        ret = SDL_JoystickNumButtons(mJoystick);
+    }
+
+    return ret;
+}
+
+int QJoystick::numHats() const
+{
+    int ret = -1;
+    if(mJoystick != NULL)
+    {
+        ret = SDL_JoystickNumHats(mJoystick);
+    }
+
+    return ret;
+}
+
+int QJoystick::reenumerateDevices()
+{
+    enablePolling(false);
+    SDL_QuitSubSystem(SDL_INIT_JOYSTICK);   //Quit the subsystem
+    SDL_Init(SDL_INIT_JOYSTICK);    //Re-open the subsystem (also reenumerate devices)
+    enablePolling(true);
+
+    return SDL_NumJoysticks();  //return the number of attached joysticks
+}
+
+int QJoystick::numJoysticks() const
 {
      return SDL_NumJoysticks();
 }
 
-void QJoystick::getdata()
+void QJoystick::getData()
 {
-    //axis.clear(); //modified by konstad
-    //buttons.clear();  //modified by konstad
-    //hats.clear();   //konstad
-
-
-        SDL_Event event;
-
-     SDL_PollEvent(&event);
-
-    for(int i=0;i<SDL_JoystickNumAxes(m_joystick);i++)
+    if(!joystickAttached())
     {
-        //axis.append(SDL_JoystickGetAxis(m_joystick,i));   //commented out by Konstad
-        axis[i] = SDL_JoystickGetAxis(m_joystick, i);
+        return;
     }
+    enablePolling(false);
 
-    for(int i=0;i<SDL_JoystickNumButtons(m_joystick);i++)
+    SDL_Event event;
+    SDL_PollEvent(&event);
+
+    for(int i=0;i<numButtons();i++)
     {
-        //buttons.append(SDL_JoystickGetButton(m_joystick,i));  //commented out by konstad
-        buttons[i] = SDL_JoystickGetButton(m_joystick, i);
-        if(buttons[i] == true && buttonsPrevious[i] == false)  //if the button just turned true (Konstad)
+        mButtonsCurrent[i] = SDL_JoystickGetButton(mJoystick, i);
+
+        //check if button was pressed
+        if(mButtonsCurrent[i] == true && mButtonsPrevious[i] == false)
         {
-            buttonsToggled[i] = !buttonsToggled[i];
-            emit toggleStateChanged(i);
+            emit buttonPressed(i);
         }
-        buttonsPrevious[i] = buttons[i]; //set the previous value to the current value
-    }
-    for(int i=0;i<SDL_JoystickNumHats(m_joystick); i++) //konstad
-    {
-        //hats.append(SDL_JoystickGetHat(m_joystick,i));
-        hats[i] = SDL_JoystickGetHat(m_joystick, i);
-        if(hats[i] != hatsPrevious[i] && hats[i] != 0)    //if hat moved and NO neutral
+
+        //check if button was released
+        else if(mButtonsCurrent[i] == false && mButtonsPrevious[i] == true)
         {
-            hatsToggled[i] = !hatsToggled[i];
-            qDebug() << "Emitting hatStateChanged";
-            emit hatStateChanged(hats[i]);
+            mButtonsToggled[i] = !mButtonsToggled[i];
+            emit buttonToggled(i, mButtonsToggled[i]);
+            emit buttonReleased(i);
         }
-        hatsPrevious[i] = hats[i];  //set the previous value to the current value
+
+        mButtonsPrevious[i] = mButtonsCurrent[i];
     }
+
+    for(int i=0;i<numHats(); i++)
+    {
+        int hat = SDL_JoystickGetHat(mJoystick, i);
+        hat = mapHatDirection(hat);
+
+        for(int j=0; j<mHatsCurrent[i].count(); j++)
+        {
+            //Record the current key press
+            mHatsCurrent[i][j] = (hat == j);
+
+            //Check values
+            if(mHatsCurrent[i][j] && !mHatsPrevious[i][j])
+            {
+                emit hatPressed(i, j);
+            }
+            else if(!mHatsCurrent[i][j] && mHatsPrevious[i][j])
+            {
+                emit hatToggled(i, j, mHatsToggled[i][j]);
+                mHatsToggled[i][j] = !mHatsToggled[i].value(j);
+                emit hatReleased(i, j);
+            }
+
+            mHatsPrevious[i][j] = mHatsCurrent[i][j];
+
+        }
+    }
+
+    for(int i=0;i<numAxes();i++)
+    {
+        mAxesCurrent[i] = SDL_JoystickGetAxis(mJoystick, i);
+    }
+
+    enablePolling(true);
+
+    //Process axis data
+    processDeadzones();
+    processBilinear();
+
+    emit axesUpdated(mAxesCurrent);
+}
+
+QJoystickInterface::HatDirection QJoystick::mapHatDirection(int sdldir)
+{
+    QJoystickInterface::HatDirection hat = Center;
+    switch(sdldir)
+    {
+    case SDL_HAT_CENTERED:
+        hat = Center;
+        break;
+
+    case SDL_HAT_UP:
+        hat = Up;
+        break;
+
+    case SDL_HAT_RIGHT:
+        hat = Right;
+        break;
+
+    case SDL_HAT_DOWN:
+        hat = Down;
+        break;
+
+    case SDL_HAT_LEFT:
+        hat = Left;
+        break;
+
+    case SDL_HAT_RIGHTUP:
+        hat = RightUp;
+        break;
+
+    case SDL_HAT_RIGHTDOWN:
+        hat = RightDown;
+        break;
+
+    case SDL_HAT_LEFTUP:
+        hat = LeftUp;
+        break;
+
+    case SDL_HAT_LEFTDOWN:
+        hat = LeftDown;
+        break;
+    }
+    return hat;
 }
