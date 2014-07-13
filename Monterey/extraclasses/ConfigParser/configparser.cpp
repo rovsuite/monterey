@@ -52,10 +52,18 @@ bool ConfigParser::parseRov(QROV& rov) const
 
     for(int i=0; i<jsonServos.count(); i++)
     {
-        if(!jsonRelays[i].toObject().contains("name"))
+        if(!jsonServos[i].toObject().contains("name") ||
+           !jsonServos[i].toObject().contains("min") ||
+           !jsonServos[i].toObject().contains("max") ||
+           !jsonServos[i].toObject().contains("defaultValue"))
             return false;
 
-        rov.servos.append(QROVServo(jsonServos[i].toObject()["name"].toString(), 0));
+        const int defVal = jsonServos[i].toObject()["defaultValue"].toInt();
+        rov.servos.append(QROVServo(jsonServos[i].toObject()["name"].toString(),
+                                    defVal,
+                                    jsonServos[i].toObject()["min"].toInt(),
+                                    jsonServos[i].toObject()["max"].toInt(),
+                                    defVal));
     }
 
     for(int i=0; i<jsonSensors.count(); i++)

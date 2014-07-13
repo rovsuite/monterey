@@ -37,11 +37,21 @@ struct QROVServo
 {
     QString name;
     int value;
+    int min;
+    int max;
+    int defaultValue;
 
-    QROVServo(const QString& name, int v)
+    QROVServo(const QString& name,
+              int v,
+              int min = 0,
+              int max = 179,
+              int defaultValue = 0)
     {
         this->name = name;
         this->value = v;
+        this->min = min;
+        this->max = max;
+        this->defaultValue = defaultValue;
     }
 };
 
@@ -244,6 +254,9 @@ inline QJsonObject getRovAsJsonObject(const QROV& rov)
         QJsonObject servoObject;
         servoObject["name"] = servo.name;
         servoObject["value"] = servo.value;
+        servoObject["min"] = servo.min;
+        servoObject["max"] = servo.max;
+        servoObject["defaultValue"] = servo.defaultValue;
 
         servoArray.append(servoObject);
     }

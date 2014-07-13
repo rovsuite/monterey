@@ -100,8 +100,9 @@ MainWindow::MainWindow(QWidget *parent) :
     {
         //Add a slider
         QSlider *slider = new QSlider(Qt::Vertical, this);
-        slider->setMaximum(SERVOMAX);
-        slider->setMinimum(SERVOMIN);
+        slider->setMinimum(controller->rov().servos[i].min);
+        slider->setMaximum(controller->rov().servos[i].max);
+        slider->setValue(controller->rov().servos[i].defaultValue);
         ui->groupBoxServoSliders->layout()->addWidget(slider);
         servoSliders.append(slider);
 

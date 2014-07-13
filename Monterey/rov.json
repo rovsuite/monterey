@@ -12,30 +12,36 @@
     ],
     "servos": [
         {
-            "name": "Servo0"
+            "name"         : "Servo0",
+            "min"          : 0,
+            "max"          : 179,
+            "defaultValue" : 0
         },
         {
-            "name": "Servo1"
+            "name"         : "Servo1",
+            "min"          : 0,
+            "max"          : 179,
+            "defaultValue" : 89
         }
     ],
     "sensors": [
         {
-            "units": "meters",
-            "name": "depth"
+            "units" : "meters",
+            "name"  : "depth"
         },
         {
-            "units": "volts",
-            "name": "voltage"
+            "units" : "volts",
+            "name"  : "voltage"
         },
         {
-            "units": "amps",
-            "name": "current"
+            "units" : "amps",
+            "name"  : "current"
         },
         {
-            "units": "degrees",
-            "name": "heading"
+            "units" : "degrees",
+            "name"  : "heading"
         }
     ],
     "motorLayout" : "tank",
-    "maxDepth" : 100
+    "maxDepth"    : 100
 }
