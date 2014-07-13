@@ -62,12 +62,14 @@ public:
     {
         int button;
         int hat;
+        int dir;
         QPushButton *pushButton;
 
-        RelayMapping(int b, int h, QPushButton *pb)
+        RelayMapping(int b, int h, int d, QPushButton *pb)
         {
             button = b;
             hat = h;
+            dir = d;
             pushButton = pb;
         }
 
@@ -75,6 +77,7 @@ public:
         {
             button = -1;
             hat = -1;
+            dir = -1;
             pushButton = nullptr;
         }
     };
@@ -86,16 +89,21 @@ public:
         int buttonUp;
         int buttonDown;
         int hatUp;
+        int dirUp;
         int hatDown;
+        int dirDown;
         QSlider *slider;
 
         ServoMapping(int bUp, int bDown,
-                     int hUp, int hDown, QSlider *s)
+                     int hUp, int hDown,
+                     int dUp, int dDown, QSlider *s)
         {
             buttonUp = bUp;
             buttonDown = bDown;
             hatUp = hUp;
+            dirUp = dUp;
             hatDown = hDown;
+            dirDown = dDown;
             slider = s;
         }
 
@@ -104,7 +112,9 @@ public:
             buttonUp = -1;
             buttonDown = -1;
             hatUp = -1;
+            dirUp = -1;
             hatDown = -1;
+            dirDown = -1;
             slider = nullptr;
         }
     };

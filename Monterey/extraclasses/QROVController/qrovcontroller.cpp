@@ -252,14 +252,13 @@ void QROVController::onHatReleased(int hat, int dir)
 
 void QROVController::onHatToggled(int hat, int dir, bool state)
 {
-    //TODO: Update for multiple hats
     QMutex mutex;
     mutex.lock();
     if(0 != dir)
     {
         foreach(RelayMapping r, relayMappings) //used for relays
         {
-            if(dir == r.hat)
+            if(hat == r.hat && dir == r.dir)
             {
                 emit clickRelayButton(r.pushButton);
             }
@@ -476,12 +475,15 @@ void QROVController::loadSettings()
     {
         relayMappings[i].button = mySettings->value("joystick/but/r" + QString::number(i)).toInt();
         relayMappings[i].hat = mySettings->value("joystick/hat/r" + QString::number(i)).toInt();
+        relayMappings[i].dir = mySettings->value("joystick/dir/r" + QString::number(i)).toInt();
     }
 
     for(int i=0; i<servoMappings.count(); i++)
     {
         servoMappings[i].hatDown = mySettings->value("joystick/hat/s" + QString::number(i) + "/down").toInt();
+        servoMappings[i].dirDown = mySettings->value("joystick/dir/s" + QString::number(i) + "/down").toInt();
         servoMappings[i].hatUp = mySettings->value("joystick/hat/s" + QString::number(i) + "/up").toInt();
+        servoMappings[i].dirUp = mySettings->value("joystick/dir/s" + QString::number(i) + "/up").toInt();
         servoMappings[i].buttonDown = mySettings->value("joystick/but/s" + QString::number(i) + "/down").toInt();
         servoMappings[i].buttonUp = mySettings->value("joystick/but/s" + QString::number(i) + "/up").toInt();
 
@@ -534,12 +536,15 @@ void QROVController::saveSettings()
     {
         mySettings->setValue("joystick/but/r" + QString::number(i), relayMappings[i].button);
         mySettings->setValue("joystick/hat/r" + QString::number(i), relayMappings[i].hat);
+        mySettings->setValue("joystick/dir/r" + QString::number(i), relayMappings[i].dir);
     }
 
     for(int i=0; i<servoMappings.count(); i++)
     {
         mySettings->setValue("joystick/hat/s" + QString::number(i) + "/up", servoMappings[i].hatUp);
+        mySettings->setValue("joystick/dir/s" + QString::number(i) + "/up", servoMappings[i].dirUp);
         mySettings->setValue("joystick/hat/s" + QString::number(i) + "/down", servoMappings[i].hatDown);
+        mySettings->setValue("joystick/dir/s" + QString::number(i) + "/down", servoMappings[i].dirDown);
         mySettings->setValue("joystick/but/s" + QString::number(i) + "/up", servoMappings[i].buttonUp);
         mySettings->setValue("joystick/but/s" + QString::number(i) + "/down", servoMappings[i].buttonDown);        
     }
@@ -599,9 +604,11 @@ void QROVController::readMappings()
         {
             for(int i=0;i<servoMappings.count();i++)  //for each servo
             {
-                if(hatStates[h] == servoMappings[i].hatUp) //if increment
+                if(h == servoMappings[i].hatUp &&
+                   hatStates[h] == servoMappings[i].dirUp)  //if increment
                     emit changeServo(i, 1);
-                else if(hatStates[h] == servoMappings[i].hatDown)  //if decrement
+                else if(h == servoMappings[i].hatDown &&
+                        hatStates[h] == servoMappings[i].dirDown)   //if dec
                     emit changeServo(i, 0);
             }
         }

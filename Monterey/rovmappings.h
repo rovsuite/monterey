@@ -23,10 +23,13 @@ private slots:
     void on_pbSave_clicked();
     void on_pbCancel_clicked();
     void updateDisplay();
+    QString getHatString(int hat, int dir);
+    void getHat(QString str, int& hat, int& dir);
 
 private:
     Ui::ROVMappings *ui;
     QTimer *updateTimer;
+    QString inputMask;
 
     //Keep track of relay settings
     QList<QComboBox*> relayButtons;

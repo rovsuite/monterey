@@ -15,6 +15,9 @@ ROVMappings::ROVMappings(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    //Match any string with (3 digits, 3 digits)
+    inputMask = "(900,900)";
+
     //Load the existing mappings
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
     if(p->controller->isJoyAttached())
@@ -71,7 +74,16 @@ ROVMappings::ROVMappings(QWidget *parent) :
             label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             lineEdit->setFixedWidth(100);
             lineEdit->setAlignment(Qt::AlignHCenter);
-            lineEdit->setText(QString::number(p->controller->relayMappings[i].hat));
+            lineEdit->setInputMask(inputMask);
+            QString current;
+            current = "(";
+            current += QString::number(p->controller->relayMappings[i].hat);
+            current += ",";
+            current += QString::number(p->controller->relayMappings[i].dir);
+            current += ")";
+            lineEdit->setText(getHatString(p->controller->relayMappings[i].hat,
+                                           p->controller->relayMappings[i].dir
+                                           ));
             newHat->addWidget(label);
             newHat->addWidget(lineEdit);
             hatLayout->addLayout(newHat);
@@ -129,7 +141,11 @@ ROVMappings::ROVMappings(QWidget *parent) :
             labelUp->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             lineEditUp->setFixedWidth(100);
             lineEditUp->setAlignment(Qt::AlignHCenter);
-            lineEditUp->setText(QString::number(p->controller->servoMappings[i].hatUp));
+            lineEditUp->setInputMask(inputMask);
+            lineEditUp->setText(getHatString(p->controller->
+                                             servoMappings[i].hatUp,
+                                             p->controller->
+                                             servoMappings[i].dirUp));
             newHatUp->addWidget(labelUp);
             newHatUp->addWidget(lineEditUp);
             hatLayout->addLayout(newHatUp);
@@ -139,7 +155,10 @@ ROVMappings::ROVMappings(QWidget *parent) :
             labelDown->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             lineEditDown->setFixedWidth(100);
             lineEditDown->setAlignment(Qt::AlignHCenter);
-            lineEditDown->setText(QString::number(p->controller->servoMappings[i].hatDown));
+            lineEditDown->setText(getHatString(p->controller->
+                                               servoMappings[i].hatDown,
+                                               p->controller->
+                                               servoMappings[i].dirDown));
             newHatDown->addWidget(labelDown);
             newHatDown->addWidget(lineEditDown);
             hatLayout->addLayout(newHatDown);
@@ -183,6 +202,10 @@ void ROVMappings::on_pbSave_clicked()
         {
             p->controller->relayMappings[i].button = relayButtons.at(i)->currentIndex();
             p->controller->relayMappings[i].hat = relayHats.at(i)->text().toInt();
+            int hat, dir;
+            getHat(relayHats.at(i)->text(), hat, dir);
+            p->controller->relayMappings[i].hat = hat;
+            p->controller->relayMappings[i].dir = dir;
         }
 
         //Set the servos
@@ -191,8 +214,14 @@ void ROVMappings::on_pbSave_clicked()
             p->controller->servoMappings[i].buttonUp = servoButtonsUp.at(i)->currentIndex();
             p->controller->servoMappings[i].buttonDown = servoButtonsDown.at(i)->currentIndex();
 
-            p->controller->servoMappings[i].hatUp = servoHatsUp.at(i)->text().toInt();
-            p->controller->servoMappings[i].hatDown = servoHatsDown.at(i)->text().toInt();
+            int hat, dir;
+            getHat(servoHatsUp.at(i)->text(), hat, dir);
+            p->controller->servoMappings[i].hatUp = hat;
+            p->controller->servoMappings[i].dirUp = dir;
+
+            getHat(servoHatsDown.at(i)->text(), hat, dir);
+            p->controller->servoMappings[i].hatDown = hat;
+            p->controller->servoMappings[i].dirDown = dir;
         }
 
         p->controller->saveSettings();  //save the settings
@@ -240,8 +269,7 @@ void ROVMappings::updateDisplay()
                 {
                     hatString.append(" ");
                 }
-                hatString.append("(" + QString::number(i) + "," +
-                                 QString::number(hatsPressed[i]) + ")");
+                hatString.append(getHatString(i, hatsPressed[i]));
             }
         }
         ui->leCurrentHat->setText(hatString);
@@ -262,4 +290,26 @@ void ROVMappings::updateDisplay()
         }
         ui->leCurrentButton->setText(buttonString);
     }
+}
+
+QString ROVMappings::getHatString(int hat, int dir)
+{
+    QString str = "(";
+    str += QString::number(hat);
+    str += ",";
+    str += QString::number(dir);
+    str += ")";
+    return str;
+}
+
+void ROVMappings::getHat(QString str, int& hat, int& dir)
+{
+    //Remove parentheses
+    str.remove(0, 1);
+    str.remove(str.length(), 1);
+
+    //Split up according to the comma
+    QStringList hatValues = str.split(",");
+    hat = hatValues[0].toInt();
+    dir = hatValues[1].toInt();
 }
