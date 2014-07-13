@@ -5,6 +5,9 @@
 #include <QLayout>
 #include <QtDebug>
 #include <QMessageBox>
+#include <QComboBox>
+#include <QTimer>
+#include <QLineEdit>
 
 ROVMappings::ROVMappings(QWidget *parent) :
     QDialog(parent),
@@ -16,12 +19,13 @@ ROVMappings::ROVMappings(QWidget *parent) :
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
     if(p->controller->isJoyAttached())
     {
-        numAxes = p->controller->getJoystickNumberAxes();
+        const int numAxes = p->controller->getJoystickAxesValues().count();
+        const int numButtons = p->controller->getJoystickButtonsPressed().count();
         //Load maximum axes
         QList<QSpinBox*> spinBoxes = this->findChildren<QSpinBox*>();
         foreach(QSpinBox* sb, spinBoxes)
         {
-            sb->setMaximum(p->controller->getJoystickNumberAxes() - 1);
+            sb->setMaximum(numAxes-1);
         }
 
         //Load axes
@@ -43,7 +47,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
             QComboBox *cb = new QComboBox(this);
             relayButtons.append(cb);
 
-            for(int b=0; b < p->controller->getJoystickNumberButtons(); b++)    //add each button
+            for(int b=0; b < numButtons; b++)    //add each button
             {
                 cb->addItem(QString::number(b));
             }
@@ -87,7 +91,7 @@ ROVMappings::ROVMappings(QWidget *parent) :
             QComboBox *cbDown = new QComboBox(this);
             servoButtonsDown.append(cbDown);
 
-            for(int b=0; b < p->controller->getJoystickNumberButtons(); b++)
+            for(int b=0; b < numButtons; b++)
             {
                 cbUp->addItem(QString::number(b));
                 cbDown->addItem(QString::number(b));
@@ -159,7 +163,6 @@ ROVMappings::~ROVMappings()
 {
     qDebug() << "Mappings dialog closed";
     delete ui;
-    this->deleteLater();
 }
 
 void ROVMappings::on_pbSave_clicked()
@@ -210,64 +213,53 @@ void ROVMappings::updateDisplay()
     MainWindow *p = dynamic_cast<MainWindow *> (this->parentWidget());
     if(p->controller->isJoyAttached())
     {
+        QList<int> axesValues = p->controller->getJoystickAxesValues();
+        const int numAxes = axesValues.count();
         //Display axes values
-        qDebug() << "Displaying 1 axis values";
         Q_ASSERT(ui->sbTL->value() < numAxes && ui->sbTL->value() >= 0);
-        ui->pbTL->setValue(p->controller->getJoystickAxesValues(ui->sbTL->value()));
-        qDebug() << ui->pbTL->value();
-        qDebug() << "Displaying 2 axis values";
+        ui->pbTL->setValue(axesValues[ui->sbTL->value()]);
         Q_ASSERT(ui->sbTR->value() < numAxes && ui->sbTR->value() >= 0);
-        ui->pbTR->setValue(p->controller->getJoystickAxesValues(ui->sbTR->value()));
-        qDebug() << ui->pbTR->value();
-        qDebug() << "Displaying 3 axis values";
+        ui->pbTR->setValue(axesValues[ui->sbTR->value()]);
         Q_ASSERT(ui->sbV->value() < numAxes && ui->sbV->value() >= 0);
-        ui->pbV->setValue(p->controller->getJoystickAxesValues(ui->sbV->value()));
-        qDebug() << ui->pbV->value();
-        qDebug() << "Displaying 4 axis values";
+        ui->pbV->setValue(axesValues[ui->sbV->value()]);
         Q_ASSERT(ui->sbVX->value() < numAxes && ui->sbVX->value() >= 0);
-        ui->pbVX->setValue(p->controller->getJoystickAxesValues(ui->sbVX->value()));
-        qDebug() << ui->pbVX->value();
-        qDebug() << "Displaying 5 axis values";
+        ui->pbVX->setValue(axesValues[ui->sbVX->value()]);
         Q_ASSERT(ui->sbVY->value() < numAxes && ui->sbVY->value() >= 0);
-        ui->pbVY->setValue(p->controller->getJoystickAxesValues(ui->sbVY->value()));
-        qDebug() << ui->pbVY->value();
-        qDebug() << "Displaying 6 axis values";
+        ui->pbVY->setValue(axesValues[ui->sbVY->value()]);
         Q_ASSERT(ui->sbVZ->value() < numAxes && ui->sbVZ->value() >= 0);
-        ui->pbVZ->setValue(p->controller->getJoystickAxesValues(ui->sbVZ->value()));
-        qDebug() << ui->pbVZ->value();
+        ui->pbVZ->setValue(axesValues[ui->sbVZ->value()]);
 
         //Display hat value
-        qDebug() << "Displaying hat value!";
-        ui->leCurrentHat->setText(QString::number(p->controller->getJoystickCurrentHatValue()));
+        QString hatString = "";
+        QList<int> hatsPressed = p->controller->getJoystickHatsPressed();
+        for(int i=0; i<hatsPressed.count(); i++)
+        {
+            if(hatsPressed[i] != 0)
+            {
+                if(!hatString.isEmpty())
+                {
+                    hatString.append(" ");
+                }
+                hatString.append("(" + QString::number(i) + "," +
+                                 QString::number(hatsPressed[i]) + ")");
+            }
+        }
+        ui->leCurrentHat->setText(hatString);
 
         //Display currently pressed buttons
-        qDebug() << "Displaying button values!";
-        QString temp;
-        QList<int> tempList = p->controller->getJoystickCurrentButtonValue();
-        if(tempList.count())
+        QString buttonString = "";
+        QList<bool> buttonsPressed = p->controller->getJoystickButtonsPressed();
+        for(int b=0; b<buttonsPressed.count(); b++)
         {
-            if(tempList[0] == -1)   //if no button pressed
+            if(buttonsPressed[b])
             {
-                temp.append(" ");
-            }
-            else if(tempList.count() == 1)   //if only one item
-            {
-                temp.append(QString::number(tempList[0]));
-            }
-            else    //if multiple buttons are pressed
-            {
-                for(int i=0;i<tempList.count();i++) //should fix crash as of 8/1/2012
+                if(!buttonString.isEmpty())
                 {
-                    temp.append(QString::number(i));
-                    temp.append(", ");
+                    buttonString.append(", ");
                 }
-                if(temp.endsWith(QChar(','), Qt::CaseInsensitive))
-                    temp.chop(temp.count()-1);  //remove last comma
+                buttonString.append(QString::number(b));
             }
-            ui->leCurrentButton->setText(temp);
         }
-        else
-            qWarning() << "tempList has no values" << tempList;
-
+        ui->leCurrentButton->setText(buttonString);
     }
 }

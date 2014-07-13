@@ -12,20 +12,20 @@
 #ifdef Q_OS_LINUX
 #include "../../SDL-linux/SDL.h"
 #else
-#include "../../SDL/SDL.h"
+#include "depends/windows/SDL/SDL.h"
 #endif
 
 class QJoystick: public QJoystickInterface
 {
     Q_OBJECT
     public:
-        virtual QJoystick();
+        QJoystick();
         virtual ~QJoystick();
 
         public slots:
         virtual int reenumerateDevices(); 
 
-        virtual const QString& name() const;
+        virtual QString name() const;
 
         virtual int numJoysticks() const;
 
@@ -42,6 +42,7 @@ class QJoystick: public QJoystickInterface
 
     private slots:
         virtual void getData();
+        HatDirection mapHatDirection(int sdldir);
 
     private:
         SDL_Joystick *mJoystick;

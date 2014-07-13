@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QDir>
 #include "../../extraclasses/QROV/qrov.h"
+#include "../../extraclasses/QJoystick/qjoystick.h"
 
 QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent) :
     QObject(parent)
@@ -12,8 +13,6 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     mutex.lock();
 
     enteredGoodState = true;    //default to success
-
-    numberOfAxes = 0;
 
     //Parse the ROV configuration file
     QDir dir;
@@ -53,7 +52,6 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
 
     monitorJoystick = new QBoolMonitor(this);
     monitorJoystick->setComparisonState(joyAttached);
-    joyID = 0;
 
     myVectorDrive = new QVectorDrive2(this);
     myVectorDrive->initVector(MOTORMIN, MOTORMAX, 0, 0, 0);
@@ -88,8 +86,13 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     connect(capturePi, SIGNAL(comChanged(bool)), this, SIGNAL(comPiChanged(bool)));
 
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(motherFunction()));
-    connect(joy, SIGNAL(toggleStateChanged(int)), this, SLOT(joystickButtonClicked(int)));
-    connect(joy, SIGNAL(hatStateChanged(int)), this, SLOT(joystickHatClicked(int)));
+    connect(joy, SIGNAL(axesUpdated(QList<int>)), this, SLOT(onAxesUpdated(QList<int>)));
+    connect(joy, SIGNAL(buttonPressed(int)), this, SLOT(onButtonPressed(int)));
+    connect(joy, SIGNAL(buttonReleased(int)), this, SLOT(onButtonReleased(int)));
+    connect(joy, SIGNAL(buttonToggled(int,bool)), this, SLOT(onButtonToggled(int,bool)));
+    connect(joy, SIGNAL(hatPressed(int,int)), this, SLOT(onHatPressed(int,int)));
+    connect(joy, SIGNAL(hatReleased(int,int)), this, SLOT(onHatReleased(int,int)));
+    connect(joy, SIGNAL(hatToggled(int,int,bool)), this, SLOT(onHatToggled(int,int,bool)));
 
     setValidity(enteredGoodState);
     packetTimer->start();
@@ -168,18 +171,12 @@ void QROVController::initJoysticks()
 {
     QMutex mutex;
     mutex.lock();
-    joysAvail = joy->availableJoysticks();
 
-    if(joysAvail != 0)
+    if(0 < joy->numJoysticks())
     {
         joyAttached = true;
-        joy->setJoystick(0);
-        numberOfAxes = joy->joystickNumAxes(0);
-        joystickAxesValues.clear();
-        for(int i=0;i<numberOfAxes;i++)
-        {
-            joystickAxesValues.append(0);
-        }
+        joy->currentJoystick(0);
+
         qDebug() << "Joystick attached";
     }
     else
@@ -196,7 +193,6 @@ void QROVController::initJoysticks()
 void QROVController::rescanJoysticks()
 {
     joy->reenumerateDevices();
-    getJoysAvail(); //recalculate the number of available joysticks
     initJoysticks();    //re-initialize joysticks
 }
 
@@ -205,12 +201,15 @@ QStringList QROVController::getJoystickNames()
     QMutex mutex;
     mutex.lock();
     QStringList joystickNames;
-    if(joy->availableJoysticks() > 0)
+    if(joy->numJoysticks() > 0)
     {
-        for(int i=0;i<joy->availableJoysticks();i++)
+        int curJoystick = joy->currentJoystick();
+        for(int i=0;i<joy->numJoysticks();i++)
         {
-            joystickNames.append(joy->joystickName(i));
+            joy->currentJoystick(i);
+            joystickNames.append(joy->name());
         }
+        joy->currentJoystick(curJoystick);
     }
     else
     {
@@ -220,38 +219,108 @@ QStringList QROVController::getJoystickNames()
     return joystickNames;
 }
 
-int QROVController::getJoystickCurrentHatValue()
+void QROVController::onButtonPressed(int button)
 {
-    if(!joy->hats.isEmpty())
-    {
-        return joy->hats[0];
-    }
-    else
-    {
-        return 0;
-    }
+    //Leave empty for now
 }
 
-QList<int> QROVController::getJoystickCurrentButtonValue()
+void QROVController::onButtonReleased(int button)
+{
+    //Leave empty for now
+}
+
+void QROVController::onButtonToggled(int button, bool state)
+{
+    //Check each relay to see if it's joystick button was clicked,
+    //if so, then click the QPushButton corresponding to each relay
+    QMutex mutex;
+    mutex.lock();
+    foreach(RelayMapping r, relayMappings)
+    {
+        if(button == r.button)
+        {
+            emit clickRelayButton(r.pushButton);
+        }
+    }
+    mutex.unlock();
+}
+
+void QROVController::onHatPressed(int hat, int dir)
+{
+    //Leave empty for now
+}
+
+void QROVController::onHatReleased(int hat, int dir)
+{
+    //Leave empty for now
+}
+
+void QROVController::onHatToggled(int hat, int dir, bool state)
+{
+    //TODO: Update for multiple hats
+    QMutex mutex;
+    mutex.lock();
+    if(0 != dir)
+    {
+        foreach(RelayMapping r, relayMappings) //used for relays
+        {
+            if(dir == r.hat)
+            {
+                emit clickRelayButton(r.pushButton);
+            }
+        }
+    }
+    mutex.unlock();
+}
+
+void QROVController::onAxesUpdated(const QList<int>& values)
 {
     QMutex mutex;
     mutex.lock();
-    QList<int> returnValues;
-    for(int i=0;i<joy->buttons.count();i++) //for each button
+
+    const int numValues = values.count();
+    Q_ASSERT(joySettings.axisX < numValues);
+    Q_ASSERT(joySettings.axisY < numValues);
+    Q_ASSERT(joySettings.axisZ < numValues);
+    Q_ASSERT(joySettings.axisV < numValues);
+    Q_ASSERT(joySettings.axisL < numValues);
+    Q_ASSERT(joySettings.axisR < numValues);
+
+    //Execute vector math
+    if(mRov.motorLayout == vectorDrive)
     {
-        if(joy->buttons[i] == true) //if button is pressed
+        Q_ASSERT(mRov.motors.count() == 6);
+        myVectorDrive->vectorMath(values[joySettings.axisX],
+               values[joySettings.axisY],
+               values[joySettings.axisZ],
+               values[joySettings.axisV],
+                false);
+
+        for(int i=0;i<mRov.motors.count();i++)    //retrieve vector values
         {
-            returnValues.append(i);
+            mRov.motors[i].value = myVectorDrive->getVectorValue(i);
         }
     }
-
-    if(returnValues.count() == 0)   //if no buttons are pressed
+    else    //if tank drive
     {
-        returnValues.append(-1);    //error value
+        //Pseudo code:
+        // Step 1: convert the joystick axis value from [-32768,32727] to [0,65355]
+        // Step 2: find the percentage of the stick deflection
+        // Step 3: find the value of that percentage of the motor range (add the minimum value to make it within the range)
+
+        const double motorRange = MOTORMAX - MOTORMIN;
+
+        double percentL = ((double)(values[joySettings.axisL] + 32768) / 65355.0);
+        mRov.motors[0].value = (int)((percentL * motorRange) + MOTORMIN);
+
+        double percentR = ((double)(values[joySettings.axisR] + 32768) / 65355.0);
+        mRov.motors[1].value = (int)((percentR * motorRange) + MOTORMIN);
+
+        double percentV = ((double)(values[joySettings.axisV] + 32768) / 65355.0);
+        mRov.motors[2].value = (int)((percentV * motorRange) + MOTORMIN);
     }
 
     mutex.unlock();
-    return returnValues;
 }
 
 void QROVController::processPacket(QString packet)
@@ -368,17 +437,17 @@ void QROVController::noJoystick()
     }
 }
 
-int QROVController::getPortTOBI()
+int QROVController::getPortTOBI() const
 {
     return TOBIPORT;
 }
 
-int QROVController::getPortTIBO()
+int QROVController::getPortTIBO() const
 {
     return captureRx->socket()->localPort();
 }
 
-int QROVController::getPortRpiTibo()
+int QROVController::getPortRpiTibo() const
 {
     return capturePi->socket()->localPort();
 }
@@ -403,7 +472,6 @@ void QROVController::loadSettings()
     joySettings.deadX = mySettings->value("joystick/deadX", "0").toInt();
     joySettings.deadY = mySettings->value("joystick/deadY", "0").toInt();
     joySettings.deadZ = mySettings->value("joystick/deadZ", "0").toInt();
-    joyID = mySettings->value("joystick/id", "0").toInt();
 
     for(int i=0; i<relayMappings.count(); i++)
     {
@@ -459,7 +527,6 @@ void QROVController::saveSettings()
     mySettings->setValue("joystick/deadX", joySettings.deadX);
     mySettings->setValue("joystick/deadY", joySettings.deadY);
     mySettings->setValue("joystick/deadZ", joySettings.deadZ);
-    mySettings->setValue("joystick/id", joyID);
 
     for(int i=0; i<relayMappings.count(); i++)
     {
@@ -487,39 +554,6 @@ void QROVController::saveSettings()
     emit savedSettings("Settings saved", MsgType::Good);
 }
 
-void QROVController::joystickButtonClicked(int buttonID)
-{
-    //Check each relay to see if it's joystick button was clicked,
-    //if so, then click the QPushButton corresponding to each relay
-    QMutex mutex;
-    mutex.lock();
-    foreach(RelayMapping r, relayMappings)
-    {
-        if(buttonID == r.button)
-        {
-            emit clickRelayButton(r.pushButton);
-            qDebug() << "Relay button clicked";
-        }
-    }
-    mutex.unlock();
-}
-
-void QROVController::joystickHatClicked(int hatID)
-{
-    QMutex mutex;
-    mutex.lock();
-    foreach(RelayMapping r, relayMappings) //used for relays
-    {
-        if(hatID == r.hat)
-        {
-            emit clickRelayButton(r.pushButton);
-            qDebug() << "Relay hat clicked";
-        }
-        qDebug() << hatID << r.hat;
-    }
-    mutex.unlock();
-}
-
 void QROVController::motherFunction()
 {
     QMutex mutex;
@@ -528,9 +562,8 @@ void QROVController::motherFunction()
     //If not in a valid state, don't do anything
     if(getValidity())
     {
-        if(joysAvail !=0 )
+        if(0 < joy->numJoysticks())
         {
-            updateJoystickData();
             readMappings();
         }
         else
@@ -543,7 +576,7 @@ void QROVController::motherFunction()
     mutex.unlock();
 }
 
-int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outMax)
+int QROVController::mapInt(int input, int inMin, int inMax, int outMin, int outMax) const
 {
     int output = (input - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
     return output;
@@ -557,102 +590,33 @@ void QROVController::readMappings()
 {
     QMutex mutex;
     mutex.lock();
-    for(int h=0; h < joy->hats.count(); h++) //support for multiple hats
+    QList<int> hatStates = joy->hatStates();
+    for(int h=0; h < hatStates.count(); h++) //support for multiple hats
     {
-        if(joy->hats[h] != 0)   //if hat is not neutral
+        if(hatStates[h] != 0)   //if hat is not neutral
         {
             for(int i=0;i<servoMappings.count();i++)  //for each servo
             {
-                if(joy->hats[h] == servoMappings[i].hatUp) //if increment
+                if(hatStates[h] == servoMappings[i].hatUp) //if increment
                     emit changeServo(i, 1);
-                else if(joy->hats[h] == servoMappings[i].hatDown)  //if decrement
+                else if(hatStates[h] == servoMappings[i].hatDown)  //if decrement
                     emit changeServo(i, 0);
             }
         }
     }
     for(int s=0; s < servoMappings.count(); s++) //for each servo
     {
-        for(int i=0; i < joy->buttons.count();i++) //for each button
+        for(int i=0; i < joy->buttonStates().count();i++) //for each button
         {
-            if(joy->buttons[i] && servoMappings[s].buttonUp == i) //if the up button is pressed
+            if(joy->buttonStates()[i] && servoMappings[s].buttonUp == i) //if the up button is pressed
             {
                 emit changeServo(s, 1);   //increment
             }
-            else if(joy->buttons[i] && servoMappings[s].buttonDown == i) //if the down button is pressed
+            else if(joy->buttonStates()[i] && servoMappings[s].buttonDown == i) //if the down button is pressed
             {
                 emit changeServo(s, 0); //decrement
             }
         }
-    }
-    mutex.unlock();
-}
-
-void QROVController::updateJoystickData()
-{
-    QMutex mutex;
-    mutex.lock();
-    joy->getdata(); //read the joystick (within QJoystick)
-
-    //Bilinear reading code
-    double bilinearThreshold = 1.0/joySettings.bilinearRatio;
-    if(joySettings.bilinearEnabled)
-    {
-        for(int i=0;i<joy->axis.count();i++)    //for each axis value
-        {
-            if((bilinearThreshold * -32768) <= joy->axis[i] && joy->axis[i] <= (bilinearThreshold * 32767)) //if the stick is within the range
-            {
-                joy->axis[i] = (joy->axis[i] / joySettings.bilinearRatio);
-            }
-            else if((bilinearThreshold * 32767) < joy->axis[i] && joy->axis[i] <= 32767)  //if the stick is in upper section of range
-            {
-                joy->axis[i] = ((joySettings.bilinearRatio * joy->axis[i]) + ((joySettings.bilinearRatio * -32767)+32767));
-            }
-            else if(-32768 <= joy->axis[i] && joy->axis[i] < (bilinearThreshold * -32768))    //if the stick is in the lower section of range
-            {
-                joy->axis[i] = ((joySettings.bilinearRatio * joy->axis[i]) + ((joySettings.bilinearRatio * 32768)-32768));
-            }
-        }
-    }
-    for(int i=0;i<numberOfAxes;i++) //record the values of the axes
-    {
-        joystickAxesValues[i] = joy->axis[i];
-    }
-
-    //Execute vector math
-    if(mRov.motorLayout == vectorDrive)
-    {
-        myVectorDrive->vectorMath(joy->axis[joySettings.axisX],joy->axis[joySettings.axisY],joy->axis[joySettings.axisZ],joy->axis[joySettings.axisV],false);
-
-        if(mRov.motors.count() == 6)
-        {
-            for(int i=0;i<mRov.motors.count();i++)    //retrieve vector values
-            {
-                mRov.motors[i].value = myVectorDrive->getVectorValue(i);
-            }
-        }
-
-    }
-    else    //if tank drive
-    {
-        //Pseudo code:
-        // Step 1: convert the joystick axis value from [-32768,32727] to [0,65355]
-        // Step 2: find the percentage of the stick deflection
-        // Step 3: find the value of that percentage of the motor range (add the minimum value to make it within the range)
-
-        const double motorRange = MOTORMAX - MOTORMIN;
-
-        joy->axis[joySettings.axisL] = joy->axis[joySettings.axisL] + 32768;
-        double percentL = ((double)joy->axis[joySettings.axisL] / 65355.0);
-        mRov.motors[0].value = (int)((percentL * motorRange) + MOTORMIN);
-
-        joy->axis[joySettings.axisR] = joy->axis[joySettings.axisR] + 32768;
-        double percentR = ((double)joy->axis[joySettings.axisR] / 65355.0);
-        mRov.motors[1].value = (int)((percentR * motorRange) + MOTORMIN);
-
-        joy->axis[joySettings.axisV] = joy->axis[joySettings.axisV] + 32768;
-        double percentV = ((double)joy->axis[joySettings.axisV] / 65355.0);
-        mRov.motors[2].value = (int)((percentV * motorRange) + MOTORMIN);
-
     }
     mutex.unlock();
 }
@@ -663,7 +627,7 @@ void QROVController::diveTimeReset()
     emit appendToActivityMonitor("Dive timer reset", MsgType::Warn);
 }
 
-QString QROVController::diveTimeString()
+QString QROVController::diveTimeString() const
 {
     return diveTimer->diveTimeString();
 }
@@ -684,4 +648,29 @@ void QROVController::logRovState()
     {
         rovHistory.push_back(mRov);
     }
+}
+
+int QROVController::getJoyId() const
+{
+    return joy->currentJoystick();
+}
+
+int QROVController::getNumberJoysticks() const
+{
+    return joy->numJoysticks();
+}
+
+const QList<int>& QROVController::getJoystickAxesValues() const
+{
+    return joy->axisStates();
+}
+
+const QList<bool>& QROVController::getJoystickButtonsPressed() const
+{
+    return joy->buttonStates();
+}
+
+QList<int> QROVController::getJoystickHatsPressed() const
+{
+    return joy->hatStates();
 }

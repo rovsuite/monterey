@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.cpp \
     extraclasses/LedIndicator/ledindicator.cpp \
     extraclasses/UdpCapture/udpcapture.cpp \
-    extraclasses/ConfigParser/configparser.cpp
+    extraclasses/ConfigParser/configparser.cpp \
+    extraclasses/QJoystickInterface/qjoystickinterface.cpp
 
 HEADERS  += mainwindow.h \
     ../Monterey/extraclasses/QActivityMonitor/qactivitymonitor.h \
@@ -62,7 +63,8 @@ HEADERS  += mainwindow.h \
     extraclasses/RaspberryPiDebugWidget/raspberrypidebugwidget.h \
     extraclasses/LedIndicator/ledindicator.h \
     extraclasses/UdpCapture/udpcapture.h \
-    extraclasses/ConfigParser/configparser.h
+    extraclasses/ConfigParser/configparser.h \
+    extraclasses/QJoystickInterface/qjoystickinterface.h
 
 FORMS    += mainwindow.ui \
     rovdebug.ui \
