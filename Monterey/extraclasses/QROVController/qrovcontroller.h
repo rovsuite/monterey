@@ -50,10 +50,10 @@ class QROVController : public QObject
 {
     Q_OBJECT
 public:
-    explicit QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent = 0);
-    ~QROVController();
-
     enum MsgType { Info, Good, Warn, Bad };
+
+    explicit QROVController(MsgType& status, QString& statusMessage, QObject *parent = 0);
+    ~QROVController();
 
     QBoolMonitor *monitorJoystick;
 

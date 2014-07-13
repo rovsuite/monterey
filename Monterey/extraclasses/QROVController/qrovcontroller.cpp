@@ -6,13 +6,13 @@
 #include "../../extraclasses/QROV/qrov.h"
 #include "../../extraclasses/QJoystick/qjoystick.h"
 
-QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, QObject *parent) :
+QROVController::QROVController(MsgType& status, QString& statusMessage, QObject *parent) :
     QObject(parent)
 {
     QMutex mutex;
     mutex.lock();
 
-    enteredGoodState = true;    //default to success
+    status = Good;  //default to success
 
     //Parse the ROV configuration file
     QDir dir;
@@ -29,11 +29,12 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
 
             qCritical() << "Could not parse ROV configuration file, QUITTING";
             statusMessage = "Could not load defaults, QUITTING.";
-            enteredGoodState = false;
+            status = Bad;
         }
         else
         {
             statusMessage = "Loaded default ROV configuration.";
+            status = Warn;
         }
     }
     else
@@ -91,7 +92,7 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     connect(joy, SIGNAL(hatReleased(int,int)), this, SLOT(onHatReleased(int,int)));
     connect(joy, SIGNAL(hatToggled(int,int,bool)), this, SLOT(onHatToggled(int,int,bool)));
 
-    setValidity(enteredGoodState);
+    setValidity((status == Good || status == Warn));
     packetTimer->start();
     mutex.unlock();
     qDebug() << "Controller finished setup!";

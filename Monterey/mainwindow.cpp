@@ -42,8 +42,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //ROV control engine
     bool rovControllerReady = false;
+    MsgType rovControllerState = MsgType::Good;
     QString statusMessage = "";
-    controller = new QROVController(rovControllerReady, statusMessage);
+    controller = new QROVController(rovControllerState, statusMessage);
+    if(rovControllerState == MsgType::Good || rovControllerState == MsgType::Warn)
+    {
+        rovControllerReady = true;
+    }
     engineThread = new QThread(this); //create a second thread
     controller->moveToThread(engineThread); //move the QROVController engine to the second thread
     engineThread->start();
@@ -54,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QString versionDisp("Version: ");
     versionDisp.append(version);
     activityMonitor->display(versionDisp, MsgType::Info);
-    activityMonitor->display(statusMessage, (rovControllerReady ? MsgType::Good : MsgType::Bad));
+    activityMonitor->display(statusMessage, rovControllerState);
 
    if(!rovControllerReady)
    {
