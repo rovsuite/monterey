@@ -9,16 +9,11 @@ QVectorDrive2::QVectorDrive2(QObject *parent) :
     yVal = 0;
     zVal = 0;
     vVal = 0;
-    xDeadzone = 0;
-    yDeadzone = 0;
-    zDeadzone = 0;
     vectorType = 1;
 }
 
 QVectorDrive2::~QVectorDrive2()
 {
-    vectorValues.clear();
-    this->deleteLater();
 }
 
 int QVectorDrive2::mapInt(int input, int inMin, int inMax, int outMin, int outMax)
@@ -97,14 +92,10 @@ double QVectorDrive2::maxDouble(double a, double b)
     }
 }
 
-void QVectorDrive2::initVector(int _vectorMin, int _vectorMax, int _xDeadzone, int _yDeadzone, int _zDeadzone)
+void QVectorDrive2::initVector(int _vectorMin, int _vectorMax)
 {
     vectorMin = _vectorMin;
     vectorMax = _vectorMax;
-
-    xDeadzone = _xDeadzone;
-    yDeadzone = _yDeadzone;
-    zDeadzone = _zDeadzone;
 
     vectorValues.clear();
 
@@ -146,30 +137,15 @@ void QVectorDrive2::vectorMath(int xInput, int yInput, int zInput, int vInput, b
         vVal = vInput;
     }
 
-    if(qAbs(xVal) < xDeadzone)
-    {
-        xVal = 0;
-    }
-
-    if(qAbs(yVal) < yDeadzone)
-    {
-        yVal = 0;
-    }
-
-    if(qAbs(zVal) < zDeadzone)
-    {
-        zVal = 0;
-    }
-
     vectorType = 1;
 
     switch(vectorType)
     {
     case 1: //Rolf Konstad's vector formula
         //Percent calculations
-        double xPercent = (100 / (32767 - (double)xDeadzone)) * (xVal - (double)xDeadzone);
-        double yPercent = -(100 / (32767 - (double)yDeadzone)) * (yVal - (double)yDeadzone);
-        double zPercent = (100 / (32767 - (double)zDeadzone)) * (zVal - (double)zDeadzone);
+        double xPercent =  (100.0 / 32767) * xVal;
+        double yPercent = -(100.0 / 32767) * yVal;
+        double zPercent =  (100.0 / 32767) * zVal;
 
         double maxInput = maxDouble(qAbs(xPercent), qAbs(yPercent));
         maxInput = maxDouble(qAbs(maxInput), qAbs(zPercent));

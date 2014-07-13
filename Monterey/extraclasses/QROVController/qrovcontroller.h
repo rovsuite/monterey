@@ -114,15 +114,15 @@ signals:
     void onMotherFunctionCompleted();
 
     //Networking
-    void sentPacket(QString packet);
-    void receivedPacket(QString packet);
-    void comTiboChanged(bool status);
-    void comPiChanged(bool status);
+    void sentPacket     (QString packet);
+    void receivedPacket (QString packet);
+    void comTiboChanged (bool status);
+    void comPiChanged   (bool status);
 
     //Misc UI Interactions
-    void clickRelayButton(QPushButton * pb);
-    void changeServo(int id, int direction);
-    void appendToActivityMonitor(QString message, MsgType type);
+    void clickRelayButton        (QPushButton * pb);
+    void changeServo             (int id, int direction);
+    void appendToActivityMonitor (QString message, MsgType type);
 
     //Misc
     void savedSettings(QString message, MsgType type);
@@ -130,7 +130,7 @@ signals:
 public slots:
 
     const QROV& rov() const { return mRov; }
-    QROV& editRov() { return mRov; }
+    QROV& editRov()         { return mRov; }
 
     //ROV Log functions
     bool saveRovLog(const QString& filename);
@@ -142,45 +142,45 @@ public slots:
     //Joystick
     void rescanJoysticks(); //!< Reenumerate joysticks
     QStringList getJoystickNames();  //!< Get the names of the joysticks
-    const QList<int>&  getJoystickAxesValues()     const;
-    QList<int>  getJoystickHatsPressed()    const;
+    const QList<int>&  getJoystickAxesValues() const;
+    QList<int>  getJoystickHatsPressed() const;
     const QList<bool>& getJoystickButtonsPressed() const;
     int getJoyId() const;
     int getNumberJoysticks() const;
-    bool isJoyAttached() const { return joyAttached; } //!< Return the joystick attached status
-    int getAxisX() const { return joySettings.axisX; }    //!< Get the axis x ID
-    void setAxisX(int x) { joySettings.axisX = x; }
+    bool isJoyAttached() const; //!< Return the joystick attached status
+    int getAxisX() const { return joySettings.axisX; }
     int getAxisY() const { return joySettings.axisY; }
-    void setAxisY(int y) { joySettings.axisY = y; }
     int getAxisZ() const { return joySettings.axisZ; }
-    void setAxisZ(int z) { joySettings.axisZ = z; }
     int getAxisV() const { return joySettings.axisV; }
-    void setAxisV(int v) { joySettings.axisV = v; }
     int getAxisL() const { return joySettings.axisL; }
-    void setAxisL(int l) { joySettings.axisL = l; }
     int getAxisR() const { return joySettings.axisR; }
+    void setAxisX(int x) { joySettings.axisX = x; }
+    void setAxisY(int y) { joySettings.axisY = y; }
+    void setAxisZ(int z) { joySettings.axisZ = z; }
+    void setAxisV(int v) { joySettings.axisV = v; }
+    void setAxisL(int l) { joySettings.axisL = l; }
     void setAxisR(int r) { joySettings.axisR = r; }
 
     //Catch Joystick signals
-    void onButtonPressed(int button);
-    void onButtonReleased(int button);
-    void onButtonToggled(int button, bool state);
-    void onHatPressed(int hat, int dir);
-    void onHatReleased(int hat, int dir);
-    void onHatToggled(int hat, int dir, bool state);
-    void onAxesUpdated(const QList<int>& values);
+    void onButtonPressed  (int button);
+    void onButtonReleased (int button);
+    void onButtonToggled  (int button, bool state);
+    void onHatPressed     (int hat, int dir);
+    void onHatReleased    (int hat, int dir);
+    void onHatToggled     (int hat, int dir, bool state);
+    void onAxesUpdated    (const QList<int>& values);
 
     //Motor math
-    void setBilinearRatio(double r) { joySettings.bilinearRatio = r; }
-    double getBilinearRatio() const { return joySettings.bilinearRatio; }
-    void setBilinearEnabled(bool b) { joySettings.bilinearEnabled = b; }
-    bool getBilinearEnabled() const { return joySettings.bilinearEnabled; }
-    void setXDeadzone(int x) { joySettings.deadX = x; }
-    int getXDeadzone() const { return joySettings.deadX; }
-    void setYDeadzone(int y) { joySettings.deadY = y; }
-    int getYDeadzone() const { return joySettings.deadY; }
-    void setZDeadzone(int z) { joySettings.deadZ = z; }
-    int getZDeadzone() const { return joySettings.deadZ; }
+    void setBilinearRatio  (double r);
+    void setBilinearEnabled(bool b);
+    double getBilinearRatio() const;
+    bool getBilinearEnabled() const;
+    int getXDeadzone() const;
+    int getYDeadzone() const;
+    int getZDeadzone() const;
+    void setXDeadzone(int x);
+    void setYDeadzone(int y);
+    void setZDeadzone(int z);
 
     //Networking
     int getPortTOBI() const;  //!< Get the TOBI port
@@ -235,7 +235,6 @@ private:
 
     //Joystick
     QJoystickInterface *joy; //joystick object
-    bool joyAttached;
 
     //Timers
     DiveTimer *diveTimer;
@@ -246,11 +245,6 @@ private:
 
     struct JoystickSettings
     {
-        //Deadzones
-        int deadX;
-        int deadY;
-        int deadZ;
-
         //Axes
         int axisX;
         int axisY;
@@ -261,8 +255,6 @@ private:
 
         //Motor value math settings
         bool vectorEnabled;
-        bool bilinearEnabled;
-        double bilinearRatio;
     }joySettings;
 };
 

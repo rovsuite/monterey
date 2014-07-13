@@ -51,10 +51,10 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
     capturePi = new UdpCapture(PIRXPORT, PITIMEOUT, this);
 
     monitorJoystick = new QBoolMonitor(this);
-    monitorJoystick->setComparisonState(joyAttached);
+    monitorJoystick->setComparisonState(joy->joystickAttached());
 
     myVectorDrive = new QVectorDrive2(this);
-    myVectorDrive->initVector(MOTORMIN, MOTORMAX, 0, 0, 0);
+    myVectorDrive->initVector(MOTORMIN, MOTORMAX);
 
     diveTimer = new DiveTimer(this);
     packetTimer = new QTimer(this);
@@ -72,10 +72,7 @@ QROVController::QROVController(bool& enteredGoodState, QString& statusMessage, Q
         servoMappings.append(ServoMapping());
     }
 
-    joySettings.bilinearEnabled = true;
     joySettings.vectorEnabled = true;
-
-    joySettings.bilinearRatio = 1.5;
 
     loadSettings();
 
@@ -174,18 +171,16 @@ void QROVController::initJoysticks()
 
     if(0 < joy->numJoysticks())
     {
-        joyAttached = true;
         joy->currentJoystick(0);
 
         qDebug() << "Joystick attached";
     }
     else
     {
-        joyAttached = false;
         qWarning() << "No joystick attached!";
 
     }
-    monitorJoystick->compareState(joyAttached);
+    monitorJoystick->compareState(joy->joystickAttached());
     mutex.unlock();
 }
 
@@ -458,9 +453,9 @@ void QROVController::loadSettings()
     mutex.lock();
     //TODO: Finish adding settings code and remove it from mainwindow.cpp
 
-   //Bilinear
-    joySettings.bilinearEnabled = mySettings->value("bilinear/enabled", "1").toBool();
-    joySettings.bilinearRatio = mySettings->value("bilinear/ratio", "1.5").toDouble();
+    //Bilinear
+    joy->bilinearEnable(mySettings->value("bilinear/enabled", "1").toBool());
+    joy->bilinearConstant(mySettings->value("bilinear/ratio", "1.5").toDouble());
 
     //Joystick
     joySettings.axisX = mySettings->value("joystick/x", "0").toInt();
@@ -469,9 +464,13 @@ void QROVController::loadSettings()
     joySettings.axisV = mySettings->value("joystick/v", "0").toInt();
     joySettings.axisL = mySettings->value("joystick/l", "0").toInt();
     joySettings.axisR = mySettings->value("joystick/r", "0").toInt();
-    joySettings.deadX = mySettings->value("joystick/deadX", "0").toInt();
-    joySettings.deadY = mySettings->value("joystick/deadY", "0").toInt();
-    joySettings.deadZ = mySettings->value("joystick/deadZ", "0").toInt();
+
+    for(int i=0; i<joy->numAxes(); i++)
+    {
+        Q_ASSERT(joy->deadzone(i, mySettings->value("joystick/dead" +
+                                                    QString::number(i),
+                                                    "0").toInt()));
+    }
 
     for(int i=0; i<relayMappings.count(); i++)
     {
@@ -488,7 +487,7 @@ void QROVController::loadSettings()
 
     }
 
-    myVectorDrive->initVector(MOTORMIN,MOTORMAX,joySettings.deadX,joySettings.deadY,joySettings.deadZ);
+    myVectorDrive->initVector(MOTORMIN, MOTORMAX);
 
     //Video
     IpVideoFeed videoFeed = mRov.videoFeed;
@@ -514,8 +513,8 @@ void QROVController::saveSettings()
     }
 
     //Bilinear
-    mySettings->setValue("bilinear/enabled", joySettings.bilinearEnabled);
-    mySettings->setValue("bilinear/ratio", joySettings.bilinearRatio);
+    mySettings->setValue("bilinear/enabled", joy->bilinearEnabled());
+    mySettings->setValue("bilinear/ratio", joy->bilinearConstant());
 
     //Joystick
     mySettings->setValue("joystick/x", joySettings.axisX);
@@ -524,9 +523,12 @@ void QROVController::saveSettings()
     mySettings->setValue("joystick/v", joySettings.axisV);
     mySettings->setValue("joystick/l", joySettings.axisL);
     mySettings->setValue("joystick/r", joySettings.axisR);
-    mySettings->setValue("joystick/deadX", joySettings.deadX);
-    mySettings->setValue("joystick/deadY", joySettings.deadY);
-    mySettings->setValue("joystick/deadZ", joySettings.deadZ);
+
+    for(int i=0; i<joy->numAxes(); i++)
+    {
+        mySettings->setValue("joystick/dead" + QString::number(i),
+                             joy->deadzone(i));
+    }
 
     for(int i=0; i<relayMappings.count(); i++)
     {
@@ -673,4 +675,71 @@ const QList<bool>& QROVController::getJoystickButtonsPressed() const
 QList<int> QROVController::getJoystickHatsPressed() const
 {
     return joy->hatStates();
+}
+
+void QROVController::setBilinearRatio(double r)
+{
+    joy->bilinearConstant(r);
+}
+
+double QROVController::getBilinearRatio() const
+{
+    return joy->bilinearConstant();
+}
+
+void QROVController::setBilinearEnabled(bool b)
+{
+    joy->bilinearEnable(b);
+}
+
+bool QROVController::getBilinearEnabled() const
+{
+    return joy->bilinearEnabled();
+}
+
+void QROVController::setXDeadzone(int x)
+{
+    Q_ASSERT(0 <= joySettings.axisX &&
+            joySettings.axisX < joy->numAxes());
+    joy->deadzone(joySettings.axisX, x);
+}
+
+int QROVController::getXDeadzone() const
+{
+    Q_ASSERT(0 <= joySettings.axisX &&
+            joySettings.axisX < joy->numAxes());
+    return joy->deadzone(joySettings.axisX);
+}
+
+void QROVController::setYDeadzone(int y)
+{
+    Q_ASSERT(0 <= joySettings.axisY &&
+            joySettings.axisY < joy->numAxes());
+    joy->deadzone(joySettings.axisY, y);
+}
+
+int QROVController::getYDeadzone() const
+{
+    Q_ASSERT(0 <= joySettings.axisY &&
+            joySettings.axisY < joy->numAxes());
+    return joy->deadzone(joySettings.axisY);
+}
+
+void QROVController::setZDeadzone(int z)
+{
+    Q_ASSERT(0 <= joySettings.axisZ &&
+            joySettings.axisZ  < joy->numAxes());
+    joy->deadzone(joySettings.axisZ, z);
+}
+
+int QROVController::getZDeadzone() const
+{
+    Q_ASSERT(0 <= joySettings.axisZ &&
+            joySettings.axisZ < joy->numAxes());
+    return joy->deadzone(joySettings.axisZ);
+}
+
+bool QROVController::isJoyAttached() const
+{
+    return joy->joystickAttached();
 }

@@ -24,31 +24,35 @@ public:
 signals:
 
 public slots:
-    void initVector(int _vectorMin, int _vectorMax, int _xDeadzone, int _yDeadzone, int _zDeadzone);  //init vector-wide parameters
+    //init vector-wide parameters
+    void initVector(int _vectorMin, int _vectorMax);
 
-    void vectorMath(int xInput, int yInput, int zInput, int vInput, bool inverted);    //set vectorValues, writes to QList
+    //set vectorValues, writes to QList
+    void vectorMath(int xInput, int yInput, int zInput, int vInput, bool inverted);
 
     int getVectorValue(int listIndex);
 
 private:
-    QList<int> vectorValues;    //FL=0,FR=1,BR=2,BL=3 final values
+    //FL=0,FR=1,BR=2,BL=3 final values
+    QList<int> vectorValues;
 
-    int vectorMax;  //maximum value (full forward)
-    int vectorMin;  //minimum value (full reverse)
+    //maximum value (full forward)
+    int vectorMax;
+
+    //minimum value (full reverse)
+    int vectorMin;
 
     int xVal;
     int yVal;
     int zVal;
     int vVal;   //vertical Value
 
-    int xDeadzone;
-    int yDeadzone;
-    int zDeadzone;
     int vectorType;
 
     QList<double> motorDoubles;
 
-    int mapInt(int input, int inMin, int inMax, int outMin, int outMax);    //taken from Arduino.cc
+    //taken from Arduino.cc
+    int mapInt(int input, int inMin, int inMax, int outMin, int outMax);
     int minInt(int a, int b);
     int maxInt(int a, int b);
     int constrainInt(int a, int min, int max);
