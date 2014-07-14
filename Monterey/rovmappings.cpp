@@ -306,7 +306,7 @@ void ROVMappings::getHat(QString str, int& hat, int& dir)
 {
     //Remove parentheses
     str.remove(0, 1);
-    str.remove(str.length(), 1);
+    str.remove(str.length()-1, 1);
 
     //Split up according to the comma
     QStringList hatValues = str.split(",");

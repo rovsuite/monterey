@@ -547,7 +547,7 @@ void QROVController::saveSettings()
         mySettings->setValue("joystick/hat/s" + QString::number(i) + "/down", servoMappings[i].hatDown);
         mySettings->setValue("joystick/dir/s" + QString::number(i) + "/down", servoMappings[i].dirDown);
         mySettings->setValue("joystick/but/s" + QString::number(i) + "/up", servoMappings[i].buttonUp);
-        mySettings->setValue("joystick/but/s" + QString::number(i) + "/down", servoMappings[i].buttonDown);        
+        mySettings->setValue("joystick/but/s" + QString::number(i) + "/down", servoMappings[i].buttonDown);
     }
 
     //Video
