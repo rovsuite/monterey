@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QJsonObject>
 #include <QDir>
-#include "../../extraclasses/QROV/qrov.h"
+#include "../QROV/qrov.h"
 #include "../../extraclasses/QJoystick/qjoystick.h"
 
 QROVController::QROVController(MsgType& status, QString& statusMessage, QObject *parent) :
@@ -73,7 +73,8 @@ QROVController::QROVController(MsgType& status, QString& statusMessage, QObject 
         servoMappings.append(ServoMapping());
     }
 
-    joySettings.vectorEnabled = true;
+    //Default to the first gear
+    joySettings.mGearIndex = 0;
 
     loadSettings();
 
@@ -268,12 +269,18 @@ void QROVController::onHatToggled(int hat, int dir, bool state)
     mutex.unlock();
 }
 
-void QROVController::onAxesUpdated(const QList<int>& values)
+void QROVController::onAxesUpdated(QList<int> values)
 {
     QMutex mutex;
     mutex.lock();
 
     const int numValues = values.count();
+    Q_ASSERT(0 <= joySettings.axisX);
+    Q_ASSERT(0 <= joySettings.axisY);
+    Q_ASSERT(0 <= joySettings.axisZ);
+    Q_ASSERT(0 <= joySettings.axisV);
+    Q_ASSERT(0 <= joySettings.axisL);
+    Q_ASSERT(0 <= joySettings.axisR);
     Q_ASSERT(joySettings.axisX < numValues);
     Q_ASSERT(joySettings.axisY < numValues);
     Q_ASSERT(joySettings.axisZ < numValues);
@@ -281,14 +288,25 @@ void QROVController::onAxesUpdated(const QList<int>& values)
     Q_ASSERT(joySettings.axisL < numValues);
     Q_ASSERT(joySettings.axisR < numValues);
 
+    Q_ASSERT(0 <= joySettings.mGearIndex);
+    Q_ASSERT(joySettings.mGearIndex < mRov.motorGears.count());
+    Q_ASSERT(0 <= mRov.motorGears[joySettings.mGearIndex]);
+    Q_ASSERT(mRov.motorGears[joySettings.mGearIndex] <= 1);
+
+    //Apply the gear settings
+    for(int i=0; i<values.count(); i++)
+    {
+        values[i] = mRov.motorGears[joySettings.mGearIndex] * values[i];
+    }
+
     //Execute vector math
     if(mRov.motorLayout == vectorDrive)
     {
         Q_ASSERT(mRov.motors.count() == 6);
         myVectorDrive->vectorMath(values[joySettings.axisX],
-               values[joySettings.axisY],
-               values[joySettings.axisZ],
-               values[joySettings.axisV],
+                values[joySettings.axisY],
+                values[joySettings.axisZ],
+                values[joySettings.axisV],
                 false);
 
         for(int i=0;i<mRov.motors.count();i++)    //retrieve vector values
@@ -299,22 +317,25 @@ void QROVController::onAxesUpdated(const QList<int>& values)
     else    //if tank drive
     {
         //Pseudo code:
-        // Step 1: convert the joystick axis value from [-32768,32727] to [0,65355]
-        // Step 2: find the percentage of the stick deflection
-        // Step 3: find the value of that percentage of the motor range (add the minimum value to make it within the range)
+        // Step 1: convert the joystick axis value from [-32768,32727] to
+        // [0,65355] Step 2: find the percentage of the stick deflection
+        // Step 3: find the value of that percentage of the motor range
+        // (add the minimum value to make it within the range)
 
         const double motorRange = MOTORMAX - MOTORMIN;
 
-        double percentL = ((double)(values[joySettings.axisL] + 32768) / 65355.0);
+        double percentL = ((double)(values[joySettings.axisL] + 32768) /
+                65355.0);
         mRov.motors[0].value = (int)((percentL * motorRange) + MOTORMIN);
 
-        double percentR = ((double)(values[joySettings.axisR] + 32768) / 65355.0);
+        double percentR = ((double)(values[joySettings.axisR] + 32768) /
+                65355.0);
         mRov.motors[1].value = (int)((percentR * motorRange) + MOTORMIN);
 
-        double percentV = ((double)(values[joySettings.axisV] + 32768) / 65355.0);
+        double percentV = ((double)(values[joySettings.axisV] + 32768) /
+                65355.0);
         mRov.motors[2].value = (int)((percentV * motorRange) + MOTORMIN);
     }
-
     mutex.unlock();
 }
 
@@ -339,16 +360,19 @@ void QROVController::processPacket(QString packet)
         }
     }
 
-    //Automatically control the dive timer based on the cached depth value
-    if(diveTimer->hasStarted() && depth <= 0)    //if the ROV is at the surface, pause the dive timer
+    // Automatically control the dive timer based on the cached depth value
+    // If the ROV is at the surface, pause the dive timer
+    if(diveTimer->hasStarted() && depth <= 0)
     {
         diveTimer->pause();
     }
-    else if(diveTimer->hasStarted() && depth > 0)    //if the ROV is underwater and the dive timer has started BUT MAY BE PAUSED
+    // If the ROV is underwater and the dive timer has started, MAY BE PAUSED
+    else if(diveTimer->hasStarted() && depth > 0)
     {
         diveTimer->resume();
     }
-    else if(!diveTimer->hasStarted() && depth > 0)   //if the ROV is underwater and the dive timer hasn't started
+    // If the ROV is underwater and the dive timer hasn't started
+    else if(!diveTimer->hasStarted() && depth > 0)
     {
         diveTimer->start();
     }
@@ -359,46 +383,52 @@ void QROVController::processPacket(QString packet)
 
 void QROVController::sendPacket()
 {
-    QMutex mutex;
-    mutex.lock();
-    QByteArray txDatagram;
-    QString txPacket;
-
-    for(int i=0; i<mRov.motors.count(); i++)
+    if(rovEnabled())
     {
-        txPacket.append(QString::number(mRov.motors[i].value));
-        txPacket.append(" ");
-    }
+        QMutex mutex;
+        mutex.lock();
+        QByteArray txDatagram;
+        QString txPacket;
 
-    foreach(QROVRelay r, mRov.relays)
-    {
-        if(r.enabled == true)
+        for(int i=0; i<mRov.motors.count(); i++)
         {
-            txPacket.append(QString::number(1));
-        }
-        else
-        {
-            txPacket.append(QString::number(0));
+            txPacket.append(QString::number(mRov.motors[i].value));
+            txPacket.append(" ");
         }
 
-        txPacket.append(" ");
+        foreach(QROVRelay r, mRov.relays)
+        {
+            if(r.enabled == true)
+            {
+                txPacket.append(QString::number(1));
+            }
+            else
+            {
+                txPacket.append(QString::number(0));
+            }
+
+            txPacket.append(" ");
+        }
+
+        foreach(QROVServo s, mRov.servos)
+        {
+            txPacket.append(QString::number(s.value));
+            txPacket.append(" ");
+        }
+
+        txDatagram = txPacket.toUtf8();
+
+        txSocket->writeDatagram(txDatagram.data(),
+                txDatagram.size(),
+                QHostAddress::Broadcast,
+                TOBIPORT);
+        // Timestamp the ROV state
+        mRov.msSinceEpoch = QDateTime::currentMSecsSinceEpoch();
+        logRovState();
+
+        emit sentPacket(txPacket);
+        mutex.unlock();
     }
-
-    foreach(QROVServo s, mRov.servos)
-    {
-        txPacket.append(QString::number(s.value));
-        txPacket.append(" ");
-    }
-
-    txDatagram = txPacket.toUtf8();
-
-    txSocket->writeDatagram(txDatagram.data(), txDatagram.size(), QHostAddress::Broadcast, TOBIPORT);
-
-    mRov.msSinceEpoch = QDateTime::currentMSecsSinceEpoch(); //timestamp the ROV state
-    logRovState();
-
-    emit sentPacket(txPacket);
-    mutex.unlock();
 }
 
 void QROVController::processPi(QString packet)
@@ -750,4 +780,36 @@ int QROVController::getZDeadzone() const
 bool QROVController::isJoyAttached() const
 {
     return joy->joystickAttached();
+}
+
+bool QROVController::motorGearIndexIncrement()
+{
+    if(joySettings.mGearIndex < mRov.motorGears.count()-1)
+    {
+        joySettings.mGearIndex++;
+        emit changedGears(joySettings.mGearIndex);
+        return true;
+    }
+    return false;
+}
+
+bool QROVController::motorGearIndexDecrement()
+{
+    if(0 < joySettings.mGearIndex)
+    {
+        joySettings.mGearIndex--;
+        emit changedGears(joySettings.mGearIndex);
+        return true;
+    }
+    return false;
+}
+
+int QROVController::motorGearIndex() const
+{
+    return joySettings.mGearIndex;
+}
+
+bool QROVController::rovEnabled() const
+{
+    return (0 != mRov.motorGears[joySettings.mGearIndex]);
 }

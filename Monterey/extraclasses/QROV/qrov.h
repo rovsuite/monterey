@@ -77,7 +77,11 @@ struct PiData
     double usedMemory;
     double usedCpu;
 
-    PiData(double tempC, int uptimeS, QHostAddress ip, double usedMem, double usedCpu)
+    PiData(double tempC,
+           int uptimeS,
+           QHostAddress ip,
+           double usedMem,
+           double usedCpu)
     {
         this->tempC = tempC;
         this->uptimeS = uptimeS;
@@ -117,6 +121,7 @@ struct QROV
     double maxDepth;
     qint64 msSinceEpoch;
     MotorLayout motorLayout;
+    QList<double> motorGears;
     IpVideoFeed videoFeed;
     PiData piData;
     QList<QROVMotor> motors;
@@ -137,6 +142,9 @@ struct QROV
         for(int i=0; i<numMotors; i++)
             motors.append(QROVMotor(1500));
 
+        motorGears.clear();
+        motorGears.append(1);
+
         relays.clear();
         for(int i=0; i<numRelays; i++)
             relays.append(QROVRelay("Relay" + QString::number(i), false));
@@ -147,14 +155,23 @@ struct QROV
 
         sensors.clear();
         for(int i=0; i<numSensors; i++)
-            sensors.append(QROVSensor("Sensor" + QString::number(i), "N/A", 0));
+            sensors.append(QROVSensor("Sensor" + QString::number(i),
+                           "N/A",
+                           0));
 
         this->maxDepth = maxDepth;
     }
 
     QROV()
     {
-        QROV(0, IpVideoFeed("main", QUrl("http://127.0.0.1"), false), PiData(), 0, 0, 0, 0, 100);
+        QROV(0,
+             IpVideoFeed("main", QUrl("http://127.0.0.1"), false),
+             PiData(),
+             0,
+             0,
+             0,
+             0,
+             100);
     }
 };
 

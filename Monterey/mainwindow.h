@@ -65,6 +65,8 @@ public slots:
     void saveRovLogFile();
     void clearLog();
 
+    void onGearChanged(int gear);
+
 private slots:
     //Buttons
     void on_pbRelay_clicked();
@@ -129,6 +131,7 @@ private:
     LedIndicator *com;
     LedIndicator *joystick;
     LedIndicator *rPi;
+    LedIndicator *gear;
     }statusLights;
 };
 

@@ -32,9 +32,6 @@
 #define MOTORMIN 1000
 #define MOTORMAX 2000
 
-#define SERVOMIN 0
-#define SERVOMAX 179
-
 #define ERRORTIMEOUT 500
 #define PITIMEOUT 5000
 #define TOBIPORT 51000
@@ -133,6 +130,7 @@ signals:
     void clickRelayButton        (QPushButton * pb);
     void changeServo             (int id, int direction);
     void appendToActivityMonitor (QString message, MsgType type);
+    void changedGears            (int gear);
 
     //Misc
     void savedSettings(QString message, MsgType type);
@@ -141,6 +139,8 @@ public slots:
 
     const QROV& rov() const { return mRov; }
     QROV& editRov()         { return mRov; }
+
+    bool rovEnabled() const;
 
     //ROV Log functions
     bool saveRovLog(const QString& filename);
@@ -178,7 +178,7 @@ public slots:
     void onHatPressed     (int hat, int dir);
     void onHatReleased    (int hat, int dir);
     void onHatToggled     (int hat, int dir, bool state);
-    void onAxesUpdated    (const QList<int>& values);
+    void onAxesUpdated    (QList<int> values);
 
     //Motor math
     void setBilinearRatio  (double r);
@@ -191,6 +191,9 @@ public slots:
     void setXDeadzone(int x);
     void setYDeadzone(int y);
     void setZDeadzone(int z);
+    bool motorGearIndexIncrement();
+    bool motorGearIndexDecrement();
+    int motorGearIndex() const;
 
     //Networking
     int getPortTOBI() const;  //!< Get the TOBI port
@@ -263,8 +266,8 @@ private:
         int axisL;
         int axisR;
 
-        //Motor value math settings
-        bool vectorEnabled;
+        //Current motor gear
+        int mGearIndex;
     }joySettings;
 };
 

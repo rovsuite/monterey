@@ -5,7 +5,8 @@
 #include <QJsonDocument>
 #include <QFile>
 #include <QtDebug>
-#include "qrov.h"
+#include <QList>
+#include "../QROV/qrov.h"
 
 ConfigParser::ConfigParser(const QString& file, QObject *parent) :
     QObject(parent)
@@ -26,6 +27,7 @@ bool ConfigParser::parseRov(QROV& rov) const
     QJsonArray jsonRelays = baseObj["relays"].toArray();
     QJsonArray jsonServos = baseObj["servos"].toArray();
     QJsonValue jsonMotorLayout = baseObj["motorLayout"];
+    QJsonArray jsonMotorGears = baseObj["motorGears"].toArray();
     QJsonValue jsonMaxDepth = baseObj["maxDepth"];
 
     if(jsonSensors.size() == 0 ||
@@ -41,6 +43,7 @@ bool ConfigParser::parseRov(QROV& rov) const
     rov.servos.clear();
     rov.sensors.clear();
     rov.motors.clear();
+    rov.motorGears.clear();
 
     for(int i=0; i<jsonRelays.count(); i++)
     {
@@ -96,6 +99,17 @@ bool ConfigParser::parseRov(QROV& rov) const
     {
         qWarning() << "Motor layout: " << jsonMotorLayout.toString() << " not defined!";
         return false;
+    }
+
+    rov.motorGears.append(0);   // in this gear, disable the ROV
+    for(int i=0; i<jsonMotorGears.count(); i++)
+    {
+        rov.motorGears.append(jsonMotorGears[i].toDouble());
+    }
+
+    if(rov.motorGears.length() < 1)
+    {
+        rov.motorGears.append(1.0);
     }
 
     rov.maxDepth = jsonMaxDepth.toDouble(100);

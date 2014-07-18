@@ -13,6 +13,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QFileDialog>
+#include "extraclasses/QROVController/qrovcontroller.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -25,7 +26,9 @@ MainWindow::MainWindow(QWidget *parent) :
     title.append(" ");
     title.append(version);
     this->setWindowTitle(title);
-    this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    this->setWindowFlags(Qt::CustomizeWindowHint |
+                         Qt::WindowMinMaxButtonsHint |
+                         Qt::WindowCloseButtonHint);
 
     //UI Settings
     mySettings = new QSettings("windowSettings.ini", QSettings::IniFormat);
@@ -39,21 +42,26 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLights.com = 0;
     statusLights.joystick = 0;
     statusLights.rPi = 0;
+    statusLights.gear = 0;
 
     //ROV control engine
     bool rovControllerReady = false;
     MsgType rovControllerState = MsgType::Good;
     QString statusMessage = "";
     controller = new QROVController(rovControllerState, statusMessage);
-    if(rovControllerState == MsgType::Good || rovControllerState == MsgType::Warn)
+    if(rovControllerState == MsgType::Good ||
+       rovControllerState == MsgType::Warn)
     {
         rovControllerReady = true;
     }
-    engineThread = new QThread(this); //create a second thread
-    controller->moveToThread(engineThread); //move the QROVController engine to the second thread
+    // Create a second thread
+    engineThread = new QThread(this);
+
+    // Move the QROVController engine to the second thread
+    controller->moveToThread(engineThread);
     engineThread->start();
 
-    //Setup the activity monitor
+    // Setup the activity monitor
     activityMonitor = new QActivityMonitor(ui->teLog);
     activityMonitor->display("Monterey started...", MsgType::Info);
     QString versionDisp("Version: ");
@@ -76,7 +84,8 @@ MainWindow::MainWindow(QWidget *parent) :
         //Add a pushbutton
         QPushButton *pb = new QPushButton(this);
         pb->setText("Relay" + QString::number(i));
-        pb->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+        pb->setSizePolicy(QSizePolicy::Preferred,
+                          QSizePolicy::MinimumExpanding);
 
         //Set a keyboard shortcut if it is in the range 1-9
         if(i < 9)
@@ -88,7 +97,10 @@ MainWindow::MainWindow(QWidget *parent) :
         relayButtons.append(pb);
 
         //Add a spacer
-        QSpacerItem *spacer = new QSpacerItem(20, 13, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        QSpacerItem *spacer = new QSpacerItem(20,
+                                              13,
+                                              QSizePolicy::Minimum,
+                                              QSizePolicy::Fixed);
         ui->groupBoxRelayButtons->layout()->addItem(spacer);
 
         //Link to the controller
@@ -148,8 +160,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setupCustomWidgets();   //load the settings for the custom widgets
 
-    //Apply the event filter that captures key presses to all of the widgets
-    //This allows for window-wide keyboard shortcuts that can override system defaults
+    // Apply the event filter that captures key presses to all of the widgets
+    // This allows for window-wide keyboard shortcuts that can override system
+    // defaults
     QList<QWidget*> widgets = this->findChildren<QWidget*>();
     foreach(QWidget *w, widgets)
     {
@@ -191,6 +204,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
     connect(controller, SIGNAL(appendToActivityMonitor(QString, MsgType)), this, SLOT(appendToActivityMonitor(QString, MsgType)));
     connect(ui->zoomSlider, SIGNAL(sliderMoved(int)), this, SLOT(zoomTheCameraFeed(int)));
+    connect(controller, SIGNAL(changedGears(int)), this, SLOT(onGearChanged(int)));
 
     //Connect the relay buttons to the relay handling function
     for(int i=0; i<relayButtons.count(); i++)
@@ -235,6 +249,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
             //Get the number of the key that was pressed
             int index = keyEv->key() - Qt::Key_1;
             controller->relayMappings.at(index).pushButton->click();
+            return true;
+        }
+        else if(Qt::Key_Equal == keyEv->key())
+        {
+            controller->motorGearIndexIncrement();
+            return true;
+        }
+        else if(Qt::Key_Minus == keyEv->key())
+        {
+            controller->motorGearIndexDecrement();
             return true;
         }
         else
@@ -345,6 +369,14 @@ void MainWindow::setupCustomWidgets()
     statusLights.joystick = new LedIndicator;
     statusLights.joystick->setIndicatorTitle("Joystick");
     statusGrid->addWidget(statusLights.joystick->container, 1, 0, 1, 1);
+
+    if(statusLights.gear != 0)
+    {
+        delete statusLights.gear;
+    }
+    statusLights.gear = new LedIndicator;
+    statusLights.gear->setIndicatorTitle("Disabled");
+    statusGrid->addWidget(statusLights.gear->container, 1, 1, 1, 1);
 
     //Setup the plots
     auto setStyleOnPlot = [this]( QCustomPlot *plot, QString titleString )
@@ -678,4 +710,15 @@ void MainWindow::on_buttonCopyLogToClipboard_clicked()
 void MainWindow::on_buttonClearLog_clicked()
 {
     ui->teLog->clear();
+}
+
+void MainWindow::onGearChanged(int gear)
+{
+    if(statusLights.gear != 0)
+    {
+        QString title = (0 == gear ?
+                        "Disabled" : ("Gear "+ QString::number(gear)));
+        statusLights.gear->setIndicatorTitle(title);
+        statusLights.gear->setStatus(gear != 0);
+    }
 }
