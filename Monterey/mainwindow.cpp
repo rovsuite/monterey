@@ -315,6 +315,18 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
             controller->motorGearIndexDecrement();
             return true;
         }
+        else if(Qt::Key_Space == keyEv->key())
+        {
+            if(0 < controller->motorGearIndex())
+            {
+                while(controller->motorGearIndexDecrement());
+            }
+            else
+            {
+                controller->motorGearIndexIncrement();
+            }
+            return true;
+        }
         else
         {
             return QMainWindow::eventFilter(obj, ev);
@@ -389,8 +401,9 @@ void MainWindow::loadSettings()
     {
         QMessageBox errorMessageBox;
         errorMessageBox.setText("Error setting the video feed URL.");
-        errorMessageBox.setInformativeText("The URL is invalid.  " +
-                                          "Please change it in the settings!");
+        QString informativeText = "The URL is invalid.";
+        informativeText += "  Please change it in the settings!";
+        errorMessageBox.setInformativeText(informativeText);
         errorMessageBox.setStandardButtons(QMessageBox::Ok);
         errorMessageBox.setDefaultButton(QMessageBox::Ok);
         errorMessageBox.exec();
