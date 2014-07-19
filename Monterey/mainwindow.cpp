@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    //Setup the base of the application
+    // Setup the base of the application
     ui->setupUi(this);
     version = new QString(QApplication::applicationVersion());
     QString title = this->windowTitle();
@@ -30,21 +30,21 @@ MainWindow::MainWindow(QWidget *parent) :
                          Qt::WindowMinMaxButtonsHint |
                          Qt::WindowCloseButtonHint);
 
-    //UI Settings
+    // UI Settings
     mySettings = new QSettings("windowSettings.ini", QSettings::IniFormat);
     loadUiGeometry();
 
-    //GUI refresh timer
+    // GUI refresh timer
     guiTimer = new QTimer;
-    guiTimer->setInterval(50); //refresh the gui 20x a second
+    guiTimer->setInterval(50); // Refresh the gui 20x a second
 
-    //Prepare status light struct
+    // Prepare status light struct
     statusLights.com = 0;
     statusLights.joystick = 0;
     statusLights.rPi = 0;
     statusLights.gear = 0;
 
-    //ROV control engine
+    // ROV control engine
     bool rovControllerReady = false;
     MsgType rovControllerState = MsgType::Good;
     QString statusMessage = "";
@@ -75,19 +75,19 @@ MainWindow::MainWindow(QWidget *parent) :
         exit(-2);
    }
 
-   //Load the current logging state
+   // Load the current logging state
    ui->actionEnable_Dive_Logging->setChecked(controller->isLoggingEnabled());
 
-    //Add the right amount of relay buttons
+    // Add the right amount of relay buttons
     for(int i=0; i<controller->relayMappings.count(); i++)
     {
-        //Add a pushbutton
+        // Add a pushbutton
         QPushButton *pb = new QPushButton(this);
         pb->setText("Relay" + QString::number(i));
         pb->setSizePolicy(QSizePolicy::Preferred,
                           QSizePolicy::MinimumExpanding);
 
-        //Set a keyboard shortcut if it is in the range 1-9
+        // Set a keyboard shortcut if it is in the range 1-9
         if(i < 9)
         {
             pb->setShortcut(Qt::Key_Control + Qt::Key_1);
@@ -96,21 +96,21 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->groupBoxRelayButtons->layout()->addWidget(pb);
         relayButtons.append(pb);
 
-        //Add a spacer
+        // Add a spacer
         QSpacerItem *spacer = new QSpacerItem(20,
                                               13,
                                               QSizePolicy::Minimum,
                                               QSizePolicy::Fixed);
         ui->groupBoxRelayButtons->layout()->addItem(spacer);
 
-        //Link to the controller
+        // Link to the controller
         controller->relayMappings[i].pushButton = pb;
     }
 
-    //Add the right amount of servo sliders
+    // Add the right amount of servo sliders
     for(int i=0; i < controller->servoMappings.count(); i++)
     {
-        //Add a slider
+        // Add a slider
         QSlider *slider = new QSlider(Qt::Vertical, this);
         slider->setMinimum(controller->rov().servos[i].min);
         slider->setMaximum(controller->rov().servos[i].max);
@@ -118,11 +118,11 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->groupBoxServoSliders->layout()->addWidget(slider);
         servoSliders.append(slider);
 
-        //Link to the controller
+        // Link to the controller
         controller->servoMappings[i].slider = slider;
     }
 
-    //Add the right amount of sensors
+    // Add the right amount of sensors
     sensorDisplays.clear();
     QVBoxLayout *verticalLayout = new QVBoxLayout(ui->groupBoxSensorReadouts);
     foreach(QROVSensor sensor, controller->rov().sensors)
@@ -146,19 +146,20 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     ui->groupBoxSensorReadouts->setLayout(verticalLayout);
 
-    //Timer for updating the graph
+    // Timer for updating the graph
     graphTime = new QTime;
     graphTime->start();
     ui->plotDepth->addGraph();
     ui->plotRPiCpuTempC->addGraph();
     ui->plotVoltage->addGraph();
 
-    //Setup the video feed display
-    webCamViewer = new QWebView;  //must call after load settings
+    // Setup the video feed display
+    webCamViewer = new QWebView;  // Must call after load settings
     webCamViewer->setObjectName("webCamViewer");
     ui->gridLayoutHUD->addWidget(webCamViewer,1,1,4,3);
 
-    setupCustomWidgets();   //load the settings for the custom widgets
+    // Load the settings for the custom widgets
+    setupCustomWidgets();
 
     // Apply the event filter that captures key presses to all of the widgets
     // This allows for window-wide keyboard shortcuts that can override system
@@ -182,44 +183,94 @@ MainWindow::MainWindow(QWidget *parent) :
         statusLights.joystick->setStatus(false);
     }
 
-    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout())); //show the about window
-    connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));  //exit the application
-    connect(ui->actionDebug, SIGNAL(triggered()), this, SLOT(showDebug())); //show the debug window
-    connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()), this->controller, SLOT(diveTimeReset()));
-    connect(ui->actionRescan_Joysticks, SIGNAL(triggered()), controller, SLOT(rescanJoysticks()));
-    connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(showSettings()));
-    connect(ui->actionJoystick_mappings, SIGNAL(triggered()), this, SLOT(showMappings()));
-    connect(ui->actionCheck_for_Updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
-    connect(ui->actionFullscreen, SIGNAL(toggled(bool)), this, SLOT(showFullscreen(bool)));
-    connect(ui->actionSave_Dive_Log, SIGNAL(triggered()), this, SLOT(saveRovLogFile()));
-    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), controller, SLOT(enableLogging(bool)));
-    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), ui->actionClear_Dive_Log, SLOT(setEnabled(bool)));
-    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)), ui->actionSave_Dive_Log, SLOT(setEnabled(bool)));
-    connect(ui->actionClear_Dive_Log, SIGNAL(triggered()), this, SLOT(clearLog()));
-    connect(controller, SIGNAL(comTiboChanged(bool)), this, SLOT(onComTiboChanged(bool)));
-    connect(controller->monitorJoystick, SIGNAL(stateChanged()), this, SLOT(lostJoystick()));
-    connect(controller, SIGNAL(comPiChanged(bool)), this, SLOT(onComPiChange(bool)));
-    connect(controller, SIGNAL(savedSettings(QString, MsgType)), activityMonitor, SLOT(display(QString, MsgType)));
-    connect(controller, SIGNAL(clickRelayButton(QPushButton*)), this, SLOT(onCalledClickRelayButton(QPushButton*)));
-    connect(controller, SIGNAL(changeServo(int,int)), this, SLOT(onCalledServoChange(int,int)));
-    connect(controller, SIGNAL(appendToActivityMonitor(QString, MsgType)), this, SLOT(appendToActivityMonitor(QString, MsgType)));
-    connect(ui->zoomSlider, SIGNAL(sliderMoved(int)), this, SLOT(zoomTheCameraFeed(int)));
-    connect(controller, SIGNAL(changedGears(int)), this, SLOT(onGearChanged(int)));
+    connect(ui->actionAbout, SIGNAL(triggered()),
+            this, SLOT(showAbout()));
 
-    //Connect the relay buttons to the relay handling function
+    connect(ui->actionExit, SIGNAL(triggered()),
+            this, SLOT(close()));
+
+    connect(ui->actionDebug, SIGNAL(triggered()),
+            this, SLOT(showDebug()));
+
+    connect(ui->actionDive_Timer_Reset, SIGNAL(triggered()),
+            this->controller, SLOT(diveTimeReset()));
+
+    connect(ui->actionRescan_Joysticks, SIGNAL(triggered()),
+            controller, SLOT(rescanJoysticks()));
+
+    connect(ui->actionSettings, SIGNAL(triggered()),
+            this, SLOT(showSettings()));
+
+    connect(ui->actionJoystick_mappings, SIGNAL(triggered()),
+            this, SLOT(showMappings()));
+
+    connect(ui->actionCheck_for_Updates, SIGNAL(triggered()),
+            this, SLOT(checkForUpdates()));
+
+    connect(ui->actionFullscreen, SIGNAL(toggled(bool)),
+            this, SLOT(showFullscreen(bool)));
+
+    connect(ui->actionSave_Dive_Log, SIGNAL(triggered()),
+            this, SLOT(saveRovLogFile()));
+
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)),
+            controller, SLOT(enableLogging(bool)));
+
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)),
+            ui->actionClear_Dive_Log, SLOT(setEnabled(bool)));
+
+    connect(ui->actionEnable_Dive_Logging, SIGNAL(triggered(bool)),
+            ui->actionSave_Dive_Log, SLOT(setEnabled(bool)));
+
+    connect(ui->actionClear_Dive_Log, SIGNAL(triggered()),
+            this, SLOT(clearLog()));
+
+    connect(controller, SIGNAL(comTiboChanged(bool)),
+            this, SLOT(onComTiboChanged(bool)));
+
+    connect(controller->monitorJoystick, SIGNAL(stateChanged()),
+            this, SLOT(lostJoystick()));
+
+    connect(controller, SIGNAL(comPiChanged(bool)),
+            this, SLOT(onComPiChange(bool)));
+
+    connect(controller, SIGNAL(savedSettings(QString, MsgType)),
+            activityMonitor, SLOT(display(QString, MsgType)));
+
+    connect(controller, SIGNAL(clickRelayButton(QPushButton*)),
+            this, SLOT(onCalledClickRelayButton(QPushButton*)));
+
+    connect(controller, SIGNAL(changeServo(int,int)),
+            this, SLOT(onCalledServoChange(int,int)));
+
+    connect(controller, SIGNAL(appendToActivityMonitor(QString, MsgType)),
+            this, SLOT(appendToActivityMonitor(QString, MsgType)));
+
+    connect(ui->zoomSlider, SIGNAL(sliderMoved(int)),
+            this, SLOT(zoomTheCameraFeed(int)));
+
+    connect(controller, SIGNAL(changedGears(int)),
+            this, SLOT(onGearChanged(int)));
+
+    // Connect the relay buttons to the relay handling function
     for(int i=0; i<relayButtons.count(); i++)
     {
-        connect(relayButtons[i], SIGNAL(clicked()), this, SLOT(on_pbRelay_clicked()));
+        connect(relayButtons[i], SIGNAL(clicked()),
+                this, SLOT(on_pbRelay_clicked()));
     }
 
-    //Connect the servo sliders to the servo handling function
+    // Connect the servo sliders to the servo handling function
     for(int i=0; i < servoSliders.count(); i++)
     {
-        connect(servoSliders[i], SIGNAL(valueChanged(int)), this, SLOT(on_vsServo_valueChanged(int)));
+        connect(servoSliders[i], SIGNAL(valueChanged(int)),
+                this, SLOT(on_vsServo_valueChanged(int)));
     }
 
     guiTimer->start();
-    connect(controller, SIGNAL(onMotherFunctionCompleted()), this, SLOT(refreshGUI())); //refresh the GUI based on QROVController
+
+    // Refresh the GUI based on QROVController
+    connect(controller, SIGNAL(onMotherFunctionCompleted()),
+            this, SLOT(refreshGUI()));
 }
 
 MainWindow::~MainWindow()
@@ -231,8 +282,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     mySettings->beginGroup("mainWindow");
     mySettings->setValue("geometry", saveGeometry());
-    mySettings->setValue("splitterStateHorizontal", ui->splitterHorizontal->saveState());
-    mySettings->setValue("splitterStateVertical", ui->splitterVertical->saveState());
+    mySettings->setValue("splitterStateHorizontal",
+                         ui->splitterHorizontal->saveState());
+    mySettings->setValue("splitterStateVertical",
+                         ui->splitterVertical->saveState());
     mySettings->endGroup();
     event->accept();
 }
@@ -243,10 +296,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
     {
         QKeyEvent *keyEv = static_cast<QKeyEvent*>(ev);
         if(keyEv->key() >= Qt::Key_1 &&
-                keyEv->key() < (Qt::Key_1 + controller->relayMappings.count()) &&
+                keyEv->key() < (Qt::Key_1 +
+                                controller->relayMappings.count()) &&
                 keyEv->key() <= Qt::Key_9)
         {
-            //Get the number of the key that was pressed
+            // Get the number of the key that was pressed
             int index = keyEv->key() - Qt::Key_1;
             controller->relayMappings.at(index).pushButton->click();
             return true;
@@ -297,7 +351,9 @@ void MainWindow::showSettings()
 {
     dialogSettings = new ROVSettings(this);
     dialogSettings->setAttribute(Qt::WA_DeleteOnClose);
-    connect(dialogSettings, SIGNAL(callLoadSettings()), this, SLOT(loadSettings()));    //connect the signal to load the settings
+    // connect the signal to load the settings
+    connect(dialogSettings, SIGNAL(callLoadSettings()),
+            this, SLOT(loadSettings()));
     dialogSettings->show();
 }
 
@@ -308,22 +364,22 @@ void MainWindow::showDiveTimer()
 
 void MainWindow::loadSettings()
 {
-    //Load the settings into the controller
+    // Load the settings into the controller
     controller->loadSettings();
 
-    //Load the relay names
+    // Load the relay names
     for(int i=0; i<controller->rov().relays.count(); i++)
     {
         relayButtons.at(i)->setText(controller->rov().relays[i].name);
     }
 
-    //Display loading in activity monitor
+    // Display loading in activity monitor
     activityMonitor->display("Settings loaded", MsgType::Good);
 
-    //Refresh the depth tape
+    // Refresh the depth tape
     depthTape->setMaxDepth((int)controller->rov().maxDepth);
 
-    //Load the proper video channel
+    // Load the proper video channel
     if(webCamViewer && controller->rov().videoFeed.url.isValid())
     {
         webCamViewer->load(controller->rov().videoFeed.url);
@@ -333,7 +389,8 @@ void MainWindow::loadSettings()
     {
         QMessageBox errorMessageBox;
         errorMessageBox.setText("Error setting the video feed URL.");
-        errorMessageBox.setInformativeText("The URL is invalid.  Please change it in the settings!");
+        errorMessageBox.setInformativeText("The URL is invalid.  " +
+                                          "Please change it in the settings!");
         errorMessageBox.setStandardButtons(QMessageBox::Ok);
         errorMessageBox.setDefaultButton(QMessageBox::Ok);
         errorMessageBox.exec();
@@ -344,8 +401,9 @@ void MainWindow::setupCustomWidgets()
 {
     controller->loadSettings();
 
-    //Setup status lights
-    QGridLayout * statusGrid = qobject_cast<QGridLayout*>(ui->groupBoxStatus->layout());
+    // Setup status lights
+    QGridLayout * statusGrid =
+                      qobject_cast<QGridLayout*>(ui->groupBoxStatus->layout());
     if(statusLights.com != 0)
     {
         delete statusLights.com;
@@ -378,10 +436,10 @@ void MainWindow::setupCustomWidgets()
     statusLights.gear->setIndicatorTitle("Disabled");
     statusGrid->addWidget(statusLights.gear->container, 1, 1, 1, 1);
 
-    //Setup the plots
+    // Setup the plots
     auto setStyleOnPlot = [this]( QCustomPlot *plot, QString titleString )
     {
-        //Colors
+        // Colors
         plot->yAxis->setTickLabelColor(this->palette().windowText().color());
         plot->yAxis->setTickPen(QPen(this->palette().windowText().color()));
         plot->yAxis->setSubTickPen(QPen(this->palette().windowText().color()));
@@ -394,11 +452,13 @@ void MainWindow::setupCustomWidgets()
 
         plot->yAxis2->setTickLabelColor(this->palette().windowText().color());
         plot->yAxis2->setTickPen(QPen(this->palette().windowText().color()));
-        plot->yAxis2->setSubTickPen(QPen(this->palette().windowText().color()));
+        plot->yAxis2->setSubTickPen(QPen(
+                                        this->palette().windowText().color()));
         plot->yAxis2->setBasePen(QPen(this->palette().windowText().color()));
         plot->xAxis2->setTickLabelColor(this->palette().windowText().color());
         plot->xAxis2->setTickPen(QPen(this->palette().windowText().color()));
-        plot->xAxis2->setSubTickPen(QPen(this->palette().windowText().color()));
+        plot->xAxis2->setSubTickPen(QPen(
+                                        this->palette().windowText().color()));
         plot->xAxis2->setBasePen(QPen(this->palette().windowText().color()));
 
         plot->graph(0)->setPen(QPen(this->palette().windowText().color()));
@@ -406,7 +466,7 @@ void MainWindow::setupCustomWidgets()
         graphColor.setAlpha(90);
         plot->graph(0)->setBrush(QBrush(graphColor));
 
-        //Title
+        // Title
         plot->plotLayout()->insertRow(0);
         QCPPlotTitle *title = new QCPPlotTitle(plot);
         title->setText(titleString);
@@ -418,28 +478,30 @@ void MainWindow::setupCustomWidgets()
         plot->setFont(font);
         plot->plotLayout()->addElement(0, 0, title);
 
-        //xAxis
-        plot->xAxis->setTickStep(1000);    //set to 1000ms gaps
-        plot->xAxis->setTickLabels(false); //hide labels
+        // xAxis
+        plot->xAxis->setTickStep(1000);    // set to 1000ms gaps
+        plot->xAxis->setTickLabels(false); // hide labels
         plot->xAxis->grid()->setVisible(false);
 
-        //yAxis
+        // yAxis
         plot->yAxis->setAutoTickCount(3);
 
-        //Show axes on all edges
+        // Show axes on all edges
         plot->axisRect()->setupFullAxesBox();
-        connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
-        connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)), plot->xAxis2, SLOT(setRange(QCPRange)));
+        connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)),
+                plot->yAxis2, SLOT(setRange(QCPRange)));
+        connect(plot->xAxis, SIGNAL(rangeChanged(QCPRange)),
+                plot->xAxis2, SLOT(setRange(QCPRange)));
     };
 
-    //Depth Plot
+    // Depth Plot
     ui->plotDepth->yAxis->setRange(0,-100);
     setStyleOnPlot(ui->plotDepth, "Depth %");
 
-    //Voltage Plot
+    // Voltage Plot
     setStyleOnPlot(ui->plotVoltage, "Voltage");
 
-    //Raspberry Pi CPU temperature C Plot
+    // Raspberry Pi CPU temperature C Plot
     QString rPiTitle = "RPi CPU Temp ";
     rPiTitle.append(QChar(0x00B0));
     rPiTitle.append("C");
@@ -453,7 +515,7 @@ void MainWindow::setupCustomWidgets()
     ui->plotDepth->yAxis->setAutoTicks(false);
     ui->plotDepth->yAxis->setTickVector(depthTicks);
     ui->plotDepth->yAxis->setTickVectorLabels(depthLabels);
-    //ui->plotDepth->xAxis->setGrid(true);
+    // ui->plotDepth->xAxis->setGrid(true);
 
     setupDepthTape();
     setupCompass();
@@ -470,9 +532,11 @@ void MainWindow::onCalledServoChange(int id, int direction)
     if(id >= 0 && id < servoSliders.count())
     {
         if(direction == 1)
-            controller->servoMappings[id].slider->setValue(controller->servoMappings[id].slider->value() + 5);
+            controller->servoMappings[id].slider->setValue(
+                            controller->servoMappings[id].slider->value() + 5);
         else
-            controller->servoMappings[id].slider->setValue(controller->servoMappings[id].slider->value() - 5);
+            controller->servoMappings[id].slider->setValue(
+                            controller->servoMappings[id].slider->value() - 5);
     }
     else
     {
@@ -494,7 +558,10 @@ void MainWindow::appendToActivityMonitor(QString message, MsgType type)
 
 void MainWindow::saveRovLogFile()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Save Dive Log", QDir::homePath(), "JSON (*.json)");
+    QString filename = QFileDialog::getSaveFileName(this,
+                                                    "Save Dive Log",
+                                                    QDir::homePath(),
+                                                    "JSON (*.json)");
     controller->saveRovLog(filename);
 }
 
@@ -515,9 +582,9 @@ void MainWindow::clearLog()
 
 void MainWindow::refreshGUI()
 {
-    loadData(); //load data from the controller object
-    displayTime();  //display the current time
-    showDiveTimer();  //show the time according to the dive timer
+    loadData(); // load data from the controller object
+    displayTime();  // display the current time
+    showDiveTimer();  // show the time according to the dive timer
 }
 
 void MainWindow::lostJoystick()
@@ -558,13 +625,15 @@ void MainWindow::loadUiGeometry()
     {
         mySettings->beginGroup("mainWindow");
         restoreGeometry(mySettings->value("geometry").toByteArray());
-        ui->splitterHorizontal->restoreState(mySettings->value("splitterStateHorizontal").toByteArray());
-        ui->splitterVertical->restoreState(mySettings->value("splitterStateVertical").toByteArray());
+        ui->splitterHorizontal->restoreState(
+                mySettings->value("splitterStateHorizontal").toByteArray());
+        ui->splitterVertical->restoreState(
+                mySettings->value("splitterStateVertical").toByteArray());
         mySettings->endGroup();
     }
     else
     {
-        //Default values
+        // Default values
         ui->splitterHorizontal->setStretchFactor(0,3);
         ui->splitterHorizontal->setStretchFactor(1,6);
         ui->splitterHorizontal->setStretchFactor(2,1);
@@ -617,22 +686,25 @@ void MainWindow::onComPiChange(bool status)
 
 void MainWindow::loadData()
 {
-    //Display the sensor values
+    // Display the sensor values
     for(int i=0; i<controller->rov().sensors.count(); i++)
     {
         sensorDisplays[i]->display(controller->rov().sensors[i].value);
     }
 
-    //Display the data graphically
+    // Display the data graphically
     int timeElapsed = graphTime->elapsed();
 
-    auto loadGraphData = [this, timeElapsed]( QCustomPlot *plot, double dataPoint, bool autoAdjustYAxis, bool canBeNegative)
+    auto loadGraphData = [this, timeElapsed](QCustomPlot *plot,
+                                             double dataPoint,
+                                             bool autoAdjustYAxis,
+                                             bool canBeNegative)
     {
         plot->graph(0)->addData(timeElapsed, dataPoint);
         plot->xAxis->setRangeUpper(timeElapsed);
         plot->xAxis->setRangeLower(timeElapsed - 30000);
 
-        //Remove no longer visible data
+        // Remove no longer visible data
         plot->graph(0)->removeDataBefore(timeElapsed - 30000);
 
         if(autoAdjustYAxis)
@@ -652,14 +724,25 @@ void MainWindow::loadData()
         plot->replot();
     };
 
-    loadGraphData(ui->plotDepth, -100*(getDepthSensor(controller->rov()).value / controller->rov().maxDepth), false, true);
-    loadGraphData(ui->plotRPiCpuTempC, controller->rov().piData.tempC, true, false);
-    loadGraphData(ui->plotVoltage, getVoltageSensor(controller->rov()).value, true, false);
-
-    depthTape->onDepthChange(getDepthSensor(controller->rov()).value, getDepthSensor(controller->rov()).units);   //TODO: test
+    loadGraphData(ui->plotDepth,
+                  -100*(getDepthSensor(controller->rov()).value /
+                                       controller->rov().maxDepth),
+                  false,
+                  true);
+    loadGraphData(ui->plotRPiCpuTempC,
+                  controller->rov().piData.tempC,
+                  true,
+                  false);
+    loadGraphData(ui->plotVoltage,
+                  getVoltageSensor(controller->rov()).value,
+                  true,
+                  false);
+    // TODO: test
+    depthTape->onDepthChange(getDepthSensor(controller->rov()).value,
+                             getDepthSensor(controller->rov()).units);
     compass->onHeadingChange(getHeadingSensor(controller->rov()).value);
 
-    //Light up the indicators
+    // Light up the indicators
     if(controller->getStatusTIBO() != statusLights.com->status())
         statusLights.com->setStatus(!statusLights.com->status());
 
@@ -675,19 +758,20 @@ void MainWindow::displayTime()
     ui->labCurrentTime->setText(timeString);
 }
 
-//Handle UI QPushButton clicks for relays
+// Handle UI QPushButton clicks for relays
 void MainWindow::on_pbRelay_clicked()
 {
     for(int i=0; i<controller->relayMappings.count(); i++)
     {
         if(controller->relayMappings[i].pushButton == sender())
         {
-            controller->editRov().relays[i].enabled = relayButtons.at(i)->isChecked();
+            controller->editRov().relays[i].enabled =
+                                               relayButtons.at(i)->isChecked();
         }
     }
 }
 
-//Handle UI QSlider change events for servos
+// Handle UI QSlider change events for servos
 void MainWindow::on_vsServo_valueChanged(int value)
 {
     for(int i=0; i < controller->servoMappings.count(); i++)

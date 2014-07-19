@@ -52,9 +52,11 @@ protected:
     bool eventFilter(QObject *obj, QEvent *ev);
 
 public slots:
-    void loadSettings();    //!< load the application's settings
+    //!< load the application's settings
+    void loadSettings();
 
-    void setupCustomWidgets();  //!< Setup the custom widgets
+    //!< Setup the custom widgets
+    void setupCustomWidgets();
 
     void onCalledClickRelayButton(QPushButton * button);
 
@@ -68,38 +70,49 @@ public slots:
     void onGearChanged(int gear);
 
 private slots:
-    //Buttons
+    // Buttons
     void on_pbRelay_clicked();
     void on_buttonCopyLogToClipboard_clicked();
     void on_buttonClearLog_clicked();
 
-    //Sliders
+    // Sliders
     void on_vsServo_valueChanged(int value);
 
-    //Show dialogs
-    void showAbout();   //!< show the about dialog
-    void showDebug();   //!< show the debug dialog
-    void showMappings();    //!< show the joystick mapping dialog
-    void showSettings();    //!< show the settings dialog
+    // Show dialogs
+    void showAbout();
+    void showDebug();
+    void showMappings();
+    void showSettings();
 
-    //Show misc. values
-    void refreshGUI();  //!< Refresh the GUI on a timer
-    void showDiveTimer();   //!< Display the dive timer
-    void onComTiboChanged(bool status);    //!< Add TIBO lost/gained to the activity monitor
-    void onComPiChange(bool status); //!< Add RPi COM lost/gained to the activity monitor
-    void displayTime(); //!< Display the current time
-    void lostJoystick();    //!< Add joystick lost/gained to the activity monitor
+    // Show misc. values
+    //!< Refresh the GUI on a timer
+    void refreshGUI();
+
+    //!< Display the dive timer
+    void showDiveTimer();
+
+    //!< Add TIBO lost/gained to the activity monitor
+    void onComTiboChanged(bool status);
+
+    //!< Add RPi COM lost/gained to the activity monitor
+    void onComPiChange(bool status);
+
+    //!< Display the current time
+    void displayTime();
+
+    //!< Add joystick lost/gained to the activity monitor
+    void lostJoystick();
 
     //Grab new data from the ROV controller
-    void loadData();    //!< Load the data from the ROV controller and display it
+    void loadData();
 
     //Setup QML widgets
-    void setupDepthTape();  //!< Configure the depth tape
-    void setupCompass();    //!< Configure the compass
+    void setupDepthTape();
+    void setupCompass();
     void loadUiGeometry();
 
     //Misc functions
-    void checkForUpdates(); //!< Check online for updates to Monterey
+    void checkForUpdates();
     void showFullscreen(bool fullscreen);
     void zoomTheCameraFeed(int zoomAmount);
 
