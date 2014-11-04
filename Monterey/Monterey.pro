@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network svg widgets quick webkit
+QT       += core gui network svg widgets quick webkit printsupport
 
 CONFIG += c++11
 
