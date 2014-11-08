@@ -12,7 +12,7 @@
 #ifdef Q_OS_LINUX
 #include "../../SDL-linux/SDL.h"
 #else
-#include "depends/windows/SDL/SDL.h"
+#include "../../SDL/SDL.h"
 #endif
 
 class QJoystick: public QJoystickInterface
