@@ -41,7 +41,7 @@ Linux: Install SDL version 1.2.15 (sudo apt-get install libsdl-dev).  Then open 
 
 OSX: First, download [SDL's Runtime Library for Mac](http://www.libsdl.org/release/SDL-1.2.15.dmg). Install the framework to /Library/Frameworks.  Then, open Monterey.pro in Qt Creator, select Desktop as your target and click run.  It should build without any problems.
 
-Windows: Development work is done primarily with MinGW, so that is the recommended compiler although MSVC has been used as well.  You can install MinGW when you install Qt or through the Qt SDK maintenance tool.  Open Monterey.pro in Qt Creator, select Desktop as your target and click run.  It should build and run just fine!
+Windows: Development work is done primarily with MSVC, so that is the recommended compiler although MinGW has been used as well.  Open Monterey.pro in Qt Creator, select Desktop as your target and click run.  It should build and run just fine!
 
 Notes:
 -------
