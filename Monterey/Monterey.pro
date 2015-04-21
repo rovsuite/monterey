@@ -117,10 +117,14 @@ win32{
 
 # Windows, MinGW
 win32-g++* {
+    LIBS += -L../Monterey/depends/windows/mingw
+    LIBS += -L../Monterey/depends/windows/mingw/ -lSDL
 }
 
 # Windows, MSVC
 win32-msvc* {
+    LIBS += -L../Monterey/depends/windows/msvc
+    LIBS += -L../Monterey/depends/windows/msvc/ -lSDL
 }
 
 # Fervor autoupdater
